@@ -25,7 +25,7 @@ description: 'Task list template for feature implementation'
 - API tests: unit tests next to the code (`domain/<entity>.spec.ts`, `application/<domain>.application.spec.ts` with fakes in `application/testing/`); integration tests `*.int.spec.ts`; API end-to-end `apps/api/tests/<domain>.e2e.spec.ts`
 - Front end (see `apps/web/AGENTS.md`, `libs/web/AGENTS.md`): screens and logic in a feature lib `libs/web/<feature>`, with Vitest + Testing Library component tests next to them; `apps/web/src/routes/` only assembles (a protected page goes in `routes/_authenticated/`, flag guard `beforeLoad: requireFeature('<flag>')`); new strings go through Lingui and the catalogs (`web:i18n-check`)
 - Browser journeys (`apps/web-e2e/src/<journey>.spec.ts`, Playwright) only for what Vitest cannot see: redirects between services, emails, cookies, several tenants
-- Run one project's tests: `pnpm nx test <project>`; everything affected: `pnpm nx affected -t lint typecheck test`
+- Run one project's tests: `pnpm nx test <project>`; everything affected: `pnpm nx affected -t lint typecheck test e2e`
 
 <!--
   ============================================================================
@@ -59,7 +59,7 @@ description: 'Task list template for feature implementation'
 - [ ] T006 Add the Drizzle tables in `libs/api/[domain]/src/lib/infra/[domain].schema.ts` and generate the migration: `pnpm nx run api:db-generate --name=[topic]`
 - [ ] T007 Implement the mapper (`[Aggregate]Mapper`, rebuilds through `restore`) and the repository until T005 passes
 
-**Checkpoint**: Foundation ready; `pnpm nx affected -t lint typecheck test` passes.
+**Checkpoint**: Foundation ready; `pnpm nx affected -t lint typecheck test e2e` passes.
 
 ---
 
@@ -85,7 +85,7 @@ description: 'Task list template for feature implementation'
 
 ### Refactor
 
-- [ ] T014 [US1] Refactor with all User Story 1 tests green; `pnpm nx affected -t lint typecheck test` passes
+- [ ] T014 [US1] Refactor with all User Story 1 tests green; `pnpm nx affected -t lint typecheck test e2e` passes
 
 **Checkpoint**: User Story 1 is fully functional and testable independently.
 
@@ -113,7 +113,7 @@ description: 'Task list template for feature implementation'
 
 ### Refactor
 
-- [ ] T021 [US2] Refactor with all User Story 2 tests green; `pnpm nx affected -t lint typecheck test` passes
+- [ ] T021 [US2] Refactor with all User Story 2 tests green; `pnpm nx affected -t lint typecheck test e2e` passes
 
 **Checkpoint**: User Stories 1 AND 2 both work independently.
 
@@ -145,6 +145,6 @@ description: 'Task list template for feature implementation'
 ## Notes
 
 - Never check a test task before seeing the test fail for the expected reason.
-- Check an implementation task once the tests it drives pass; require `pnpm nx affected -t lint typecheck test` at each story's refactor task and checkpoint.
+- Check an implementation task once the tests it drives pass; require `pnpm nx affected -t lint typecheck test e2e` at each story's refactor task and checkpoint.
 - Commit after each green step or logical group; open one pull request per user story.
 - Avoid: vague tasks, same-file conflicts, cross-story dependencies that break independence.
