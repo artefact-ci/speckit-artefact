@@ -25,7 +25,7 @@
 
 **Identity**: Better Auth service (`apps/auth`), JWT access tokens carrying `tenant_id` and `roles`
 
-**Testing**: Vitest, Testcontainers (Postgres, Redis, Mailpit), supertest through `configureApp`, Playwright (`apps/web-e2e`)
+**Testing**: Vitest (API unit tests; front-end component tests with Testing Library), Testcontainers (Postgres, Redis, Mailpit), supertest through `configureApp`, Playwright (`apps/web-e2e`, only for what Vitest cannot see)
 
 **Tenancy**: multi-tenant; every business row carries `tenant_id` taken from `RequestContext`
 
@@ -60,7 +60,7 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design. Each un
 - **Name**: `[domain].[feature]`
 - **Default**: `false`
 - **Client**: [`true` if the front end reads it through `GET /api/v1/feature-flags`, else `false`]
-- **Guarded entry points**: [routes with `@RequireFeature`, handlers or screens checking it]
+- **Guarded entry points**: [API routes with `@RequireFeature`, handlers calling `isEnabled`, front routes with `beforeLoad: requireFeature('<flag>')`; `libs/web/*` receive booleans as props and never read flags]
 
 ## Integration Events
 
@@ -87,9 +87,9 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design. Each un
 <!-- One row per acceptance scenario of spec.md (and per edge case worth a test).
      Pick the lowest level that proves the behavior. -->
 
-| Scenario (spec)       | Level                                               | Test file                                                               |
-| --------------------- | --------------------------------------------------- | ----------------------------------------------------------------------- |
-| US1-AS1 [short title] | [unit \| integration \| API e2e \| browser journey] | [path, e.g. `libs/api/[domain]/src/lib/application/[use-case].spec.ts`] |
+| Scenario (spec)       | Level                                                            | Test file                                                                         |
+| --------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| US1-AS1 [short title] | [unit \| integration \| API e2e \| component \| browser journey] | [path, e.g. `libs/api/[domain]/src/lib/application/[domain].application.spec.ts`] |
 
 ## Project Structure
 
@@ -115,13 +115,14 @@ libs/api/[domain]/src/
 ├── index.ts                              # facade: module, facade, contract types only
 └── lib/
     ├── domain/                           # entities and rules, pure TypeScript
-    ├── application/                      # use cases, ports, facade
-    ├── infra/                            # Drizzle schema (*.schema.ts), mappers, adapters
+    ├── application/                      # use-cases/<use-case>.ts, ports, facade, testing/ (in-memory fakes)
+    ├── infra/                            # <domain>.schema.ts (one per domain), mappers, repositories, adapters
     └── http/                             # thin controllers, zod DTOs
 apps/api/migrations/                      # generated migration
 apps/api/tests/[domain].e2e.spec.ts       # API end-to-end tests
-apps/web/src/routes/                      # screens (TanStack Router)
-libs/web/[lib]/                           # front-end feature, data-access or ui code
+apps/web/src/routes/_authenticated/       # thin routes only (assembly, requireFeature guard)
+libs/web/[feature]/src/lib/components/   # screens and logic, with Vitest + Testing Library tests
+libs/web/data-access/                     # API client and queries; Lingui catalogs updated (web:i18n-check)
 apps/web-e2e/src/[journey].spec.ts        # browser journeys
 ```
 

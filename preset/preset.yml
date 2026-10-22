@@ -36,6 +36,12 @@ provides:
       replaces: 'tasks-template'
 
     - type: 'command'
+      name: 'speckit.tasks'
+      file: 'commands/speckit.tasks.md'
+      description: 'Mandatory, test-first task generation appended to tasks'
+      strategy: 'append'
+
+    - type: 'command'
       name: 'speckit.implement'
       file: 'commands/speckit.implement.md'
       description: 'Test-first rules appended to implement'

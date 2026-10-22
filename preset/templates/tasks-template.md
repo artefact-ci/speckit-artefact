@@ -20,10 +20,11 @@ description: 'Task list template for feature implementation'
 
 ## Path Conventions
 
-- API domain: `libs/api/<domain>/src/lib/{domain,application,infra,http}/`, public facade in `libs/api/<domain>/src/index.ts`
+- API domain: `libs/api/<domain>/src/lib/{domain,application,infra,http}/`, use cases in `application/use-cases/<use-case>.ts`, one Drizzle schema per domain in `infra/<domain>.schema.ts`, public facade in `libs/api/<domain>/src/index.ts`
 - Shared contracts and events: `libs/shared/contracts/src/lib/<domain>/`
-- Unit tests: `*.spec.ts` next to the code; integration tests: `*.int.spec.ts`; API end-to-end: `apps/api/tests/<domain>.e2e.spec.ts`
-- Front end: `apps/web/src/routes/`, `libs/web/*`; browser journeys: `apps/web-e2e/src/<journey>.spec.ts`
+- API tests: unit tests next to the code (`domain/<entity>.spec.ts`, `application/<domain>.application.spec.ts` with fakes in `application/testing/`); integration tests `*.int.spec.ts`; API end-to-end `apps/api/tests/<domain>.e2e.spec.ts`
+- Front end (see `apps/web/AGENTS.md`, `libs/web/AGENTS.md`): screens and logic in a feature lib `libs/web/<feature>`, with Vitest + Testing Library component tests next to them; `apps/web/src/routes/` only assembles (a protected page goes in `routes/_authenticated/`, flag guard `beforeLoad: requireFeature('<flag>')`); new strings go through Lingui and the catalogs (`web:i18n-check`)
+- Browser journeys (`apps/web-e2e/src/<journey>.spec.ts`, Playwright) only for what Vitest cannot see: redirects between services, emails, cookies, several tenants
 - Run one project's tests: `pnpm nx test <project>`; everything affected: `pnpm nx affected -t lint typecheck test`
 
 <!--
@@ -52,9 +53,11 @@ description: 'Task list template for feature implementation'
 
 - [ ] T001 Declare the `[domain].[feature]` flag (default `false`) in `FEATURE_FLAGS` in `libs/shared/contracts`
 - [ ] T002 [P] Add the zod schemas (and `defineIntegrationEvent` declarations, if any) in `libs/shared/contracts/src/lib/[domain]/`
-- [ ] T003 Write the failing integration test for the repository in `libs/api/[domain]/src/lib/infra/drizzle-[aggregate].repository.int.spec.ts`; run it and confirm it FAILS
-- [ ] T004 Add the Drizzle schema in `libs/api/[domain]/src/lib/infra/[aggregate].schema.ts` and generate the migration: `pnpm nx run api:db-generate --name=[topic]`
-- [ ] T005 Implement the mapper and repository until T003 passes
+- [ ] T003 Write the failing unit test for the [aggregate] invariants and `restore` in `libs/api/[domain]/src/lib/domain/[aggregate].spec.ts`; run it and confirm it FAILS
+- [ ] T004 Implement the [aggregate] entity with `restore` in `libs/api/[domain]/src/lib/domain/[aggregate].ts` until T003 passes
+- [ ] T005 Write the failing integration test for the repository in `libs/api/[domain]/src/lib/infra/drizzle-[aggregate].repository.int.spec.ts`; run it and confirm it FAILS
+- [ ] T006 Add the Drizzle tables in `libs/api/[domain]/src/lib/infra/[domain].schema.ts` and generate the migration: `pnpm nx run api:db-generate --name=[topic]`
+- [ ] T007 Implement the mapper (`[Aggregate]Mapper`, rebuilds through `restore`) and the repository until T005 passes
 
 **Checkpoint**: Foundation ready; `pnpm nx affected -t lint typecheck test` passes.
 
@@ -70,19 +73,19 @@ description: 'Task list template for feature implementation'
 
 ### Red: tests for User Story 1 (write first, run, confirm they FAIL)
 
-- [ ] T006 [P] [US1] Unit test for [rule] (US1-AS1) in `libs/api/[domain]/src/lib/domain/[entity].spec.ts`; run `pnpm nx test api-[domain]` and confirm it FAILS
-- [ ] T007 [P] [US1] Unit test for [use case] with in-memory fakes (US1-AS2) in `libs/api/[domain]/src/lib/application/[use-case].spec.ts`; confirm it FAILS
-- [ ] T008 [P] [US1] API end-to-end test for [endpoint], including the 404 on another user's resource, in `apps/api/tests/[domain].e2e.spec.ts`; confirm it FAILS
+- [ ] T008 [P] [US1] Unit test for [rule] (US1-AS1) in `libs/api/[domain]/src/lib/domain/[aggregate].spec.ts`; run `pnpm nx test api-[domain]` and confirm it FAILS
+- [ ] T009 [P] [US1] Unit test for [use case] with in-memory fakes (US1-AS2) in `libs/api/[domain]/src/lib/application/[domain].application.spec.ts`; confirm it FAILS
+- [ ] T010 [P] [US1] API end-to-end test for [endpoint], including the 404 on another user's resource, in `apps/api/tests/[domain].e2e.spec.ts`; confirm it FAILS
 
 ### Green: implementation for User Story 1
 
-- [ ] T009 [US1] Implement [entity] rules in `libs/api/[domain]/src/lib/domain/[entity].ts` until T006 passes
-- [ ] T010 [US1] Implement [use case] in `libs/api/[domain]/src/lib/application/[use-case].ts` until T007 passes
-- [ ] T011 [US1] Add the controller and DTOs in `libs/api/[domain]/src/lib/http/` (`@RequireFeature`, `@RequireRole` if needed) until T008 passes
+- [ ] T011 [US1] Implement [rule] in `libs/api/[domain]/src/lib/domain/[aggregate].ts` until T008 passes
+- [ ] T012 [US1] Implement [use case] in `libs/api/[domain]/src/lib/application/use-cases/[use-case].ts` until T009 passes
+- [ ] T013 [US1] Add the controller and DTOs in `libs/api/[domain]/src/lib/http/` (`@RequireFeature`, `@RequireRole` if needed) until T010 passes
 
 ### Refactor
 
-- [ ] T012 [US1] Refactor with all User Story 1 tests green; `pnpm nx affected -t lint typecheck test` passes
+- [ ] T014 [US1] Refactor with all User Story 1 tests green; `pnpm nx affected -t lint typecheck test` passes
 
 **Checkpoint**: User Story 1 is fully functional and testable independently.
 
@@ -98,17 +101,19 @@ description: 'Task list template for feature implementation'
 
 ### Red: tests for User Story 2 (write first, run, confirm they FAIL)
 
-- [ ] T013 [P] [US2] [Test for US2-AS1] in [path]; confirm it FAILS
-- [ ] T014 [P] [US2] Browser journey for [flow] in `apps/web-e2e/src/[journey].spec.ts`; confirm it FAILS
+- [ ] T015 [P] [US2] [Test for US2-AS1] in [path]; confirm it FAILS
+- [ ] T016 [P] [US2] Component test (Vitest + Testing Library) for [screen] (US2-AS2) in `libs/web/[feature]/src/lib/components/[screen].spec.tsx`; confirm it FAILS
+- [ ] T017 [P] [US2] Browser journey for [flow that crosses services, emails or tenants] (US2-AS3) in `apps/web-e2e/src/[journey].spec.ts`; confirm it FAILS
 
 ### Green: implementation for User Story 2
 
-- [ ] T015 [US2] Implement [behavior] in [path] until T013 passes
-- [ ] T016 [US2] Implement the screen in `apps/web/src/routes/[route].tsx` until T014 passes
+- [ ] T018 [US2] Implement [behavior] in [path] until T015 passes
+- [ ] T019 [US2] Implement the screen in `libs/web/[feature]/src/lib/components/[screen].tsx` (strings through Lingui) until T016 passes
+- [ ] T020 [US2] Add the thin route in `apps/web/src/routes/_authenticated/[route].tsx` with `beforeLoad: requireFeature('[domain].[feature]')`, update the Lingui catalogs, until T017 passes
 
 ### Refactor
 
-- [ ] T017 [US2] Refactor with all User Story 2 tests green
+- [ ] T021 [US2] Refactor with all User Story 2 tests green; `pnpm nx affected -t lint typecheck test` passes
 
 **Checkpoint**: User Stories 1 AND 2 both work independently.
 
@@ -140,6 +145,6 @@ description: 'Task list template for feature implementation'
 ## Notes
 
 - Never check a test task before seeing the test fail for the expected reason.
-- Never check an implementation task before its tests and `pnpm nx affected -t lint typecheck test` pass.
+- Check an implementation task once the tests it drives pass; require `pnpm nx affected -t lint typecheck test` at each story's refactor task and checkpoint.
 - Commit after each green step or logical group; open one pull request per user story.
 - Avoid: vague tasks, same-file conflicts, cross-story dependencies that break independence.
