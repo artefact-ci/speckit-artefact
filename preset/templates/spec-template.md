@@ -6,6 +6,16 @@
 
 **Status**: Draft
 
+<!--
+  Status (one word, checked by `pnpm -s spec:trace`):
+  - Draft: being written or implemented; scenarios may still wait for their test.
+  - Implemented: every active scenario has a test (set by /speckit-converge).
+  - Shipped: the feature flag is removed; set in that pull request.
+  - Retired: the feature was removed; no test may cite its scenarios any more.
+  Once merged, this spec describes the current behavior: a pull request that changes it
+  updates this file. plan.md and tasks.md stay as they were (history of the build).
+-->
+
 **Input**: User description: "$ARGUMENTS"
 
 ## User Scenarios & Testing _(mandatory)_
@@ -28,7 +38,11 @@
 
   Scenario numbers are identifiers: tests cite them as `<feature number>-US<story>-AS<n>`
   (e.g. `003-US1-AS2`). Never renumber existing scenarios: give a new scenario the next
-  free number, and leave the number of a removed scenario unused.
+  free number. Never delete a scenario either: retire it, keeping its number, and say what
+  replaces it, if anything (another spec's scenario, or a new one here):
+  `2. **Retired** (replaced by 007-US1-AS3): **Given** …`
+  No test may cite a retired scenario. A new spec that changes this behavior names the
+  scenario it replaces, and retires it here in the same pull request.
 -->
 
 ### User Story 1 - [Brief Title] (Priority: P1)
