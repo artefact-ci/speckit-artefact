@@ -25,6 +25,10 @@
   Every Given/When/Then acceptance scenario MUST be verifiable by an automated test
   (unit, integration, API end-to-end or browser journey), without relying on human
   judgment: each scenario becomes a test written before the code (constitution VIII).
+
+  Scenario numbers are identifiers: tests cite them as `<feature number>-US<story>-AS<n>`
+  (e.g. `003-US1-AS2`). Never renumber existing scenarios: give a new scenario the next
+  free number, and leave the number of a removed scenario unused.
 -->
 
 ### User Story 1 - [Brief Title] (Priority: P1)
