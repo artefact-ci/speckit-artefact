@@ -1,0 +1,54 @@
+# Boilerplate preset for Spec Kit. This directory is the source of truth: edit it here, then
+# reinstall with `uvx --from specify-cli==1.2.2 specify preset update boilerplate --dev tools/spec-kit/preset`.
+# Never edit the installed copy in .specify/presets/boilerplate/ or .claude/skills/speckit-*/.
+schema_version: '1.0'
+
+preset:
+  id: 'boilerplate'
+  name: 'Nx NestJS React boilerplate'
+  version: '1.0.0'
+  description: 'Templates and test-first commands for the Nx NestJS React boilerplate'
+  author: 'nx-react-nestjs boilerplate'
+  repository: 'https://github.com/AlMoustapha01/monorepo-nx-react-nestjs'
+  license: 'MIT'
+
+requires:
+  speckit_version: '>=1.2.2'
+
+provides:
+  templates:
+    - type: 'template'
+      name: 'spec-template'
+      file: 'templates/spec-template.md'
+      description: 'Spec template: every acceptance scenario must be testable'
+      replaces: 'spec-template'
+
+    - type: 'template'
+      name: 'plan-template'
+      file: 'templates/plan-template.md'
+      description: 'Plan template: boilerplate stack, domains, flag, events, migrations, access rules, test strategy'
+      replaces: 'plan-template'
+
+    - type: 'template'
+      name: 'tasks-template'
+      file: 'templates/tasks-template.md'
+      description: 'Tasks template: mandatory tests, red-green-refactor, one user story per pull request'
+      replaces: 'tasks-template'
+
+    - type: 'command'
+      name: 'speckit.implement'
+      file: 'commands/speckit.implement.md'
+      description: 'Test-first rules appended to implement'
+      strategy: 'append'
+
+    - type: 'command'
+      name: 'speckit.converge'
+      file: 'commands/speckit.converge.md'
+      description: 'Acceptance-scenario test coverage appended to converge'
+      strategy: 'append'
+
+tags:
+  - 'tdd'
+  - 'nx'
+  - 'nestjs'
+  - 'react'
