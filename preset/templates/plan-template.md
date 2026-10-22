@@ -84,12 +84,13 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design. Each un
 
 ## Test Strategy
 
-<!-- One row per acceptance scenario of spec.md (and per edge case worth a test).
+<!-- One row per acceptance scenario of spec.md (and per edge case worth a test), by its
+     id `[###]-US<story>-AS<n>`: the title of each covering test starts with that id.
      Pick the lowest level that proves the behavior. -->
 
-| Scenario (spec)       | Level                                                            | Test file                                                                         |
-| --------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| US1-AS1 [short title] | [unit \| integration \| API e2e \| component \| browser journey] | [path, e.g. `libs/api/[domain]/src/lib/application/[domain].application.spec.ts`] |
+| Scenario (spec)             | Level                                                            | Test file                                                                         |
+| --------------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| [###]-US1-AS1 [short title] | [unit \| integration \| API e2e \| component \| browser journey] | [path, e.g. `libs/api/[domain]/src/lib/application/[domain].application.spec.ts`] |
 
 ## Project Structure
 

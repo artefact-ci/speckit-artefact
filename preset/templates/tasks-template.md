@@ -8,7 +8,7 @@ description: 'Task list template for feature implementation'
 
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
-**Tests**: MANDATORY. Every acceptance scenario of spec.md has a test task, listed BEFORE the implementation it drives (constitution VIII, Test-First). Use the levels and files from the plan's Test Strategy.
+**Tests**: MANDATORY. Every acceptance scenario of spec.md has a test task, listed BEFORE the implementation it drives (constitution VIII, Test-First). Use the levels and files from the plan's Test Strategy. The title of each test starts with its scenario id, e.g. `it('[###]-US1-AS2: refuses …')`, so that `pnpm -s spec:trace` can map scenarios to tests.
 
 **Organization**: Tasks are grouped by user story. Each user story is delivered in its own pull request, under 500 changed lines; split a story that would exceed it.
 
@@ -73,8 +73,8 @@ description: 'Task list template for feature implementation'
 
 ### Red: tests for User Story 1 (write first, run, confirm they FAIL)
 
-- [ ] T008 [P] [US1] Unit test for [rule] (US1-AS1) in `libs/api/[domain]/src/lib/domain/[aggregate].spec.ts`; run `pnpm nx test api-[domain]` and confirm it FAILS
-- [ ] T009 [P] [US1] Unit test for [use case] with in-memory fakes (US1-AS2) in `libs/api/[domain]/src/lib/application/[domain].application.spec.ts`; confirm it FAILS
+- [ ] T008 [P] [US1] Unit test for [rule] titled `[###]-US1-AS1: …` in `libs/api/[domain]/src/lib/domain/[aggregate].spec.ts`; run `pnpm nx test api-[domain]` and confirm it FAILS
+- [ ] T009 [P] [US1] Unit test for [use case] with in-memory fakes titled `[###]-US1-AS2: …` in `libs/api/[domain]/src/lib/application/[domain].application.spec.ts`; confirm it FAILS
 - [ ] T010 [P] [US1] API end-to-end test for [endpoint], including the 404 on another user's resource, in `apps/api/tests/[domain].e2e.spec.ts`; confirm it FAILS
 
 ### Green: implementation for User Story 1
@@ -101,9 +101,9 @@ description: 'Task list template for feature implementation'
 
 ### Red: tests for User Story 2 (write first, run, confirm they FAIL)
 
-- [ ] T015 [P] [US2] [Test for US2-AS1] in [path]; confirm it FAILS
-- [ ] T016 [P] [US2] Component test (Vitest + Testing Library) for [screen] (US2-AS2) in `libs/web/[feature]/src/lib/components/[screen].spec.tsx`; confirm it FAILS
-- [ ] T017 [P] [US2] Browser journey for [flow that crosses services, emails or tenants] (US2-AS3) in `apps/web-e2e/src/[journey].spec.ts`; confirm it FAILS
+- [ ] T015 [P] [US2] [Test titled `[###]-US2-AS1: …`] in [path]; confirm it FAILS
+- [ ] T016 [P] [US2] Component test (Vitest + Testing Library) for [screen] titled `[###]-US2-AS2: …` in `libs/web/[feature]/src/lib/components/[screen].spec.tsx`; confirm it FAILS
+- [ ] T017 [P] [US2] Browser journey for [flow that crosses services, emails or tenants] titled `[###]-US2-AS3: …` in `apps/web-e2e/src/[journey].spec.ts`; confirm it FAILS
 
 ### Green: implementation for User Story 2
 
