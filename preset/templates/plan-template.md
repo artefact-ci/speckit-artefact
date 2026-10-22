@@ -44,7 +44,7 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design. Each un
 - [ ] III. Secure by Default: routes are authenticated; shared-data mutations declare `@RequireRole`; forbidden resources answer 404.
 - [ ] IV. Bounded External Calls: Redis keys have a TTL; external calls have a timeout, and slow ones go through a queue.
 - [ ] V. Generated, Backward-Compatible Migrations: generated with `db-generate`, expand/contract.
-- [ ] VI. Small, Flagged Increments: behind a flag disabled by default; each user story fits a PR under 500 lines.
+- [ ] VI. Flagged Increments: behind a flag disabled by default; each user story is delivered in its own pull request.
 - [ ] VII. Domain Boundaries: facade-only imports, port + adapter, own Postgres schema, events for asynchronous reactions.
 - [ ] VIII. Test-First: every acceptance scenario has a test in the Test Strategy below, written before the code.
 

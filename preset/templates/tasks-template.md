@@ -10,7 +10,7 @@ description: 'Task list template for feature implementation'
 
 **Tests**: MANDATORY. Every acceptance scenario of spec.md has a test task, listed BEFORE the implementation it drives (constitution VIII, Test-First). Use the levels and files from the plan's Test Strategy. The title of each test starts with its scenario id, e.g. `it('[###]-US1-AS2: refuses …')`, so that `pnpm -s spec:trace` can map scenarios to tests.
 
-**Organization**: Tasks are grouped by user story. Each user story is delivered in its own pull request, under 500 changed lines; split a story that would exceed it.
+**Organization**: Tasks are grouped by user story. Each user story is delivered in its own pull request.
 
 ## Format: `[ID] [P?] [Story] Description`
 
@@ -69,7 +69,7 @@ description: 'Task list template for feature implementation'
 
 **Independent Test**: [How to verify this story works on its own]
 
-**Pull request**: this story alone, under 500 changed lines.
+**Pull request**: this story alone.
 
 ### Red: tests for User Story 1 (write first, run, confirm they FAIL)
 
@@ -97,7 +97,7 @@ description: 'Task list template for feature implementation'
 
 **Independent Test**: [How to verify this story works on its own]
 
-**Pull request**: this story alone, under 500 changed lines.
+**Pull request**: this story alone.
 
 ### Red: tests for User Story 2 (write first, run, confirm they FAIL)
 

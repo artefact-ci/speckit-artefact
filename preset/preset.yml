@@ -36,6 +36,12 @@ provides:
       replaces: 'tasks-template'
 
     - type: 'command'
+      name: 'speckit.specify'
+      file: 'commands/speckit.specify.md'
+      description: 'Feature branch from the git extension, reused as the spec directory'
+      strategy: 'append'
+
+    - type: 'command'
       name: 'speckit.tasks'
       file: 'commands/speckit.tasks.md'
       description: 'Mandatory, test-first task generation appended to tasks'
