@@ -20,7 +20,7 @@ description: 'Task list template for feature implementation'
 
 ## Path Conventions
 
-- API domain: `libs/api/<domain>/src/lib/{domain,application,infra,http}/`, use cases in `application/use-cases/<use-case>.ts`, one Drizzle schema per domain in `infra/<domain>.schema.ts`, public facade in `libs/api/<domain>/src/index.ts`
+- API domain: a new domain is created with `pnpm new:domain <domain>` (lib, facade, module registered in the AppModule; first task of the Foundational phase), never by copying another domain's configuration; `libs/api/<domain>/src/lib/{domain,application,infra,http}/`, use cases in `application/use-cases/<use-case>.ts`, one Drizzle schema per domain in `infra/<domain>.schema.ts`, public facade in `libs/api/<domain>/src/index.ts`
 - Shared contracts and events: `libs/shared/contracts/src/lib/<domain>/`
 - API tests: unit tests next to the code (`domain/<entity>.spec.ts`, `application/<domain>.application.spec.ts` with fakes in `application/testing/`); integration tests `*.int.spec.ts`; API end-to-end `apps/api/tests/<domain>.e2e.spec.ts`
 - Front end (see `apps/web/AGENTS.md`, `libs/web/AGENTS.md`): screens and logic in a feature lib `libs/web/<feature>`, with Vitest + Testing Library component tests next to them; `apps/web/src/routes/` only assembles (a protected page goes in `routes/_authenticated/`, flag guard `beforeLoad: requireFeature('<flag>')`); new strings go through Lingui and the catalogs (`web:i18n-check`)
