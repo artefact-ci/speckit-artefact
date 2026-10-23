@@ -25,6 +25,7 @@ description: 'Task list template for feature implementation'
 - API tests: unit tests next to the code (`domain/<entity>.spec.ts`, `application/<domain>.application.spec.ts` with fakes in `application/testing/`); integration tests `*.int.spec.ts`; API end-to-end `apps/api/tests/<domain>.e2e.spec.ts`
 - Front end (see `apps/web/AGENTS.md`, `libs/web/AGENTS.md`): screens and logic in a feature lib `libs/web/<feature>`, created with `pnpm new:web-feature <feature>` (never by copying another lib's configuration), with Vitest + Testing Library component tests next to them; `apps/web/src/routes/` only assembles (a protected page goes in `routes/_authenticated/`, flag guard `beforeLoad: requireFeature('<flag>')`); new strings go through Lingui and the catalogs (`web:i18n-check`)
 - Browser journeys (`apps/web-e2e/src/<journey>.spec.ts`, Playwright) only for what Vitest cannot see: redirects between services, emails, cookies, several tenants
+- Every new page gets an accessibility check (axe) in `apps/web-e2e/src/accessibility.spec.ts`, with its form in error if it has one; a page behind a flag needs the flag in `E2E_FEATURE_FLAGS` (`apps/web-e2e/src/stack.ts`), or it answers 404
 - Run one project's tests: `pnpm nx test <project>`; everything affected: `pnpm nx affected -t lint typecheck test e2e`
 
 <!--
@@ -103,7 +104,7 @@ description: 'Task list template for feature implementation'
 
 - [ ] T015 [P] [US2] [Test titled `[###]-US2-AS1: …`] in [path]; confirm it FAILS
 - [ ] T016 [P] [US2] Component test (Vitest + Testing Library) for [screen] titled `[###]-US2-AS2: …` in `libs/web/[feature]/src/lib/components/[screen].spec.tsx`; confirm it FAILS
-- [ ] T017 [P] [US2] Browser journey for [flow that crosses services, emails or tenants] titled `[###]-US2-AS3: …` in `apps/web-e2e/src/[journey].spec.ts`; confirm it FAILS
+- [ ] T017 [P] [US2] Browser journey for [flow that crosses services, emails or tenants] titled `[###]-US2-AS3: …` in `apps/web-e2e/src/[journey].spec.ts`, and the accessibility check of the new page in `apps/web-e2e/src/accessibility.spec.ts` (flag in `E2E_FEATURE_FLAGS`); confirm they FAIL
 
 ### Green: implementation for User Story 2
 
