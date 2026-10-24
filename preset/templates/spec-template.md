@@ -16,6 +16,15 @@
   updates this file. plan.md and tasks.md stay as they were (history of the build).
 -->
 
+**Product Requirements**: None
+
+<!--
+  Product requirements (checked by `pnpm -s spec:trace`): when specs/product-requirements.json
+  exists, the ids of the requirements this feature implements, comma-separated (`PAY-03, PAY-04`),
+  or `None` (technical feature, or no requirement in the index). Each id must be in the index.
+  The state of a requirement is derived from the status of its specs: never record it elsewhere.
+-->
+
 **Input**: User description: "$ARGUMENTS"
 
 ## User Scenarios & Testing _(mandatory)_
