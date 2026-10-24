@@ -56,7 +56,7 @@ provides:
     - type: 'command'
       name: 'speckit.converge'
       file: 'commands/speckit.converge.md'
-      description: 'Acceptance-scenario test coverage appended to converge'
+      description: 'Acceptance-scenario test coverage and independent review appended to converge'
       strategy: 'append'
 
 tags:
