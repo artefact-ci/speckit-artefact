@@ -35,6 +35,21 @@ provides:
       description: 'Tasks template: mandatory tests, red-green-refactor, one user story per pull request'
       replaces: 'tasks-template'
 
+    - type: 'template'
+      name: 'prd-template'
+      file: 'templates/prd-template.md'
+      description: 'Product requirements document: vision, users, scope, constraints, requirements (ids of specs/product.yml)'
+
+    - type: 'command'
+      name: 'speckit.prd'
+      file: 'commands/speckit.prd.md'
+      description: 'Write or revise the product requirements document and the requirements of the product index'
+
+    - type: 'command'
+      name: 'speckit.epics'
+      file: 'commands/speckit.epics.md'
+      description: 'Group the requirements into ordered epics with their end-to-end journeys'
+
     - type: 'command'
       name: 'speckit.specify'
       file: 'commands/speckit.specify.md'
