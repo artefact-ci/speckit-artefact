@@ -31,14 +31,32 @@ The index belongs to the product, that is to the user. You propose; the user dec
 
 5. **Journeys.** For each epic, the paths a user takes across several features to reach its outcome, written as steps a browser test can follow (`sign up`, `order`, `pay by mobile money`, `ask for a refund`). One to three per epic, the ones that prove the outcome. A journey belongs to the epic it completes, even when its first steps come from the epics it depends on. Their tests are written when the epic is done, in `apps/web-e2e`, titled `'<journey id>: …'`.
 
-6. **Show the proposal, then wait.** Show the user a table (epic, goal, requirements, depends on, journeys), the proposed order with its reasons, and for a revision the differences with the current index. Write nothing until the user approves; apply their changes and show again if needed.
+6. **Show the proposal, then wait.** First check it against `specs/product.yml`: every active requirement is in exactly one epic, every dependency names an epic of the proposal, and no dependency loops. Fix the proposal before showing it; `spec:trace` must not be the first to find a forgotten requirement. Then show the user a table (epic, goal, requirements, depends on, journeys), the proposed order with its reasons, and for a revision the differences with the current index. Write nothing until the user approves; apply their changes and show again if needed.
 
-7. **Write** the `epics` list of `specs/product.yml`. Keep the `requirements` list and the comments as they are. Revising:
+7. **Write** the `epics` list of `specs/product.yml`. Keep the `requirements` list and the comments as they are. Titles, goals and steps are in English, like the specs. An epic has `id`, `title`, `goal`, `requirements`, `depends_on` (may be empty) and `journeys`; a journey has `id`, `title`, `steps` (at least one) and, once dropped, `retired`:
+
+   ```yaml
+   epics:
+     - id: E01
+       title: Shop goes live
+       goal: A shop owner opens a storefront, and customers see it once it is approved.
+       requirements: [SHP-01, SHP-02, CAT-01]
+       depends_on: []
+       journeys:
+         - id: E01-J1
+           title: A new shop is approved and shown to customers
+           steps:
+             - the shop owner creates the shop
+             - the Boutik team approves the shop
+             - a customer sees the shop
+   ```
+
+   Revising:
    - ids of epics and journeys are never renumbered nor reused: a new one takes the next free number;
    - a dropped journey gets `retired: <reason>` and keeps its id; an epic is not retired by hand: it is retired once all its requirements are;
    - moving a requirement out of an epic that already has specs is the user's call: name those specs in the proposal.
 
-8. **Check.** Run `pnpm -s spec:trace` and fix every error it reports on the index (requirement in no epic or in two, unknown dependency, cycle, journey id that does not start with its epic id). A journey without test is an error only once its epic is done: if the revision makes a done epic gain a journey, tell the user that its test is now owed.
+8. **Check.** Run `pnpm -s spec:trace` and fix every error it reports on the index (requirement in no epic or in two, unknown dependency, cycle, journey id that does not start with its epic id). A fix that only corrects the writing (a typo in an id, a missing field) is yours. A fix that changes what the user approved (where a requirement goes, a dependency) goes back to the user: show it and wait before committing. A journey without test is an error only once its epic is done: if the revision makes a done epic gain a journey, tell the user that its test is now owed.
 
 9. **Commit.** Stage only `specs/product.yml` (never `git add .`), and commit with a Conventional Commits message in English, such as `docs(product): group the requirements into epics`.
 
@@ -47,5 +65,5 @@ The index belongs to the product, that is to the user. You propose; the user dec
 ## Rules
 
 - Never write a state (specified, done, shipped) in the index: states are derived from the specs.
-- Never edit `specs/prd.md` from this command, nor a spec (`specs/NNN-*/`). A requirement that is missing, too broad or ambiguous while grouping goes back to `/speckit-prd`: say which one and why.
+- Never edit `specs/prd.md` from this command, nor a spec (`specs/NNN-*/`). A requirement that is missing, too broad or ambiguous while grouping goes back to `/speckit-prd`: say which one and why, in the proposal and in the report. It does not block the epics: group the requirements that exist, and the next `/speckit-prd` and `/speckit-epics` add the rest.
 - An epic says what the user gets, not how it is built: no domain, endpoint, table or flag here.
