@@ -25,24 +25,38 @@ The PRD and the index belong to the product, that is to the user. You draft; the
 
 2. **Read what exists.** `specs/prd.md` and `specs/product.yml` if they exist, and the output of `pnpm -s spec:trace` (states of the requirements and epics). When the user input is a path, read that document: it is the source, the PRD restates it, it does not invent beyond it.
 
-3. **Find the gaps.** Check the source and the existing PRD against each section of the template (`.specify/scripts/bash/resolve-template.sh prd-template`): vision, users, problems, scope and non-goals, constraints, success metrics, requirements. Ask at most 5 questions, one at a time, each with a recommended answer and the options, as `/speckit-clarify` does. Ask only what changes the requirements or the scope; anything else goes to **Open Questions**.
+3. **Find the gaps.** Check the source and the existing PRD against each section of the template (`.specify/scripts/bash/resolve-template.sh prd-template` prints its content, not its path): vision, users, problems, scope and non-goals, constraints, success metrics, requirements. Ask at most 5 questions, one at a time, each with a recommended answer and the options, as `/speckit-clarify` does. Ask only what changes the requirements or the scope; anything else goes to **Open Questions**.
 
 4. **Draft the requirements.** One requirement = one capability a user can be given or refused, testable through specs later. For each one:
    - an id `<PREFIX>-<number>` (uppercase prefix, dash, digits: `PAY-03`), the only form `spec:trace` accepts: the source's own id when it has that form, otherwise a short prefix per area (`ACC`, `PAY`, `ORD`) and the next free number of that prefix. When the source numbers its requirements another way (`REQ-1.2`, `F12`), keep the mapping in the PRD, after the title: `**PAY-03** Pay by mobile money (source: REQ-1.2): …`;
    - a short title, the same in the PRD and in the index;
    - no technology, no screen, no data model: those belong to `/speckit-plan`.
 
+   Then check the coverage: every problem of the PRD is answered by at least one requirement. A problem left without one is either a missing requirement or a constraint (`order in the evening, delivered the next day`): say which in the draft, do not drop it silently.
+
    Revising an existing index, ids are never renumbered nor reused. A dropped requirement gets `retired: <reason>` in `specs/product.yml` and is struck through in the PRD with the same reason; a changed requirement keeps its id if its intent stays the same, otherwise the old one is retired and a new one is created.
 
-5. **Show the draft, then wait.** Show the user the requirement table (id, title, area, and for a revision: added, changed, retired) and a summary of the PRD sections. Write nothing until the user approves; apply their changes and show again if needed.
+5. **Show the draft, then wait.** Show the user the requirement table (id, title, area, source id, and for a revision: added, changed, retired), a summary of the PRD sections, and in a list of its own what the PRD leaves out of the source and why (a technology choice, a vendor not signed, a vague wish turned into a constraint or an open question). Nothing from the source disappears without the user seeing it. Write nothing until the user approves; apply their changes and show again if needed.
 
 6. **Write.**
    - `specs/prd.md` from the template, all placeholders replaced, comments of the template removed. In English, like the specs.
-   - In `specs/product.yml`, the `requirements` list only. Keep the existing `epics` and the comments as they are. Create the file with this header when it does not exist:
+   - In `specs/product.yml`, the `requirements` list only. Keep the existing `epics` and the comments as they are. An entry has `id`, `title` and, once dropped, `retired`; nothing else, the area is a YAML comment above its group. Create the file with this header when it does not exist:
 
      ```yaml
      # Product index: owned by the product (CODEOWNERS). Ids are never renumbered: retire them.
      # Narrative in specs/prd.md. Checked by `pnpm -s spec:trace`.
+     ```
+
+     Entries look like this:
+
+     ```yaml
+     requirements:
+       # Payments
+       - id: PAY-01
+         title: Pay by mobile money
+       - id: PAY-02
+         title: Cash on delivery
+         retired: replaced by PAY-05 (payment on pickup only)
      ```
 
 7. **Check.** Run `pnpm -s spec:trace`. When the index already has epics, a new requirement belongs to no epic and spec:trace fails: tell the user that `/speckit-epics` must place it, and go on to the commit anyway (the branch is not merged until it passes). Any other error is yours: fix it.
