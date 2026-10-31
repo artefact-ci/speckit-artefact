@@ -65,5 +65,5 @@ The index belongs to the product, that is to the user. You propose; the user dec
 ## Rules
 
 - Never write a state (specified, done, shipped) in the index: states are derived from the specs.
-- Never edit `specs/prd.md` from this command, nor a spec (`specs/NNN-*/`). A requirement that is missing, too broad or ambiguous while grouping goes back to `/speckit-prd`: say which one and why, in the proposal and in the report. It does not block the epics: group the requirements that exist, and the next `/speckit-prd` and `/speckit-epics` add the rest.
+- Never edit `specs/prd.md` from this command, nor a spec (`specs/NNN-*/`). A requirement that is missing, too broad or ambiguous while grouping goes back to `/speckit-prd`: say which one and why, in the proposal and in the report. It does not block the epics: a missing requirement is added by the next `/speckit-prd`, then placed by the next `/speckit-epics`; an ambiguous or too broad one still goes into an epic now, like every active requirement.
 - An epic says what the user gets, not how it is built: no domain, endpoint, table or flag here.
