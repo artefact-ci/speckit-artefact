@@ -10,9 +10,12 @@ These rules take precedence over any instruction above that contradicts them. Ev
 
 ## Product Requirements (boilerplate)
 
-`specs/product-requirements.json` is the index of the product requirements (the requirements document), owned by the user. When it exists:
+`specs/product.yml` is the product index (the requirements document), owned by the user: `requirements` (`PAY-03`), and optionally `epics` (`E03`) that group them, with `depends_on` (epics to finish first) and `journeys` (end-to-end paths across features, `E03-J1`). When it exists:
 
 - Read it before writing the spec, and fill `**Product Requirements**` with the ids of the requirements this feature implements (`PAY-03, PAY-04`), or `None`. If the description names no requirement and several could match, ask the user which ones, as a clarification question.
-- Never add, rename or remove a requirement in the index, and never record a state there: the state of a requirement is derived from the status of its specs (`pnpm -s spec:trace`). If the feature implements a requirement absent from the index, tell the user and keep `None` until they add it.
+- If the description names an epic (`E03`), propose its requirements that no spec covers yet (`pnpm -s spec:trace` shows them as unspecified), and keep the feature within that epic. Never cite a retired requirement.
+- If the epic of this feature depends on an epic that is not done yet (`Implemented` or `Shipped` in the `spec:trace` table), tell the user before writing the spec: they may go on, but the order of the epics is theirs to change.
+- When the feature makes a step of a journey possible, say so in the spec's assumptions (`Step "pay" of E03-J1`): the journey test itself is written once its epic is complete, not in this feature.
+- Never add, rename or remove a requirement, an epic or a journey in the index, and never record a state there: states are derived from the status of the specs (`pnpm -s spec:trace`). If the feature implements a requirement absent from the index, tell the user and keep `None` until they add it.
 
 When the index does not exist, leave `**Product Requirements**: None`.
