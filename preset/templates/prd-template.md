@@ -60,7 +60,7 @@
 
 ### [Area]
 
-- **[PREFIX-01]** [Title, as in specs/product.yml]: [what the user can do, and the rule that matters]
+- **[PREFIX-01]** [Title, as in specs/product.yml] [(source: id in the requirements document, when it differs)]: [what the user can do, and the rule that matters]
 
 ## Open Questions
 

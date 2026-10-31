@@ -28,7 +28,7 @@ The PRD and the index belong to the product, that is to the user. You draft; the
 3. **Find the gaps.** Check the source and the existing PRD against each section of the template (`.specify/scripts/bash/resolve-template.sh prd-template`): vision, users, problems, scope and non-goals, constraints, success metrics, requirements. Ask at most 5 questions, one at a time, each with a recommended answer and the options, as `/speckit-clarify` does. Ask only what changes the requirements or the scope; anything else goes to **Open Questions**.
 
 4. **Draft the requirements.** One requirement = one capability a user can be given or refused, testable through specs later. For each one:
-   - an id `<PREFIX>-<number>`: the source's own id if it has one, otherwise a short prefix per area (`ACC`, `PAY`, `ORD`) and the next free number of that prefix;
+   - an id `<PREFIX>-<number>` (uppercase prefix, dash, digits: `PAY-03`), the only form `spec:trace` accepts: the source's own id when it has that form, otherwise a short prefix per area (`ACC`, `PAY`, `ORD`) and the next free number of that prefix. When the source numbers its requirements another way (`REQ-1.2`, `F12`), keep the mapping in the PRD, after the title: `**PAY-03** Pay by mobile money (source: REQ-1.2): …`;
    - a short title, the same in the PRD and in the index;
    - no technology, no screen, no data model: those belong to `/speckit-plan`.
 
