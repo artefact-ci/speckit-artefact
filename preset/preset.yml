@@ -43,7 +43,7 @@ provides:
     - type: 'command'
       name: 'speckit.prd'
       file: 'commands/speckit.prd.md'
-      description: 'Write or revise the product requirements document and the requirements of the product index'
+      description: 'Write or revise the product requirements document and the requirements of the product index, with the product reviewer'
 
     - type: 'template'
       name: 'design-template'
@@ -58,7 +58,7 @@ provides:
     - type: 'command'
       name: 'speckit.epics'
       file: 'commands/speckit.epics.md'
-      description: 'Group the requirements into ordered epics with their end-to-end journeys'
+      description: 'Group the requirements into ordered epics with their end-to-end journeys, with the product reviewer'
 
     - type: 'command'
       name: 'speckit.specify'

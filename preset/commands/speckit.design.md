@@ -17,7 +17,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 Produce the design level of the product, between `/speckit-prd` and `/speckit-epics`: `specs/design.md` (users and their contexts, UX principles, voice and tone, accessibility, visual direction) and the theme of the app that applies it (`libs/web/ui/src/lib/styles/theme.css`). Every prototype (`/speckit-prototype`) and every screen inherits it.
 
-The design direction belongs to the product, that is to the user. The `designer` agent drafts, the `relecteur-design` agent reviews it cold, you show both to the user, and the user decides. Nothing is written before the user has approved it.
+The design direction belongs to the product, that is to the user. The `designer` agent drafts, the `relecteur-design` agent reviews it cold, you show both to the user, and the user decides. Nothing is committed before the user has approved it.
 
 ## Steps
 
