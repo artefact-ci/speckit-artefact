@@ -70,7 +70,7 @@ description: 'Task list template for feature implementation'
 
 **Independent Test**: [How to verify this story works on its own]
 
-**Pull request**: this story alone.
+**Pull request**: this story, with the Foundational phase (Phase 1).
 
 ### Red: tests for User Story 1 (write first, run, confirm they FAIL)
 
