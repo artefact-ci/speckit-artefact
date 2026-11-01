@@ -10,7 +10,7 @@ These rules take precedence over any instruction above that contradicts them. Th
   - adds an infrastructure dependency (a service in the compose files, a cloud SDK, a Testcontainers image);
   - picks between designs that will be hard to change later (the tenant model, a new role, where files are stored).
 
-  List each one in **Decisions for the User** of the plan: the question, the options with what each one costs, and your recommendation. Show them to the user and wait; do not run the `after_plan` commit hook before every decision has an answer. Then record the answer and its reason in that section, and go on.
+  List each one in **Decisions for the User** of the plan: the question, the options with what each one costs, and your recommendation. Show them to the user and end your turn there: the rest of the command, and its `after_plan` commit hook, run only once every decision has an answer. Then record each answer and its reason in that section, and go on.
 
 - Everything else you settle yourself, in `research.md`, and say so in the report.
 
