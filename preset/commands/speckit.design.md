@@ -21,25 +21,25 @@ The design direction belongs to the product, that is to the user. The `designer`
 
 ## Steps
 
-1. **Branch.** Stop if the working tree has uncommitted changes. On a `docs/product-*` branch left by `/speckit-prd`, stay on it. On `dev` (on `main`, switch to `dev` and pull it first), create and switch to `docs/product-design` (`git switch -c`). On another branch, ask the user before going on.
+1. **Branch.** Stop if the working tree has uncommitted changes. On a `docs/product-*` branch left by `/speckit-prd`, stay on it. On `dev` (on `main`, switch to `dev` and pull it first), create and switch to `docs/product-design` (`docs/product-design-<short-name>` for a revision, as `/speckit-epics` does; `git switch -c`). On another branch, ask the user before going on.
 
 2. **Read.** `specs/prd.md` (stop and point to `/speckit-prd` if it does not exist), `specs/design.md` if it exists, and `theme.css`.
 
 3. **Ask.** At most 5 questions, one at a time, each with a recommended answer and the options, as `/speckit-clarify` does, and only on what changes the direction: the devices and conditions of use, the image the product must give (references the user likes or dislikes), an existing brand (colors, font), the accessibility level. Skip what the PRD or the user input already answers.
 
-4. **Draft.** Launch the `designer` subagent in mode `cadrage`, with the paths to read and the user's answers. With an agent other than Claude Code, ask the user to run `docs/agents/designer.md` in a new session and paste its report.
+4. **Draft.** Launch the `designer` subagent in mode `cadrage`, with the paths to read and the user's answers. It drafts in place: `specs/design.md`, the tokens of `theme.css`, and a chosen font installed with its `knip.json` entry (see step 7), so that the review and the preview see the real files. With an agent other than Claude Code, ask the user to run `docs/agents/designer.md` in a new session and paste its report.
 
 5. **Review.** Launch the `relecteur-design` subagent in mode `cadrage`, with the paths only, never the designer's report. When it reports a blocking issue, send that report to the `designer` once for a fix, then go on: no second round. With another agent, ask the user to run `docs/agents/relecteur-design.md` in a new session, as for the designer.
 
 6. **Show, then wait.** Show the user:
    - a summary of each section of the draft `design.md`;
    - the token pairs before and after, with their contrast, and the font if one is chosen;
-   - a preview of the theme on the existing components: `pnpm nx run web-ui:storybook` (http://localhost:6006) with the draft `theme.css`;
+   - a preview of the theme, font included, on the existing components: `pnpm nx run web-ui:storybook` (http://localhost:6006) with the draft `theme.css`;
    - the blocking issues the reviewer left, and the ones the designer disputes, with their proof.
 
-   Write nothing final until the user approves; apply their changes (through the designer when they are more than a value) and show again if needed. When the user declines, restore `theme.css` (`git checkout -- libs/web/ui/src/lib/styles/theme.css`) and remove the draft.
+   Write nothing final until the user approves; apply their changes (through the designer when they are more than a value) and show again if needed. When the user declines, restore every file of the draft: `git checkout -- libs/web/ui/src/lib/styles/theme.css package.json pnpm-lock.yaml knip.json`, then `pnpm install`; `specs/design.md` is restored the same way when it was already tracked, and deleted only when this run created it.
 
-7. **Write.**
+7. **Finalize** the draft the user approved (the designer wrote it in step 4; these are the rules it follows):
    - `specs/design.md` from the template (`.specify/scripts/bash/resolve-template.sh design-template` prints its content), all placeholders replaced, template comments removed, in English.
    - `theme.css`: the approved tokens of `:root` and `.dark`, and `--radius`.
    - A font: `pnpm add @fontsource-variable/<name>` (or `@fontsource/<name>` when no variable version exists) at the root, an `@import` of it at the top of `theme.css`, and `--font-sans: '<Family>', ui-sans-serif, system-ui, sans-serif;` set in the `@theme inline` block. knip does not follow CSS imports: add the package to `ignoreDependencies` of `knip.json`, next to `tw-animate-css`.

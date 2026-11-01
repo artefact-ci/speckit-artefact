@@ -22,3 +22,9 @@
 **Errors and empty states**:
 
 - `[screen-state]`: [when it shows up, what the user can do from it]
+
+## Components to add to web-ui
+
+<!-- Filled in with the mockup: what the screens need that libs/web/ui lacks, read by /speckit-plan. -->
+
+- [Component]: [screens that use it] (or None)

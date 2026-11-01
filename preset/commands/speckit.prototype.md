@@ -31,13 +31,15 @@ This step is optional: the user runs it on the features they judge important, be
 3. **Mockup.**
    1. Launch the `designer` in mode `maquette`. It writes the pages, then runs `pnpm prototype specs/NNN-<name> --capture`, which compiles `styles.css` from `theme.css` and writes the captures.
    2. Launch the `relecteur-design` in mode `maquette`, paths only; one fix round on a blocking issue, as above.
-   3. Show the user the `file://` URL printed by `pnpm prototype` (the mockup opens in the browser, without a server), the captures, the components missing from `libs/web/ui`, and the issues left and disputed. Wait for their approval; apply their changes and show again if needed.
+   3. Check that the designer listed the missing components in the « Components to add to web-ui » section of `journeys.md`. Show the user the `file://` URL printed by `pnpm prototype` (the mockup opens in the browser, without a server), the captures, the components missing from `libs/web/ui`, and the issues left and disputed. Wait for their approval; apply their changes and show again if needed.
 
    With an agent other than Claude Code, ask the user to run `docs/agents/designer.md` and `docs/agents/relecteur-design.md` in new sessions and paste their reports, for each mode.
 
+   When the user drops the prototype, remove the files of this run (`git clean -fd specs/NNN-<name>/prototypes/` for a new prototype, `git checkout --` for a revised one): the next command needs a clean tree.
+
 4. **Back to the spec.** What the journeys and the mockup reveal that `spec.md` does not say (a step, an error case, a rule, an empty state) is proposed to the user as a change of `spec.md`: a new scenario takes the next free number of its story, scenarios are never renumbered, and a committed scenario is retired, not deleted. Write it only once the user approves.
 
-5. **Check.** Run `pnpm -s spec:trace specs/NNN-<name>` and `pnpm prototype specs/NNN-<name>` (no dead link between the pages; a page nothing leads to is reported); fix what fails in the files of this command. `specs/` is not formatted by `pnpm format`.
+5. **Check.** Run `pnpm -s spec:trace` (all specs, not the strict run on this feature: before the plan its scenarios have no test yet, which a `Draft` spec tolerates) and `pnpm prototype specs/NNN-<name>` (no dead link between the pages; a page nothing leads to is reported); fix what fails in the files of this command. `specs/` is not formatted by `pnpm format`.
 
 6. **Commit.** Stage only `specs/NNN-<name>/prototypes/` and, when it changed, `specs/NNN-<name>/spec.md` (never `git add .`), and commit with a Conventional Commits message in English, such as `docs(<name>): add the prototype`.
 
