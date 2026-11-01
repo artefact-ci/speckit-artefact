@@ -57,6 +57,12 @@ provides:
       strategy: 'append'
 
     - type: 'command'
+      name: 'speckit.plan'
+      file: 'commands/speckit.plan.md'
+      description: 'Decisions left to the user, example code, research from the repo, appended to plan'
+      strategy: 'append'
+
+    - type: 'command'
       name: 'speckit.tasks'
       file: 'commands/speckit.tasks.md'
       description: 'Mandatory, test-first task generation appended to tasks'
