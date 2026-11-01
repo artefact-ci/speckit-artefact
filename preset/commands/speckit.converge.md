@@ -28,7 +28,7 @@ These rules also take precedence over the instructions above, including "Little 
 An agent judges its own work generously: the work is reviewed by a reviewer that did not write it, in a fresh context, before converge concludes.
 
 - When this pass finds no remaining gap for the user stories implemented on this branch (one story per pull request), get an independent review following `docs/agents/relecteur.md`, before handing the story over and before reporting **Converged**. In Claude Code, launch the `relecteur` subagent. With another agent, ask the user to run that review in a new session and paste its report.
-- Give the reviewer only the base (`origin/main`) and the feature directory: never your summary, your reasoning or your opinion of the work.
+- Give the reviewer only the base (`origin/dev`) and the feature directory: never your summary, your reasoning or your opinion of the work.
 - Each blocking finding becomes appended tasks, under the append-only contract above; when it concerns an acceptance scenario, the test task comes first. Do not hand the story over, nor report **Converged**, while a blocking finding is open.
 - You may dispute a finding only with evidence (the code or test that disproves it). A disputed finding stays open: report it with that evidence, do not report **Converged**, and let the user decide (they close it, or it becomes a task); never drop it silently.
 - Quote the reviewer's verdict, and the items it left to human review, in your report.
