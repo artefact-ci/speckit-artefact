@@ -20,13 +20,13 @@ description: 'Task list template for feature implementation'
 
 ## Path Conventions
 
-- API domain: a new domain is created with `pnpm new:domain <domain>` (lib, facade, module registered in the AppModule; first task of the Foundational phase), never by copying another domain's configuration; `libs/api/<domain>/src/lib/{domain,application,infra,http}/`, use cases in `application/use-cases/<use-case>.ts`, one Drizzle schema per domain in `infra/<domain>.schema.ts`, public facade in `libs/api/<domain>/src/index.ts`
+- API domain: a new domain is created with `pnpm new:domain <domain>` (lib, facade, module registered in the AppModule; first task of the first phase that needs it: Foundational when every story does), never by copying another domain's configuration; `libs/api/<domain>/src/lib/{domain,application,infra,http}/`, use cases in `application/use-cases/<use-case>.ts`, one Drizzle schema per domain in `infra/<domain>.schema.ts`, public facade in `libs/api/<domain>/src/index.ts`
 - Shared contracts and events: `libs/shared/contracts/src/lib/<domain>/`
 - API tests: unit tests next to the code (`domain/<entity>.spec.ts`, `application/<domain>.application.spec.ts` with fakes in `application/testing/`); integration tests `*.int.spec.ts`; API end-to-end `apps/api/tests/<domain>.e2e.spec.ts`
 - Front end (see `apps/web/AGENTS.md`, `libs/web/AGENTS.md`): screens and logic in a feature lib `libs/web/<feature>`, created with `pnpm new:web-feature <feature>` (never by copying another lib's configuration), with Vitest + Testing Library component tests next to them; `apps/web/src/routes/` only assembles (a protected page goes in `routes/_authenticated/`, flag guard `beforeLoad: requireFeature('<flag>')`); new strings go through Lingui and the catalogs (`web:i18n-check`)
 - Browser journeys (`apps/web-e2e/src/<journey>.spec.ts`, Playwright) only for what Vitest cannot see: redirects between services, emails, cookies, several tenants
 - Every new page gets an accessibility check (axe) in `apps/web-e2e/src/accessibility.spec.ts`, with its form in error if it has one; a page behind a flag needs the flag in `E2E_FEATURE_FLAGS` (`apps/web-e2e/src/stack.ts`), or it answers 404
-- Run one project's tests: `pnpm nx test <project>`; everything affected: `pnpm nx affected -t lint typecheck test e2e`
+- Run one project's tests: `pnpm nx test <project>`: `api-<domain>` and `web-<feature>` for the libs, `api` for the API end-to-end tests (`apps/api/tests`, there is no `e2e` target for them), `auth` for the identity service; browser journeys: `pnpm nx run web-e2e:e2e`; everything affected: `pnpm nx affected -t lint typecheck test e2e` (`e2e` only runs the browser journeys)
 
 <!--
   ============================================================================
@@ -50,7 +50,7 @@ description: 'Task list template for feature implementation'
 
 ## Phase 1: Foundational (Blocking Prerequisites)
 
-**Purpose**: What every user story needs. No user story work begins before this phase is complete.
+**Purpose**: What every user story needs. No user story work begins before this phase is complete. Delivered in the pull request of the first user story.
 
 - [ ] T001 Declare the `[domain].[feature]` flag (default `false`) in `FEATURE_FLAGS` in `libs/shared/contracts`
 - [ ] T002 [P] Add the zod schemas (and `defineIntegrationEvent` declarations, if any) in `libs/shared/contracts/src/lib/[domain]/`
