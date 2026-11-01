@@ -42,18 +42,18 @@ The design direction belongs to the product, that is to the user. The `designer`
 7. **Write.**
    - `specs/design.md` from the template (`.specify/scripts/bash/resolve-template.sh design-template` prints its content), all placeholders replaced, template comments removed, in English.
    - `theme.css`: the approved tokens of `:root` and `.dark`, and `--radius`.
-   - A font: `pnpm add @fontsource-variable/<name>` (or `@fontsource/<name>` when no variable version exists) at the root, an `@import` of it at the top of `theme.css`, and `--font-sans: '<Family>', ui-sans-serif, system-ui, sans-serif;` set in the `@theme inline` block.
+   - A font: `pnpm add @fontsource-variable/<name>` (or `@fontsource/<name>` when no variable version exists) at the root, an `@import` of it at the top of `theme.css`, and `--font-sans: '<Family>', ui-sans-serif, system-ui, sans-serif;` set in the `@theme inline` block. knip does not follow CSS imports: add the package to `ignoreDependencies` of `knip.json`, next to `tw-animate-css`.
 
 8. **Stale prototypes.** List the `specs/NNN-*/prototypes/` of the specs whose status is neither `Implemented` nor `Shipped`: their captures no longer show the theme. Name them in the report; `/speckit-plan` warns about them too.
 
 9. **Check.** Run `pnpm check`; fix what fails in the files of this command.
 
-10. **Commit.** Stage only `specs/design.md`, `libs/web/ui/src/lib/styles/theme.css`, and for a font `package.json` and `pnpm-lock.yaml` (never `git add .`), and commit with a Conventional Commits message in English, such as `docs(product): set the design direction and theme`.
+10. **Commit.** Stage only `specs/design.md`, `libs/web/ui/src/lib/styles/theme.css`, and for a font `package.json`, `pnpm-lock.yaml` and `knip.json` (never `git add .`), and commit with a Conventional Commits message in English, such as `docs(product): set the design direction and theme`.
 
 11. **Report.** What changed in the direction and the theme, the disputed issues left to the user, the stale prototypes, and the next step: `/speckit-epics` (or `/speckit-specify` when the epics already exist).
 
 ## Rules
 
-- The only code this command changes is `theme.css` and the font dependency. What the direction needs beyond them (turning dark mode on or following the system setting, a density the spacing scale cannot give, a new component) goes to the `Deferred` section of `design.md`, to be built by a feature.
+- The only code this command changes is `theme.css` and the font dependency (with its `knip.json` entry). What the direction needs beyond them (turning dark mode on or following the system setting, a density the spacing scale cannot give, a new component) goes to the `Deferred` section of `design.md`, to be built by a feature.
 - Never edit `specs/prd.md`, `specs/product.yml` or a spec (`specs/NNN-*/`). A requirement the direction calls into question goes back to `/speckit-prd`: say which one in the report.
 - Never write a color, radius or font in a component: the direction lives in the theme tokens.
