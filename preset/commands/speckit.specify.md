@@ -13,7 +13,7 @@ These rules take precedence over any instruction above that contradicts them. Ev
 
 - Resolve the template with `.specify/scripts/bash/resolve-template.sh spec-template`, which prints its content: the `specify` CLI is not installed in a session.
 - The limit of 3 `[NEEDS CLARIFICATION]` markers counts questions: one marker per question, not one per place it shows up.
-- While no test cites the spec's scenarios yet, a dropped scenario or story is simply deleted. Once a test cites one, it is retired (`**Retired**`), never deleted: the ids follow the numbering, and deleting it would shift the ids that tests cite.
+- A scenario or story written in this run and not committed yet can be rewritten or dropped freely. Once committed, it is retired (`**Retired**`), never deleted nor renumbered: another branch may already have a test that cites it.
 
 ## Product Requirements (boilerplate)
 
