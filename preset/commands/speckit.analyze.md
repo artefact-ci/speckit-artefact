@@ -10,7 +10,7 @@ These rules take precedence over any instruction above that contradicts them, in
 
 ## Scenarios and Severity (boilerplate)
 
-- Trace at the level of the acceptance scenarios, not only the functional requirements: every scenario id `<feature number>-US<story>-AS<n>` has a test task (read the Scenario Coverage of `tasks.md`; `pnpm -s spec:trace <feature dir>` lists the scenario ids, and reports them without test as long as nothing is implemented, which is expected here). A scenario without a test task is CRITICAL.
+- Trace at the level of the acceptance scenarios, not only the functional requirements: every scenario id `<feature number>-US<story>-AS<n>` has a test task (search the test tasks of `tasks.md` for each id; `pnpm -s spec:trace <feature dir>` lists the scenario ids, and reports them without test as long as nothing is implemented, which is expected here). A scenario without a test task is CRITICAL.
 - Success criteria judged by people (a usability target, a business metric) are not expected to have a test: list them as such, not as missing coverage.
 - A deviation from the constitution that the plan justifies in Complexity Tracking and that the user approved (Decisions for the User) is not a violation: list it for confirmation, LOW unless the design has changed since. A deviation that is neither justified nor approved stays CRITICAL.
 
