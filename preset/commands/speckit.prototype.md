@@ -37,7 +37,7 @@ This step is optional: the user runs it on the features they judge important, be
 
 4. **Back to the spec.** What the journeys and the mockup reveal that `spec.md` does not say (a step, an error case, a rule, an empty state) is proposed to the user as a change of `spec.md`: a new scenario takes the next free number of its story, scenarios are never renumbered, and a committed scenario is retired, not deleted. Write it only once the user approves.
 
-5. **Check.** Run `pnpm -s spec:trace specs/NNN-<name>` and `pnpm format:check`; fix what fails in the files of this command.
+5. **Check.** Run `pnpm -s spec:trace specs/NNN-<name>` and `pnpm prototype specs/NNN-<name>` (no dead link between the pages; a page nothing leads to is reported); fix what fails in the files of this command. `specs/` is not formatted by `pnpm format`.
 
 6. **Commit.** Stage only `specs/NNN-<name>/prototypes/` and, when it changed, `specs/NNN-<name>/spec.md` (never `git add .`), and commit with a Conventional Commits message in English, such as `docs(<name>): add the prototype`.
 
