@@ -45,6 +45,16 @@ provides:
       file: 'commands/speckit.prd.md'
       description: 'Write or revise the product requirements document and the requirements of the product index'
 
+    - type: 'template'
+      name: 'design-template'
+      file: 'templates/design-template.md'
+      description: 'Product design: users and contexts, UX principles, voice, accessibility, visual direction, theme'
+
+    - type: 'command'
+      name: 'speckit.design'
+      file: 'commands/speckit.design.md'
+      description: 'Set the design direction of the product and apply it to the theme, with the designer and the design reviewer'
+
     - type: 'command'
       name: 'speckit.epics'
       file: 'commands/speckit.epics.md'
@@ -55,6 +65,16 @@ provides:
       file: 'commands/speckit.specify.md'
       description: 'Feature branch from the git extension, reused as the spec directory; product requirements from the index'
       strategy: 'append'
+
+    - type: 'template'
+      name: 'journeys-template'
+      file: 'templates/journeys-template.md'
+      description: 'User journeys of a feature, screen by screen, before its mockup'
+
+    - type: 'command'
+      name: 'speckit.prototype'
+      file: 'commands/speckit.prototype.md'
+      description: 'Optional: user journeys then a clickable HTML mockup of a feature, with the designer and the design reviewer'
 
     - type: 'command'
       name: 'speckit.plan'

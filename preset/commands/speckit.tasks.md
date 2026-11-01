@@ -15,6 +15,7 @@ These rules come from the constitution (VIII. Test-First) and take precedence ov
 - **Existing tests the plan makes wrong.** Search the tests of what the plan changes (a route made public, a rule relaxed, a response reshaped) and add a task to change them, in the story that changes the behavior.
 - **Dependencies.** A new dependency is added in the task of its first import, not ahead of it: knip fails in CI on a dependency that nothing imports yet.
 - **Configuration.** A new environment variable goes, in the task that adds it to the validated environment, into the `.env.example` of its app, `docs/reference/variables-environnement.md` (for the API and the identity service, a test checks that every variable is documented) and, when it is required in production, `docker-compose.prod.yml`. Not in Polish.
+- **Prototype.** When `specs/NNN-<name>/prototypes/captures/` exists, a task that builds a screen cites its captures. A component the plan adds to `libs/web/ui` gets its own tasks (test, then component and Storybook story) before the first screen that uses it.
 - **Behavior without a scenario.** Production code the plan adds without an acceptance scenario (a role in a claim, a limit in the identity service, a script option) still gets a test task, without a scenario id.
 
 ## Phases and Pull Requests (boilerplate)

@@ -26,3 +26,7 @@ These rules take precedence over any instruction above that contradicts them. Ev
 - Never add, rename or remove a requirement, an epic or a journey in the index, and never record a state there: states are derived from the status of the specs (`pnpm -s spec:trace`). If the feature implements a requirement absent from the index, tell the user and keep `None` until they add it.
 
 When the index does not exist, leave `**Product Requirements**: None`.
+
+## Next Step (boilerplate)
+
+When the feature has screens, add to the report that `/speckit-prototype` can show its user journeys and a clickable mockup before the plan, after `/speckit-clarify`. It is optional: mention it, do not run it.
