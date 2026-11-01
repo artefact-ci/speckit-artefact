@@ -12,6 +12,17 @@ These rules come from the constitution (VIII. Test-First) and take precedence ov
 - When every active scenario of the spec has a test and you report **Converged**, set the spec's `**Status**` from `Draft` to `Implemented` (the only edit to `spec.md` allowed here). From then on, `pnpm -s spec:trace` fails in CI if a scenario loses its test.
 - Never report **Converged** while a scenario has no test or while `pnpm -s spec:trace specs/<feature>` exits with an error. Quote its final matrix in your report.
 
+## Gaps and Tasks (boilerplate)
+
+These rules also take precedence over the instructions above, including "Little or no code yet: treat the entire specified scope as missing".
+
+- **Already planned.** A gap that an open task of `tasks.md` already covers, unchanged, gets no new task: list it in the summary as "covered by T0xx". Append only what no open task covers, or what an open task gets wrong (then say which one).
+- **Partial implementation.** Converge can run after `/speckit-implement` stopped part-way: assess what is done, and treat the open tasks as planned work.
+- **Blocked from outside.** A task that cannot be done as planned (an image or a service no longer available, a dependency that does not do what `research.md` assumed) is a decision for the user: append one task that names the blocker and the options, says that the decision goes back to `/speckit-plan`, and comes before the blocked tasks it unblocks.
+- **Unrequested but justified.** Code that no task asked for but that a done task made necessary (a test fixed because a route became public), with its reason in the commit or in `tasks.md`, is not a gap.
+- **Severity in the task.** End a task appended for a CRITICAL or HIGH finding with its severity: `… per FR-001 (missing, CRITICAL)`.
+- **Fresh test runs.** Before reporting **Converged**, run the tests of the story without the Nx cache (`pnpm nx affected -t test --skip-nx-cache`): a cached result proves nothing about the code as it is now.
+
 ## Independent Review (boilerplate)
 
 An agent judges its own work generously: the work is reviewed by a reviewer that did not write it, in a fresh context, before converge concludes.
