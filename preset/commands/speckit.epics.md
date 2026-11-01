@@ -21,7 +21,7 @@ The index belongs to the product, that is to the user. You propose; the user dec
 
 ## Steps
 
-1. **Branch.** Stop if the working tree has uncommitted changes. On `main`, create and switch to `docs/product-epics` (or `docs/product-<short-name>` for a revision; `git switch -c`); on a `docs/product-*` branch left by `/speckit-prd`, stay on it; on another branch, ask the user before going on.
+1. **Branch.** Stop if the working tree has uncommitted changes. On `dev` (on `main`, switch to `dev` and pull it first), create and switch to `docs/product-epics` (or `docs/product-<short-name>` for a revision; `git switch -c`); on a `docs/product-*` branch left by `/speckit-prd`, stay on it; on another branch, ask the user before going on.
 
 2. **Read.** `specs/product.yml` (stop and point to `/speckit-prd` if it does not exist or has no requirement), `specs/prd.md` (vision, users, problems, constraints), and the output of `pnpm -s spec:trace`: the states of the requirements and of the existing epics.
 

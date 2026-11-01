@@ -21,7 +21,7 @@ The PRD and the index belong to the product, that is to the user. You draft; the
 
 ## Steps
 
-1. **Branch.** Stop if the working tree has uncommitted changes. On `main`, create and switch to `docs/product-<short-name>` (`git switch -c`); on another branch, ask the user before going on.
+1. **Branch.** Stop if the working tree has uncommitted changes. On `dev` (on `main`, switch to `dev` and pull it first), create and switch to `docs/product-<short-name>` (`git switch -c`); on another branch, ask the user before going on.
 
 2. **Read what exists.** `specs/prd.md` and `specs/product.yml` if they exist, and the output of `pnpm -s spec:trace` (states of the requirements and epics). When the user input is a path, read that document: it is the source, the PRD restates it, it does not invent beyond it.
 
