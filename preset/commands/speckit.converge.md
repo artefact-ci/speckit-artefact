@@ -18,10 +18,10 @@ These rules also take precedence over the instructions above, including "Little 
 
 - **Already planned.** A gap that an open task of `tasks.md` already covers, unchanged, gets no new task: list it in the summary as "covered by T0xx". Append only what no open task covers, or what an open task gets wrong (then say which one).
 - **Partial implementation.** Converge can run after `/speckit-implement` stopped part-way: assess what is done, and treat the open tasks as planned work.
-- **Blocked from outside.** A task that cannot be done as planned (an image or a service no longer available, a dependency that does not do what `research.md` assumed) is a decision for the user: append one task that names the blocker and the options, says that the decision goes back to `/speckit-plan`, and comes before the blocked tasks it unblocks.
+- **Blocked from outside.** A task that cannot be done as planned (an image or a service no longer available, a dependency that does not do what `research.md` assumed) is a decision for the user: append one task that names the blocker and the options, says that the decision goes back to `/speckit-plan`, and names the blocked tasks it must be done before. It is appended first in the new phase, like any other task: never move an existing task.
 - **Unrequested but justified.** Code that no task asked for but that a done task made necessary (a test fixed because a route became public), with its reason in the commit or in `tasks.md`, is not a gap.
 - **Severity in the task.** End a task appended for a CRITICAL or HIGH finding with its severity: `… per FR-001 (missing, CRITICAL)`.
-- **Fresh test runs.** Before reporting **Converged**, run the tests of the story without the Nx cache (`pnpm nx affected -t test --skip-nx-cache`): a cached result proves nothing about the code as it is now.
+- **Fresh test runs.** Before reporting **Converged**, run the end-of-story checks without the Nx cache (`pnpm nx affected -t lint typecheck test e2e --skip-nx-cache`): a cached result proves nothing about the code as it is now.
 
 ## Independent Review (boilerplate)
 
