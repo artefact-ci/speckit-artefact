@@ -45,6 +45,16 @@ provides:
       file: 'commands/speckit.prd.md'
       description: 'Write or revise the product requirements document and the requirements of the product index'
 
+    - type: 'template'
+      name: 'design-template'
+      file: 'templates/design-template.md'
+      description: 'Product design: users and contexts, UX principles, voice, accessibility, visual direction, theme'
+
+    - type: 'command'
+      name: 'speckit.design'
+      file: 'commands/speckit.design.md'
+      description: 'Set the design direction of the product and apply it to the theme, with the designer and the design reviewer'
+
     - type: 'command'
       name: 'speckit.epics'
       file: 'commands/speckit.epics.md'
