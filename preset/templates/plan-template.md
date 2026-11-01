@@ -48,6 +48,15 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design. Each un
 - [ ] VII. Domain Boundaries: facade-only imports, port + adapter, own Postgres schema, events for asynchronous reactions.
 - [ ] VIII. Test-First: every acceptance scenario has a test in the Test Strategy below, written before the code.
 
+## Decisions for the User
+
+<!-- Choices that are the user's (see the command): deviations from the constitution or from
+     AGENTS.md, CODEOWNERS paths, new infrastructure, designs hard to change later. For each:
+     the question, the options and their cost, the recommendation, then the user's answer and
+     its reason. "None" when the plan needs no such choice. -->
+
+- **[Question]**: [options and cost] — recommended: [option] — **decided**: [answer, reason]
+
 ## Domains
 
 <!-- Domains touched or created. For each: why it owns this behavior, the facade methods
@@ -131,8 +140,8 @@ apps/web-e2e/src/[journey].spec.ts        # browser journeys
 
 ## Complexity Tracking
 
-> **Fill ONLY if Constitution Check has violations that must be justified**
+> **Fill ONLY if Constitution Check has violations, or the plan departs from a convention of `AGENTS.md` (pagination order, idempotency, IDs…), that must be justified**
 
-| Violation   | Why Needed     | Simpler Alternative Rejected Because       |
-| ----------- | -------------- | ------------------------------------------ |
-| [principle] | [current need] | [why the compliant option is insufficient] |
+| Violation                 | Why Needed     | Simpler Alternative Rejected Because       |
+| ------------------------- | -------------- | ------------------------------------------ |
+| [principle or convention] | [current need] | [why the compliant option is insufficient] |
