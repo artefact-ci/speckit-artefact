@@ -66,6 +66,16 @@ provides:
       description: 'Feature branch from the git extension, reused as the spec directory; product requirements from the index'
       strategy: 'append'
 
+    - type: 'template'
+      name: 'journeys-template'
+      file: 'templates/journeys-template.md'
+      description: 'User journeys of a feature, screen by screen, before its mockup'
+
+    - type: 'command'
+      name: 'speckit.prototype'
+      file: 'commands/speckit.prototype.md'
+      description: 'Optional: user journeys then a clickable HTML mockup of a feature, with the designer and the design reviewer'
+
     - type: 'command'
       name: 'speckit.plan'
       file: 'commands/speckit.plan.md'
