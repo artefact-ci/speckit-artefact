@@ -20,6 +20,8 @@ Le CLI Tailwind (`@tailwindcss/cli`) et Playwright sont pris dans le projet s'il
 - Quand Chromium manque, la commande affiche celle qui installe le Chromium de la version de Playwright chargée (`npx playwright@<version> install chromium`).
 - Il faut Node 24.11 ou plus récent, aussi sur un projet Bun.
 
+Le binaire s'appelle `artefact-prototype`, pas `prototype` : le registre npm retire une clé `prototype` du `bin` de son manifeste (0.1.0 publiée ainsi), et `npx @artefact-ci/prototype` ne trouvait plus rien à lancer. `npx` et `pnpm dlx` lancent le seul binaire du paquet, quel que soit son nom.
+
 ## Développer
 
 ```sh

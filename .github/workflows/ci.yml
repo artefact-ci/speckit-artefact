@@ -104,6 +104,6 @@ jobs:
           npx -y --package="$(ls "$RUNNER_TEMP"/packs/artefact-ci-spec-trace-*.tgz)" spec-trace \
             | grep -q 'Aucune spec dans specs/' \
             || { echo "::error::spec-trace does not run from its tarball"; exit 1; }
-          npx -y --package="$(ls "$RUNNER_TEMP"/packs/artefact-ci-prototype-*.tgz)" prototype --help \
-            | grep -q 'Usage : prototype' \
+          npx -y --package="$(ls "$RUNNER_TEMP"/packs/artefact-ci-prototype-*.tgz)" artefact-prototype --help \
+            | grep -q 'Usage : artefact-prototype' \
             || { echo "::error::prototype does not run from its tarball"; exit 1; }

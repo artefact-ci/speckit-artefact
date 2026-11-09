@@ -1,6 +1,6 @@
 {
   "name": "@artefact-ci/prototype",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Maquettes HTML cliquables d'une spec, compilées depuis le thème du projet (méthode artefact-sdd)",
   "license": "MIT",
   "repository": {
@@ -14,7 +14,7 @@
   },
   "type": "module",
   "bin": {
-    "prototype": "dist/cli.mjs"
+    "artefact-prototype": "dist/cli.mjs"
   },
   "files": [
     "dist"
