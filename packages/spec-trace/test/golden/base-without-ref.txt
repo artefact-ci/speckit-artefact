@@ -1,0 +1,1 @@
+--base attend une référence git (ex. origin/dev).

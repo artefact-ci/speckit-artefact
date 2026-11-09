@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { DEFAULT_TEST_GLOBS, isTestFile, pathspecs, testGlobs } from './stack.mts';
+import { DEFAULT_TEST_GLOBS, expandBraces, pathspecs, testGlobs } from './stack.mts';
 
 describe('testGlobs', () => {
   it('reads tests.globs from stack.yml', () => {
@@ -21,37 +21,40 @@ describe('testGlobs', () => {
     }
   });
 
+  it('refuses tests written as a list instead of an object', () => {
+    assert.throws(() => testGlobs("tests: ['src/**/*.test.ts']\n"), /tests doit être un objet/);
+  });
+
   it('refuses a stack.yml that is not valid YAML', () => {
     assert.throws(() => testGlobs('tests: [\n'), /YAML invalide/);
   });
 });
 
-describe('isTestFile', () => {
-  const globs = ['**/*.spec.ts', '**/*.spec.tsx'];
-
-  it('matches the test files at any depth, the root included', () => {
-    for (const path of ['order.spec.ts', 'libs/api/orders/order.spec.ts', 'apps/web/a.spec.tsx']) {
-      assert.equal(isTestFile(path, globs), true, path);
-    }
+describe('expandBraces', () => {
+  it('expands each alternative, nested ones included', () => {
+    assert.deepEqual(expandBraces('src/**/*.{test,spec}.ts'), [
+      'src/**/*.test.ts',
+      'src/**/*.spec.ts',
+    ]);
+    assert.deepEqual(expandBraces('{a,b{c,d}}/*.ts'), ['a/*.ts', 'bc/*.ts', 'bd/*.ts']);
+    assert.deepEqual(expandBraces('**/*.spec.{ts,tsx}'), ['**/*.spec.ts', '**/*.spec.tsx']);
   });
 
-  it('leaves out the other files', () => {
-    for (const path of ['order.ts', 'tools/dev/spec-trace-core.test.mts', 'a.spec.ts.snap']) {
-      assert.equal(isTestFile(path, globs), false, path);
-    }
+  it('leaves a pattern without braces as it is', () => {
+    assert.deepEqual(expandBraces('**/*.spec.ts'), ['**/*.spec.ts']);
   });
 
-  it('follows a directory given in the pattern', () => {
-    assert.equal(isTestFile('src/a/b.test.ts', ['src/**/*.test.ts']), true);
-    assert.equal(isTestFile('scripts/b.test.ts', ['src/**/*.test.ts']), false);
+  it('refuses an unclosed brace', () => {
+    assert.throws(() => expandBraces('src/*.{test,spec.ts'), /Accolade non fermée/);
   });
 });
 
 describe('pathspecs', () => {
-  it('turns the patterns into git glob pathspecs', () => {
-    assert.deepEqual(pathspecs(['**/*.spec.ts', 'src/**/*.test.ts']), [
+  it('turns the patterns into git glob pathspecs, braces expanded and ./ dropped', () => {
+    assert.deepEqual(pathspecs(['**/*.spec.ts', './src/**/*.{test,spec}.ts']), [
       ':(glob)**/*.spec.ts',
       ':(glob)src/**/*.test.ts',
+      ':(glob)src/**/*.spec.ts',
     ]);
   });
 });

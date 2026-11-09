@@ -9,11 +9,16 @@ export function themeOf(stackYaml: string | undefined): string {
   try {
     data = parseYaml(stackYaml);
   } catch (error) {
-    throw new Error(`YAML invalide : ${(error as Error).message}`);
+    throw new Error(`.specify/stack.yml : YAML invalide : ${(error as Error).message}`);
   }
   const ui = (data as { ui?: unknown } | null)?.ui;
-  if (ui === undefined || ui === null) {
-    throw new Error('ui: null dans .specify/stack.yml : le projet n\'a pas de front à maquetter.');
+  if (ui === undefined) {
+    throw new Error(
+      'ui absent de .specify/stack.yml : sans front (ui: null), rien à maquetter ; sinon, ui.theme.',
+    );
+  }
+  if (ui === null) {
+    throw new Error("ui: null dans .specify/stack.yml : le projet n'a pas de front à maquetter.");
   }
   const theme = (ui as { theme?: unknown }).theme;
   if (typeof theme !== 'string' || theme.trim() === '') {
@@ -30,4 +35,10 @@ export function binOf(
   const { bin } = packageJson;
   if (typeof bin === 'string') return bin;
   return bin?.[name];
+}
+
+/** Commande qui installe le Chromium de la version de Playwright chargée, pas celui de `latest`. */
+export function chromiumInstallHint(playwrightVersion: string | undefined): string {
+  const pinned = playwrightVersion ? `playwright@${playwrightVersion}` : 'playwright';
+  return `npx ${pinned} install chromium`;
 }

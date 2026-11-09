@@ -34,7 +34,7 @@ import {
   pageFiles,
   prototypesDir,
 } from './core.mts';
-import { binOf, themeOf } from './stack.mts';
+import { binOf, chromiumInstallHint, themeOf } from './stack.mts';
 
 const STACK_FILE = join('.specify', 'stack.yml');
 const USAGE = 'Usage : prototype <specs/NNN-nom> [--capture] [--theme <fichier css>]';
@@ -57,6 +57,21 @@ if (unknownOption) {
   process.exit(1);
 }
 const featurePath = args.find((arg) => !arg.startsWith('--')) ?? '';
+
+// Le dossier de la feature d'abord : sans argument, l'usage s'affiche avant tout le reste.
+let dir: string;
+let pages: string[];
+try {
+  dir = prototypesDir(featurePath);
+  pages = pageFiles(readdirSync(dir));
+} catch (error) {
+  const message =
+    (error as NodeJS.ErrnoException).code === 'ENOENT'
+      ? `${featurePath} n'a pas de dossier prototypes/.`
+      : (error as Error).message;
+  console.error(`${USAGE}\n${message}`);
+  process.exit(1);
+}
 
 let THEME: string;
 try {
@@ -81,20 +96,6 @@ function resolvePackage(specifier: string): string {
   }
 }
 
-let dir: string;
-let pages: string[];
-try {
-  dir = prototypesDir(featurePath);
-  pages = pageFiles(readdirSync(dir));
-} catch (error) {
-  const message =
-    (error as NodeJS.ErrnoException).code === 'ENOENT'
-      ? `${featurePath} n'a pas de dossier prototypes/.`
-      : (error as Error).message;
-  console.error(`${USAGE}\n${message}`);
-  process.exit(1);
-}
-
 const html = Object.fromEntries(pages.map((page) => [page, readFileSync(join(dir, page), 'utf8')]));
 const { dead, orphans } = linkProblems(html);
 if (orphans.length > 0) {
@@ -117,9 +118,21 @@ try {
     [join(dirname(cliPackage), bin), '-i', entry, '-o', join(dir, 'styles.css'), '--minify'],
     { stdio: 'inherit' },
   );
+} catch (error) {
+  // Tailwind a déjà dit pourquoi ; le CLI peut venir de ce paquet, pas `tailwindcss` ni ce que le
+  // thème importe : ceux-là se résolvent depuis le thème, donc dans le projet.
+  console.error(
+    (error as { status?: number }).status === undefined
+      ? (error as Error).message
+      : `Tailwind n'a pas compilé ${THEME}. Les paquets que le thème importe (tailwindcss…) ` +
+          'doivent être installés dans le projet.',
+  );
+  process.exitCode = 1;
 } finally {
   rmSync(entry, { force: true });
 }
+
+if (process.exitCode === 1) process.exit(1);
 
 // Les fichiers d'un paquet importé par le thème (polices @fontsource) restent visés en relatif
 // (`url(./files/…)`) : on les copie à côté de styles.css, sinon la page retombe sur une autre police.
@@ -146,7 +159,17 @@ type Chromium = (typeof import('playwright'))['chromium'];
 // Un module CommonJS importé expose ses exports sous `default` quand Node ne les devine pas.
 const chromiumOf = (module: { chromium?: Chromium; default?: { chromium?: Chromium } }) =>
   module.chromium ?? module.default?.chromium;
-async function loadChromium(): Promise<Chromium> {
+// Version du paquet `name` dont `entry` est un fichier : le package.json le plus proche qui porte ce nom.
+function versionOf(entry: string, name: string): string | undefined {
+  for (let at = dirname(entry); at !== dirname(at); at = dirname(at)) {
+    const path = join(at, 'package.json');
+    if (!existsSync(path)) continue;
+    const json = JSON.parse(readFileSync(path, 'utf8')) as { name?: string; version?: string };
+    if (json.name === name) return json.version;
+  }
+  return undefined;
+}
+async function loadChromium(): Promise<{ chromium: Chromium; version: string | undefined }> {
   for (const specifier of ['playwright', '@playwright/test']) {
     let path: string;
     try {
@@ -155,21 +178,25 @@ async function loadChromium(): Promise<Chromium> {
       continue; // pas dans le projet : on essaie le suivant
     }
     const chromium = chromiumOf(await import(pathToFileURL(path).href));
-    if (chromium) return chromium;
+    if (chromium) return { chromium, version: versionOf(path, specifier) };
   }
-  const chromium = chromiumOf(await import('playwright'));
+  const path = fromHere.resolve('playwright');
+  const chromium = chromiumOf(await import(pathToFileURL(path).href));
   if (!chromium) throw new Error('Playwright introuvable.');
-  return chromium;
+  return { chromium, version: versionOf(path, 'playwright') };
 }
 
 if (capture) {
   let browser;
+  let version: string | undefined;
   try {
-    browser = await (await loadChromium()).launch();
+    const playwright = await loadChromium();
+    version = playwright.version;
+    browser = await playwright.chromium.launch();
   } catch (error) {
     const missing = /Executable doesn't exist/.test((error as Error).message);
     console.error(
-      missing ? 'Chromium manquant : npx playwright install chromium' : (error as Error).message,
+      missing ? `Chromium manquant : ${chromiumInstallHint(version)}` : (error as Error).message,
     );
     process.exit(1);
   }

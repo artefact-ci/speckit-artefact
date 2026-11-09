@@ -14,7 +14,11 @@ npx @artefact-ci/prototype specs/004-checkout --theme src/app/globals.css  # aut
 - **Styles** : `styles.css` est compilé par Tailwind 4 depuis le thème du projet (`ui.theme`) et les classes des pages. Les fichiers des paquets importés par le thème (polices `@fontsource`) sont copiés à côté.
 - **Captures** : une par page et par format (1440×900, 390×844) dans `captures/`, pleine page sauf pour une page marquée `data-capture="viewport"` (dialogue, toast). Un échec garde les anciennes.
 
-Tailwind (`@tailwindcss/cli`) et Playwright sont pris dans le projet s'il les a, sinon dans ce paquet : les styles compilent avec la version de l'app, et les captures trouvent le Chromium déjà installé pour les parcours. S'il manque : `npx playwright install chromium`.
+Le CLI Tailwind (`@tailwindcss/cli`) et Playwright sont pris dans le projet s'il les a, sinon dans ce paquet : les styles compilent avec la version de l'app, et les captures trouvent le Chromium déjà installé pour les parcours.
+
+- Le repli ne fournit que le CLI : `tailwindcss` et les paquets que le thème importe se résolvent depuis le thème, donc doivent être installés dans le projet. Il sert au projet qui a `tailwindcss` sans `@tailwindcss/cli` (Next avec `@tailwindcss/postcss`, Vite).
+- Quand Chromium manque, la commande affiche celle qui installe le Chromium de la version de Playwright chargée (`npx playwright@<version> install chromium`).
+- Il faut Node 24.11 ou plus récent, aussi sur un projet Bun.
 
 ## Développer
 
@@ -25,4 +29,4 @@ pnpm --filter @artefact-ci/prototype typecheck
 pnpm --filter @artefact-ci/prototype build
 ```
 
-`src/core.mts` est la logique pure, `src/stack.mts` la lecture de `stack.yml`, `src/cli.mts` les fichiers, Tailwind et Playwright.
+`src/core.mts` est la logique pure, `src/stack.mts` la lecture de `stack.yml`, `src/cli.mts` les fichiers, Tailwind et Playwright. `src/cli.test.mts` lance la CLI sur un projet jetable qui n'a que `tailwindcss` : compilation réelle, et captures quand le Chromium de Playwright est installé (`pnpm --filter @artefact-ci/prototype exec playwright install chromium` ; sans lui, le test est sauté hors CI).

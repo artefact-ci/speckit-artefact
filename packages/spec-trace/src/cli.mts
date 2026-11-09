@@ -36,7 +36,7 @@ import {
   traceFeature,
   traceRequirements,
 } from './core.mts';
-import { isTestFile, pathspecs, testGlobs } from './stack.mts';
+import { pathspecs, testGlobs } from './stack.mts';
 
 const SPECS_DIR = 'specs';
 const REQUIREMENT_INDEX = join(SPECS_DIR, 'product.yml');
@@ -54,14 +54,16 @@ function featureDirs(args: string[]): string[] {
 }
 
 // Fichiers suivis et nouveaux (pas encore ajoutés), hors fichiers ignorés (node_modules, dist…).
+// Filtrés par git, comme l'avertissement de dérive : un seul moteur de motifs.
 function testFiles(globs: string[]): TestFile[] {
-  const output = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard'], {
-    encoding: 'utf8',
-    maxBuffer: 64 * 1024 * 1024,
-  });
+  const output = execFileSync(
+    'git',
+    ['ls-files', '--cached', '--others', '--exclude-standard', '--', ...pathspecs(globs)],
+    { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
+  );
   return output
     .split('\n')
-    .filter((path) => path !== '' && isTestFile(path, globs) && existsSync(path))
+    .filter((path) => path !== '' && existsSync(path))
     .map((path) => ({ path, content: readFileSync(path, 'utf8') }));
 }
 
@@ -244,6 +246,7 @@ try {
     cliGlobs.length > 0
       ? cliGlobs
       : testGlobs(existsSync(STACK_FILE) ? readFileSync(STACK_FILE, 'utf8') : undefined);
+  pathspecs(globs); // une accolade non fermée s'arrête ici, avant toute sortie
 } catch (error) {
   console.error(`${STACK_FILE} : ${(error as Error).message}`);
   process.exit(1);
