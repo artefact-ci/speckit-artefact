@@ -1,0 +1,31 @@
+# .specify/stack.yml : nx-react-nestjs (Nx, NestJS, React)
+version: 1
+branches:
+  base: dev
+  production: main
+docs:
+  - AGENTS.md
+  - apps/web/AGENTS.md
+  - libs/web/AGENTS.md
+commands:
+  test: pnpm nx test {project}
+  affected: pnpm nx affected -t lint typecheck test
+  fresh: pnpm nx affected -t lint typecheck test --skip-nx-cache
+  check: pnpm check
+  trace: pnpm -s spec:trace
+tests:
+  globs: ['**/*.spec.ts', '**/*.spec.tsx']
+  needs: [docker] # Testcontainers
+shared:
+  - libs/api/core
+  - libs/shared/contracts
+  - libs/web/data-access
+  - apps/auth
+ui:
+  components: libs/web/ui
+  storybook: true
+  theme: libs/web/ui/src/lib/styles/theme.css
+e2e:
+  dir: apps/web-e2e
+  command: pnpm nx affected -t e2e # --skip-nx-cache avant Converged
+  setup: pnpm exec playwright install chromium

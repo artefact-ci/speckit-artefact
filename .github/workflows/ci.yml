@@ -14,12 +14,19 @@ env:
 
 jobs:
   preset:
-    name: Install the preset on a blank project
+    name: Install the preset and the extension on a blank project
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: astral-sh/setup-uv@v6
+
+      - name: Check that the preset names no stack
+        run: |
+          if grep -rnE '\bnx\b|libs/|apps/|pnpm' preset/; then
+            echo "::error::preset/ cites a stack: move it to .specify/stack.yml or to the project docs"
+            exit 1
+          fi
 
       - name: Create a blank Spec Kit 1.3.2 project
         run: |
@@ -34,10 +41,31 @@ jobs:
         working-directory: ${{ runner.temp }}/blank
         run: $SPECIFY preset add --dev "$GITHUB_WORKSPACE/preset"
 
+      - name: Add the extension in dev mode
+        working-directory: ${{ runner.temp }}/blank
+        run: $SPECIFY extension add --dev "$GITHUB_WORKSPACE/extension"
+
       - name: Check the preset sections in the skills
         working-directory: ${{ runner.temp }}/blank
         run: |
           for command in specify plan tasks analyze implement converge; do
-            grep -q '(boilerplate)' ".claude/skills/speckit-$command/SKILL.md" \
-              || { echo "::error::speckit-$command has no (boilerplate) section"; exit 1; }
+            grep -q '(artefact-sdd)' ".claude/skills/speckit-$command/SKILL.md" \
+              || { echo "::error::speckit-$command has no (artefact-sdd) section"; exit 1; }
           done
+
+      - name: Check the extension skills and their aliases
+        working-directory: ${{ runner.temp }}/blank
+        run: |
+          for command in prd design epics prototype; do
+            for skill in "speckit-artefact-product-$command" "speckit-$command"; do
+              test -f ".claude/skills/$skill/SKILL.md" \
+                || { echo "::error::skill $skill is missing"; exit 1; }
+            done
+          done
+
+      - name: Layer the Nx preset example above artefact-sdd
+        working-directory: ${{ runner.temp }}/blank
+        run: |
+          $SPECIFY preset add --dev "$GITHUB_WORKSPACE/examples/nx-preset" --priority 5
+          .specify/scripts/bash/resolve-template.sh plan-template | grep -q 'libs/api' \
+            || { echo "::error::the Nx plan template does not take precedence"; exit 1; }

@@ -1,15 +1,16 @@
-# Boilerplate preset for Spec Kit. This directory is the source of truth: edit it here, then
-# reinstall with `uvx --from specify-cli==1.3.2 specify preset update boilerplate --dev tools/spec-kit/preset`.
-# Never edit the installed copy in .specify/presets/boilerplate/ or .claude/skills/speckit-*/.
+# artefact-sdd: the test-first core of the Artefact CI method for Spec Kit. This directory is
+# the source of truth: edit it here, then reinstall with
+# `uvx --from specify-cli==1.3.2 specify preset update artefact-sdd --dev <speckit-artefact>/preset`.
+# Never edit the installed copy in .specify/presets/artefact-sdd/ or .claude/skills/speckit-*/.
 schema_version: '1.0'
 
 preset:
-  id: 'boilerplate'
-  name: 'Nx NestJS React boilerplate'
+  id: 'artefact-sdd'
+  name: 'Artefact SDD'
   version: '1.0.0'
-  description: 'Templates and test-first commands for the Nx NestJS React boilerplate'
-  author: 'nx-react-nestjs boilerplate'
-  repository: 'https://github.com/AlMoustapha01/monorepo-nx-react-nestjs'
+  description: 'Test-first templates and commands of the Artefact CI method, for any stack described in .specify/stack.yml'
+  author: 'Artefact CI'
+  repository: 'https://github.com/artefact-ci/speckit-artefact'
   license: 'MIT'
 
 requires:
@@ -26,7 +27,7 @@ provides:
     - type: 'template'
       name: 'plan-template'
       file: 'templates/plan-template.md'
-      description: 'Plan template: boilerplate stack, domains, flag, events, migrations, access rules, test strategy'
+      description: 'Plan template: stack read from the repo, constitution check, decisions for the user, flag, test strategy'
       replaces: 'plan-template'
 
     - type: 'template'
@@ -36,29 +37,10 @@ provides:
       replaces: 'tasks-template'
 
     - type: 'template'
-      name: 'prd-template'
-      file: 'templates/prd-template.md'
-      description: 'Product requirements document: vision, users, scope, constraints, requirements (ids of specs/product.yml)'
-
-    - type: 'command'
-      name: 'speckit.prd'
-      file: 'commands/speckit.prd.md'
-      description: 'Write or revise the product requirements document and the requirements of the product index, with the product reviewer'
-
-    - type: 'template'
-      name: 'design-template'
-      file: 'templates/design-template.md'
-      description: 'Product design: users and contexts, UX principles, voice, accessibility, visual direction, theme'
-
-    - type: 'command'
-      name: 'speckit.design'
-      file: 'commands/speckit.design.md'
-      description: 'Set the design direction of the product and apply it to the theme, with the designer and the design reviewer'
-
-    - type: 'command'
-      name: 'speckit.epics'
-      file: 'commands/speckit.epics.md'
-      description: 'Group the requirements into ordered epics with their end-to-end journeys, with the product reviewer'
+      name: 'constitution-template'
+      file: 'templates/constitution-template.md'
+      description: 'Constitution template: the four principles of the Artefact CI base, then the project principles'
+      replaces: 'constitution-template'
 
     - type: 'command'
       name: 'speckit.specify'
@@ -66,20 +48,10 @@ provides:
       description: 'Feature branch from the git extension, reused as the spec directory; product requirements from the index'
       strategy: 'append'
 
-    - type: 'template'
-      name: 'journeys-template'
-      file: 'templates/journeys-template.md'
-      description: 'User journeys of a feature, screen by screen, before its mockup'
-
-    - type: 'command'
-      name: 'speckit.prototype'
-      file: 'commands/speckit.prototype.md'
-      description: 'Optional: user journeys then a clickable HTML mockup of a feature, with the designer and the design reviewer'
-
     - type: 'command'
       name: 'speckit.plan'
       file: 'commands/speckit.plan.md'
-      description: 'Decisions left to the user, example code, research from the repo, appended to plan'
+      description: 'Decisions left to the user, research from the repo and its conventions, prototype, appended to plan'
       strategy: 'append'
 
     - type: 'command'
@@ -108,6 +80,4 @@ provides:
 
 tags:
   - 'tdd'
-  - 'nx'
-  - 'nestjs'
-  - 'react'
+  - 'sdd'

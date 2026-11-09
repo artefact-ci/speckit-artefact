@@ -3,7 +3,7 @@ description: 'Group the product requirements into epics, order them by their dep
 argument-hint: 'Optional: the epics to revise, or a constraint on the order'
 ---
 
-<!-- Boilerplate preset (source: tools/spec-kit/preset). A command of its own, not part of core Spec Kit. -->
+<!-- artefact-product extension (source: extension/ of speckit-artefact). A command of its own, not part of core Spec Kit. -->
 
 ## User Input
 

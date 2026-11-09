@@ -3,7 +3,7 @@ description: 'Optional: write the user journeys of a feature, then a clickable H
 argument-hint: 'Optional: the user stories or screens to prototype, or what to change in the prototype'
 ---
 
-<!-- Boilerplate preset (source: tools/spec-kit/preset). A command of its own, not part of core Spec Kit. -->
+<!-- artefact-product extension (source: extension/ of speckit-artefact). A command of its own, not part of core Spec Kit. -->
 
 ## User Input
 
