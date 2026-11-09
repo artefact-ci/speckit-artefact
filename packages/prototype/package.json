@@ -8,6 +8,10 @@
     "url": "git+https://github.com/artefact-ci/speckit-artefact.git",
     "directory": "packages/prototype"
   },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
   "type": "module",
   "bin": {
     "prototype": "dist/cli.mjs"

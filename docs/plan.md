@@ -118,7 +118,7 @@ Fini quand : les quatre commandes s'installent et se lancent sur un projet sans 
 - [x] Sortir `tools/dev/spec-trace.mts` en `@artefact-ci/spec-trace` : motifs de tests configurables (`tests.globs` de `stack.yml`, ou `--tests`), même sortie que l'actuel. Le format des ids reste celui de la méthode : les commandes du preset et la constitution le citent, le rendre configurable dans le seul outil les ferait diverger.
 - [x] Sortir `pnpm prototype` en `@artefact-ci/prototype` : le thème vient de `ui.theme` (ou `--theme`), Tailwind et Playwright du projet quand il les a.
 - [x] Tests unitaires repris du boilerplate (`pnpm test:tools`), plus ceux de la lecture de `stack.yml` ; la CI les lance et empaquette les deux outils.
-- [ ] Publication sur le registre npm de l'organisation, une fois le registre tranché (voir À trancher).
+- [ ] Publication sur npm public, scope `@artefact-ci` (`publishConfig.access: public`) ; la première publication vient avec la CI de release (phase 5), après la création de l'organisation `artefact-ci` sur npmjs.com.
 
 Vérifié le 9 novembre 2026 avec les paquets empaquetés (`pnpm pack`, puis `npx --package=<tgz>`) : sur Afri Café, la matrice est identique à celle de `pnpm -s spec:trace` (toutes les specs, chaque spec en mode strict, `--base`, erreurs), et la maquette de `003-loyalty-status` donne le même `styles.css`, les mêmes polices et les mêmes captures (à l'animation d'un spinner près, qui varie aussi d'une exécution à l'autre de l'ancien outil). nx-react-nestjs n'a pas de spec : même sortie, « Aucune spec ». L'avertissement de dérive et `tests.globs` sont vérifiés sur un dépôt jetable, que les tests de la CLI reprennent avec des sorties produites par l'ancien outil. Le critère « Fini quand » est donc rempli avec les archives des paquets ; il reste à le rejouer avec `npx` depuis le registre, après la publication.
 
@@ -217,5 +217,5 @@ Le plus gros risque est la réécriture des commandes autour de `stack.yml` : un
 
 - [ ] Où vivent les specs d'AVIA quand une fonctionnalité touche l'agent et le front : dans avia-agent, dans un dépôt `avia-specs`, ou en regroupant les deux dépôts en monorepo ?
 - [ ] Les agents : copiés dans `.claude/agents/` par l'installeur, ou lus depuis `.specify/extensions/artefact-product/agents/` par un sous-agent générique (plus rien à copier, mais sans réglages d'outils ni de modèle) ?
-- [ ] Registre npm : GitHub Packages de l'organisation `artefact-ci`, ou npm public ?
+- [x] Registre npm : npm public, scope `@artefact-ci` (tranché le 9 novembre 2026). Aucun jeton pour installer : `npx @artefact-ci/…` marche partout. Le code compilé des paquets devient public alors que ce dépôt est privé ; la licence reste à choisir avant la première publication (`UNLICENSED` aujourd'hui).
 - [ ] Langue des commandes et des templates : anglais, comme aujourd'hui pour les specs, ou français ?
