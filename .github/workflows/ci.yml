@@ -26,7 +26,8 @@ jobs:
           mkdir "$RUNNER_TEMP/blank"
           cd "$RUNNER_TEMP/blank"
           # specify init first: --non-interactive refuses a directory that is not empty, .git included.
-          $SPECIFY init --here --integration claude --script sh --non-interactive
+          # --ignore-agent-tools: the runner has no claude CLI, and the skills do not need it to be written.
+          $SPECIFY init --here --integration claude --script sh --non-interactive --ignore-agent-tools
           git init
 
       - name: Add the preset in dev mode
