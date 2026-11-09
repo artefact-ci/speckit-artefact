@@ -2,8 +2,8 @@
 /**
  * Prototype d'une fonctionnalité (/speckit-prototype), pages HTML dans specs/NNN-<nom>/prototypes/,
  * à lancer à la racine du dépôt :
- *   prototype specs/004-checkout             → compile styles.css depuis le thème (ui.theme)
- *   prototype specs/004-checkout --capture   → puis remplace captures/ (desktop et mobile)
+ *   artefact-prototype specs/004-checkout             → compile styles.css depuis le thème (ui.theme)
+ *   artefact-prototype specs/004-checkout --capture   → puis remplace captures/ (desktop et mobile)
  * Affiche l'URL de index.html, à ouvrir dans le navigateur : aucun serveur.
  * Tailwind (`@tailwindcss/cli`) et Playwright sont pris dans le projet s'il les a, sinon dans ce
  * paquet : la maquette compile avec la même version que l'app, et les captures trouvent le Chromium
@@ -37,7 +37,7 @@ import {
 import { binOf, chromiumInstallHint, themeOf } from './stack.mts';
 
 const STACK_FILE = join('.specify', 'stack.yml');
-const USAGE = 'Usage : prototype <specs/NNN-nom> [--capture] [--theme <fichier css>]';
+const USAGE = 'Usage : artefact-prototype <specs/NNN-nom> [--capture] [--theme <fichier css>]';
 
 const args = process.argv.slice(2);
 if (args.includes('--help') || args.includes('-h')) {

@@ -82,7 +82,7 @@ describe('prototype', () => {
     rmSync(join(project, '.specify'), { recursive: true });
     const { status, stderr } = prototype();
     assert.equal(status, 1);
-    assert.match(stderr, /^Usage : prototype/);
+    assert.match(stderr, /^Usage : artefact-prototype/);
   });
 
   it('says what to install when the theme imports a package the project lacks', () => {
