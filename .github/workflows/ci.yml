@@ -25,9 +25,9 @@ jobs:
         run: |
           mkdir "$RUNNER_TEMP/blank"
           cd "$RUNNER_TEMP/blank"
+          # specify init first: --non-interactive refuses a directory that is not empty, .git included.
+          $SPECIFY init --here --integration claude --script sh --non-interactive
           git init
-          # --force: the directory already holds .git, and --non-interactive refuses a non-empty one.
-          $SPECIFY init --here --force --integration claude --script sh --non-interactive
 
       - name: Add the preset in dev mode
         working-directory: ${{ runner.temp }}/blank

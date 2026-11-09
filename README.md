@@ -20,11 +20,11 @@ Phase 0 terminée : `preset/` est le preset du boilerplate nx-react-nestjs, impo
 Il faut [uv](https://docs.astral.sh/uv/). Dans un dossier vide, hors du dépôt :
 
 ```sh
+uvx --from specify-cli==1.3.2 specify init --here --integration claude --script sh --non-interactive
 git init
-uvx --from specify-cli==1.3.2 specify init --here --force --integration claude --script sh --non-interactive
 uvx --from specify-cli==1.3.2 specify preset add --dev <chemin vers speckit-artefact>/preset
 ```
 
-`--force` est nécessaire parce que le dossier contient déjà `.git`. Les skills `.claude/skills/speckit-{specify,plan,tasks,analyze,implement,converge}/SKILL.md` contiennent alors les sections « (boilerplate) » du preset. Après une modification de `preset/`, réinstallez avec `specify preset update boilerplate --dev <chemin>/preset`.
+`specify init` passe avant `git init` : avec `--non-interactive`, il refuse un dossier qui n'est pas vide, `.git` compris. Les skills `.claude/skills/speckit-{specify,plan,tasks,analyze,implement,converge}/SKILL.md` contiennent alors les sections « (boilerplate) » du preset. Après une modification de `preset/`, réinstallez avec `specify preset update boilerplate --dev <chemin>/preset`.
 
 La CI (`.github/workflows/ci.yml`) fait la même chose à chaque push et à chaque PR vers `dev` et `main`.
