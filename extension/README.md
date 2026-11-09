@@ -1,6 +1,6 @@
 # extension/
 
-Extension Spec Kit `artefact-product` : `/speckit-prd`, `/speckit-design`, `/speckit-epics`, `/speckit-prototype` et leurs templates (prd, design, journeys), sortis de `preset/` en phase 1. Spec Kit les nomme `speckit-artefact-product-<commande>` ; le manifeste garde les anciens noms en alias. Les commandes citent encore les chemins Nx du boilerplate : elles lisent `stack.yml` à partir de la phase 2.
+Extension Spec Kit `artefact-product` : `/speckit-prd`, `/speckit-design`, `/speckit-epics`, `/speckit-prototype` et leurs templates (prd, design, journeys), sortis de `preset/` en phase 1. Spec Kit les nomme `speckit-artefact-product-<commande>` ; le manifeste garde les anciens noms en alias. Elles lisent `.specify/stack.yml` (schéma : [`docs/stack.md`](../docs/stack.md)) : branches, commande de trace et front (`ui`). Sans front, `/speckit-design` n'écrit que la partie non visuelle et `/speckit-prototype` s'arrête. Elles travaillent avec les agents de la méthode, dont les consignes sont dans `docs/agents/` du projet (installées en phase 4) ; sans elles, elles s'arrêtent.
 
 Après une modification ici :
 

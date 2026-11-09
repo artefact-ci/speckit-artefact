@@ -106,8 +106,10 @@ Fini quand : `grep` ne trouve plus `nx`, `libs/`, `apps/` ni `pnpm` dans le pres
 
 ### Phase 2 — Extension `artefact-product`
 
-- [ ] Réécrire les quatre commandes pour lire `stack.yml` au lieu des chemins Nx, comme celles du cœur en phase 1.
-- [ ] Rendre les étapes front (thème, Storybook, maquettes) conditionnelles à `ui` dans `stack.yml`.
+- [x] Réécrire les quatre commandes pour lire `stack.yml` au lieu des chemins Nx, comme celles du cœur en phase 1. Le schéma gagne `ui.preview` (aperçu du thème, Storybook pour le boilerplate) et `ui.prototype` (outil de maquette). Les commandes s'arrêtent quand une consigne d'agent manque dans `docs/agents/` : la relecture ne se saute pas.
+- [x] Rendre les étapes front (thème, Storybook, maquettes) conditionnelles à `ui` dans `stack.yml`. Sans front, `/speckit-design` écrit `design.md` sans direction visuelle ni thème, et `/speckit-prototype` s'arrête ; les parcours des epics deviennent des tests de bout en bout, pas forcément navigateur.
+
+Vérifié le 9 novembre 2026 sur un projet vierge avec `examples/stack/bun-hono.yml` et les agents du boilerplate copiés à la main : les quatre commandes se lancent en mode non interactif (`claude -p`) ; prototype s'arrête, design, prd et epics vont jusqu'à leur question ou leur proposition, epics avec la relecture de `relecteur-produit`.
 
 Fini quand : les quatre commandes s'installent et se lancent sur un projet sans front.
 

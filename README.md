@@ -13,10 +13,10 @@ Le plan de création, ses décisions et son calendrier sont dans [`docs/plan.md`
 
 ## État
 
-Phase 1 terminée :
+Phases 1 et 2 terminées :
 
 - `preset/` est le preset générique `artefact-sdd`. Ses six commandes et ses templates (spec, plan, tasks, constitution) ne citent plus aucune stack : ils lisent `.specify/stack.yml`, dont le schéma est dans [`docs/stack.md`](docs/stack.md).
-- `extension/` est l'extension `artefact-product` : prd, design, epics, prototype. Les anciens noms restent en alias. Ses commandes citent encore les chemins Nx jusqu'à la phase 2.
+- `extension/` est l'extension `artefact-product` : prd, design, epics, prototype. Les anciens noms restent en alias. Ses commandes lisent aussi `stack.yml`, et leurs étapes front dépendent de `ui`. Elles ont besoin des consignes d'agents dans `docs/agents/`, que l'installeur posera en phase 4.
 - `examples/stack/` contient des `stack.yml` types, et `examples/nx-preset/` le preset local qui rend au boilerplate ses templates Nx.
 
 `agents/` et `packages/` ne contiennent qu'un README qui dit à quelle phase ils se remplissent.
@@ -42,4 +42,4 @@ Pour réinstaller après une modification :
 - du preset : `specify preset update artefact-sdd --dev <chemin>/preset` ;
 - de l'extension : `specify extension add --dev <chemin>/extension --force`.
 
-La CI (`.github/workflows/ci.yml`) fait la même chose à chaque push et à chaque PR vers `dev` et `main`. Elle vérifie aussi que `preset/` ne cite aucune stack et que le preset local Nx prend bien le pas sur les templates génériques.
+La CI (`.github/workflows/ci.yml`) fait la même chose à chaque push et à chaque PR vers `dev` et `main`. Elle vérifie aussi que `preset/` et `extension/` ne citent aucune stack et que le preset local Nx prend bien le pas sur les templates génériques.
