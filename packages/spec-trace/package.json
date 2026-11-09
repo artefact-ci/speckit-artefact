@@ -1,12 +1,16 @@
 {
   "name": "@artefact-ci/spec-trace",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Matrice scénarios → tests des specs Spec Kit (méthode artefact-sdd)",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/artefact-ci/speckit-artefact.git",
     "directory": "packages/spec-trace"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   },
   "type": "module",
   "bin": {
