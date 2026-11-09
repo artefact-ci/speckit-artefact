@@ -13,9 +13,15 @@ Le plan de création, ses décisions et son calendrier sont dans [`docs/plan.md`
 
 ## État
 
-Phase 0 terminée : `preset/` est le preset du boilerplate nx-react-nestjs, importé avec son historique et encore inchangé (id `boilerplate`, chemins Nx). Sa généralisation en `artefact-sdd` est la phase 1. Les autres dossiers (`extension/`, `agents/`, `packages/`, `examples/stack/`) ne contiennent qu'un README qui dit à quelle phase ils se remplissent.
+Phase 1 terminée :
 
-## Tester le preset en local
+- `preset/` est le preset générique `artefact-sdd`. Ses six commandes et ses templates (spec, plan, tasks, constitution) ne citent plus aucune stack : ils lisent `.specify/stack.yml`, dont le schéma est dans [`docs/stack.md`](docs/stack.md).
+- `extension/` est l'extension `artefact-product` : prd, design, epics, prototype. Les anciens noms restent en alias. Ses commandes citent encore les chemins Nx jusqu'à la phase 2.
+- `examples/stack/` contient des `stack.yml` types, et `examples/nx-preset/` le preset local qui rend au boilerplate ses templates Nx.
+
+`agents/` et `packages/` ne contiennent qu'un README qui dit à quelle phase ils se remplissent.
+
+## Tester en local
 
 Il faut [uv](https://docs.astral.sh/uv/). Dans un dossier vide, hors du dépôt :
 
@@ -23,8 +29,17 @@ Il faut [uv](https://docs.astral.sh/uv/). Dans un dossier vide, hors du dépôt 
 uvx --from specify-cli==1.3.2 specify init --here --integration claude --script sh --non-interactive
 git init
 uvx --from specify-cli==1.3.2 specify preset add --dev <chemin vers speckit-artefact>/preset
+uvx --from specify-cli==1.3.2 specify extension add --dev <chemin vers speckit-artefact>/extension
+cp <chemin vers speckit-artefact>/examples/stack/nx.yml .specify/stack.yml   # ou bun-hono.yml, nextjs.yml
 ```
 
-`specify init` passe avant `git init` : avec `--non-interactive`, il refuse un dossier qui n'est pas vide, `.git` compris. Les skills `.claude/skills/speckit-{specify,plan,tasks,analyze,implement,converge}/SKILL.md` contiennent alors les sections « (boilerplate) » du preset. Après une modification de `preset/`, réinstallez avec `specify preset update boilerplate --dev <chemin>/preset`.
+`specify init` passe avant `git init` : avec `--non-interactive`, il refuse un dossier qui n'est pas vide, `.git` compris.
 
-La CI (`.github/workflows/ci.yml`) fait la même chose à chaque push et à chaque PR vers `dev` et `main`.
+Les skills `.claude/skills/speckit-{specify,plan,tasks,analyze,implement,converge}/SKILL.md` contiennent alors les sections « (artefact-sdd) ». Les skills `speckit-artefact-product-*` sont installées avec leurs alias `speckit-{prd,design,epics,prototype}`.
+
+Pour réinstaller après une modification :
+
+- du preset : `specify preset update artefact-sdd --dev <chemin>/preset` ;
+- de l'extension : `specify extension add --dev <chemin>/extension --force`.
+
+La CI (`.github/workflows/ci.yml`) fait la même chose à chaque push et à chaque PR vers `dev` et `main`. Elle vérifie aussi que `preset/` ne cite aucune stack et que le preset local Nx prend bien le pas sur les templates génériques.
