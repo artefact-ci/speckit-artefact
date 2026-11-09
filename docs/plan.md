@@ -86,10 +86,10 @@ Sept phases, dans l'ordre : chacune se termine par un critère vérifiable avant
 ### Phase 0 — Amorçage du dépôt
 
 - [ ] Créer `artefact-ci/speckit-artefact` (privé), branches `main` et `dev`, PR obligatoires vers `dev`.
-- [ ] Copier `tools/spec-kit/preset/` du boilerplate dans `preset/` avec son historique (`git subtree split` ou `git filter-repo`).
-- [ ] Poser l'arborescence, un README et la CI vide.
+- [x] Copier `tools/spec-kit/preset/` du boilerplate dans `preset/` avec son historique (`git filter-repo`, depuis la branche `dev` du boilerplate, `b30bb7b`).
+- [x] Poser l'arborescence, un README et la CI.
 
-Fini quand : `specify preset add --dev preset/` fonctionne sur un projet vierge en 1.3.2.
+Fini quand : `specify preset add --dev preset/` fonctionne sur un projet vierge en 1.3.2. Un projet vierge se crée avec `specify init --here` dans un dossier vide, puis `git init` : dans l'ordre inverse, `--non-interactive` refuse le dossier, qui n'est plus vide.
 
 ### Phase 1 — Preset générique `artefact-sdd`
 
@@ -97,13 +97,15 @@ Fini quand : `specify preset add --dev preset/` fonctionne sur un projet vierge 
 - [ ] Définir le schéma de `stack.yml` : commandes (`test`, `affected`, `check`, `trace`), motifs de tests, `ui` (thème, composants, Storybook), `e2e`.
 - [ ] Réécrire les six commandes du cœur pour lire `stack.yml` au lieu des chemins Nx (environ 40 références).
 - [ ] Extraire le socle de constitution : test-first, ids de scénario, incréments derrière un flag, une story par PR, relecture indépendante, spec tenue à jour.
+- [ ] Déplacer prd, design, epics, prototype et leurs templates du preset vers `extension/` (`artefact-product`), pour que le preset ne garde que le cœur.
+- [ ] Renommer ces commandes au format d'extension (`speckit.artefact-product.prd`…) et vérifier le nom des skills générées. Le renommage vient avec le déplacement : en 1.3.2, une commande d'extension nommée `speckit.prd` devient quand même la skill `speckit-artefact-product-prd`.
+- [ ] Écrire la procédure de migration d'un projet qui a le preset `boilerplate` (voir Versionnement) et la tester sur un projet vierge.
 
-Fini quand : `grep` ne trouve plus `nx`, `libs/`, `apps/` ni `pnpm` dans le preset.
+Fini quand : `grep` ne trouve plus `nx`, `libs/`, `apps/` ni `pnpm` dans le preset, et l'extension s'installe avec `specify extension add --dev extension/` à côté du preset.
 
 ### Phase 2 — Extension `artefact-product`
 
-- [ ] Déplacer prd, design, epics, prototype et leurs templates du preset vers l'extension.
-- [ ] Renommer les commandes au format d'extension (`speckit.artefact-product.prd`…) et vérifier le nom des skills générées.
+- [ ] Réécrire les quatre commandes pour lire `stack.yml` au lieu des chemins Nx, comme celles du cœur en phase 1.
 - [ ] Rendre les étapes front (thème, Storybook, maquettes) conditionnelles à `ui` dans `stack.yml`.
 
 Fini quand : les quatre commandes s'installent et se lancent sur un projet sans front.
@@ -118,7 +120,7 @@ Fini quand : `npx @artefact-ci/spec-trace` donne la même matrice que `pnpm -s s
 
 ### Phase 4 — Installeur `@artefact-ci/sdd`
 
-- [ ] `init` : vérifie `uv`, lance `uvx --from specify-cli==1.3.2 specify init --here` si besoin, puis installe l'extension git, l'extension et le preset depuis les zips de la release (`--from`).
+- [ ] `init` : vérifie `uv`, lance `uvx --from specify-cli==1.3.2 specify init --here` si besoin (avec `--force` dans un dépôt existant, que `--non-interactive` refuse sinon), puis installe l'extension git, l'extension et le preset depuis les zips de la release (`--from`).
 - [ ] Copie les agents dans `.claude/agents/` et leurs consignes dans `docs/agents/`.
 - [ ] Réapplique les 10 hooks git du boilerplate dans `extensions.yml`.
 - [ ] Détecte la stack (`nx.json`, `bun.lock`, `next.config.*`), propose un `stack.yml` à valider, écrit la constitution de base.
@@ -170,6 +172,13 @@ Une seule version pour tout le dépôt : le tag `vX.Y.Z` publie le preset, l'ext
 - **Mise à jour d'un projet** : `npx @artefact-ci/sdd update`, qui réinstalle l'extension (`extension add --force`) et le preset (`preset update`) depuis la nouvelle release, puis réapplique agents et hooks.
 - **Montée de Spec Kit** : faite d'abord dans `speckit-artefact` avec la procédure de `docs/guides/spec-kit.md`, validée sur le boilerplate, puis publiée en MINOR. Renovate ne suit pas Spec Kit : à vérifier chaque mois avec `specify self check`.
 - **Changelog** : un `CHANGELOG.md` par release, avec ce qui change pour un projet déjà installé.
+- **Migration depuis le preset `boilerplate`** : le changement d'id casse `specify preset update boilerplate`. Un projet qui l'a (nx-react-nestjs, Afri Café) migre ainsi, testé en 1.3.2 :
+  1. `specify preset remove boilerplate` : supprime `.specify/presets/boilerplate/` et les skills prd, epics, design et prototype, et remet les six skills du cœur à leur version d'origine ;
+  2. `specify preset add` du preset `artefact-sdd`, puis `specify extension add` de `artefact-product` (`--dev <chemin>` avant la phase 5, `--from <zip>` ensuite), après avoir écrit `.specify/stack.yml` ;
+  3. remplacer dans la documentation du projet (`AGENTS.md`, guides, tutoriel) la commande `preset update boilerplate` et les anciens noms de skills (`/speckit-prd` devient `/speckit-artefact-product-prd`) ;
+  4. vérifier avec `specify preset list` et `git status` que seuls `.specify/` et `.claude/skills/` ont changé, en plus de la documentation.
+
+  À partir de la phase 4, `npx @artefact-ci/sdd init` détecte le preset `boilerplate` et fait les étapes 1 et 2.
 - **Bundle, plus tard** : quand d'autres équipes d'Artefact voudront la méthode sans passer par nous, ou qu'il faudra combiner plusieurs presets. On ajoute alors le catalogue et un `bundle.yml`, et l'installeur remplace ses trois commandes par `specify bundle add artefact`.
 
 ## Répartition et calendrier
@@ -194,7 +203,7 @@ Le plus gros risque est la réécriture des commandes autour de `stack.yml` : un
 | Commandes génériques moins précises que les commandes Nx | Comparer les skills avant et après (phase 6a) ; garder des exemples concrets dans `examples/stack/` |
 | Spec Kit change de format (presets, extensions, noms de skills) | Version figée partout ; montée testée d'abord dans ce dépôt |
 | L'installeur écrase une personnalisation locale | `update` ne touche ni `stack.yml` ni la constitution ; `git status` vérifié après chaque test |
-| Un renommage de commande casse les habitudes (`/speckit-prd` devient un nom d'extension) | Vérifier en phase 2 les noms de skills générées ; annoncer les nouveaux noms dans le changelog |
+| Un renommage de commande casse les habitudes (`/speckit-prd` devient un nom d'extension) | Vérifier en phase 1 les noms de skills générées ; annoncer les nouveaux noms dans le changelog |
 | Le boilerplate et le dépôt divergent pendant la transition | Geler `tools/spec-kit/preset/` dès la phase 0 ; toute modification se fait dans `speckit-artefact` |
 
 **À trancher**
