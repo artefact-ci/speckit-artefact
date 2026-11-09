@@ -1,0 +1,19 @@
+requirements:
+  - id: NOTE-01
+    title: Add a note
+  - id: NOTE-02
+    title: Draft work
+epics:
+  - id: E01
+    title: Notes
+    goal: Customers leave notes
+    requirements: [NOTE-01]
+    journeys:
+      - id: E01-J1
+        title: Leave a note
+        steps: [open, write, save]
+  - id: E02
+    title: Drafts
+    goal: Later
+    requirements: [NOTE-02]
+    depends_on: [E01]

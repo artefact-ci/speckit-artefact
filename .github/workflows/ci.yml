@@ -69,3 +69,41 @@ jobs:
           $SPECIFY preset add --dev "$GITHUB_WORKSPACE/examples/nx-preset" --priority 5
           .specify/scripts/bash/resolve-template.sh plan-template | grep -q 'libs/api' \
             || { echo "::error::the Nx plan template does not take precedence"; exit 1; }
+
+  packages:
+    name: Test and pack the npm tools (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['24.11', '24'] # the minimum of engines, and the latest 24
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm typecheck
+
+      # The capture test of prototype needs the Chromium of the Playwright the package depends on.
+      - name: Install Chromium for the prototype captures
+        run: pnpm --filter @artefact-ci/prototype exec playwright install --with-deps chromium
+
+      # Unit tests, then both CLIs end to end: spec-trace against outputs of the boilerplate tool,
+      # prototype with a real Tailwind build and real captures.
+      - run: pnpm test
+
+      - name: Pack the packages and run them from their tarball
+        run: |
+          pnpm -r exec pnpm pack --pack-destination "$RUNNER_TEMP/packs"
+          npx -y --package="$(ls "$RUNNER_TEMP"/packs/artefact-ci-spec-trace-*.tgz)" spec-trace \
+            | grep -q 'Aucune spec dans specs/' \
+            || { echo "::error::spec-trace does not run from its tarball"; exit 1; }
+          npx -y --package="$(ls "$RUNNER_TEMP"/packs/artefact-ci-prototype-*.tgz)" prototype --help \
+            | grep -q 'Usage : prototype' \
+            || { echo "::error::prototype does not run from its tarball"; exit 1; }

@@ -1,0 +1,6 @@
+
+## specs/002-draft (Draft) : INCOMPLET
+
+| Scénario | Tests |
+| -------- | ----- |
+| 002-US1-AS1 | **aucun** |
