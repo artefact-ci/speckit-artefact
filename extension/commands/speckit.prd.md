@@ -3,7 +3,7 @@ description: 'Write or revise the product requirements document (specs/prd.md) a
 argument-hint: 'Product description, path to a requirements document, or the change to make'
 ---
 
-<!-- Boilerplate preset (source: tools/spec-kit/preset). A command of its own, not part of core Spec Kit. -->
+<!-- artefact-product extension (source: extension/ of speckit-artefact). A command of its own, not part of core Spec Kit. -->
 
 ## User Input
 

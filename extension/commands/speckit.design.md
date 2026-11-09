@@ -3,7 +3,7 @@ description: 'Set or revise the design direction of the product (specs/design.md
 argument-hint: 'Optional: what to change in the design direction, or references to follow'
 ---
 
-<!-- Boilerplate preset (source: tools/spec-kit/preset). A command of its own, not part of core Spec Kit. -->
+<!-- artefact-product extension (source: extension/ of speckit-artefact). A command of its own, not part of core Spec Kit. -->
 
 ## User Input
 

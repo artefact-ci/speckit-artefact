@@ -14,7 +14,7 @@ env:
 
 jobs:
   preset:
-    name: Install the preset on a blank project
+    name: Install the preset and the extension on a blank project
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -34,10 +34,24 @@ jobs:
         working-directory: ${{ runner.temp }}/blank
         run: $SPECIFY preset add --dev "$GITHUB_WORKSPACE/preset"
 
+      - name: Add the extension in dev mode
+        working-directory: ${{ runner.temp }}/blank
+        run: $SPECIFY extension add --dev "$GITHUB_WORKSPACE/extension"
+
       - name: Check the preset sections in the skills
         working-directory: ${{ runner.temp }}/blank
         run: |
           for command in specify plan tasks analyze implement converge; do
             grep -q '(boilerplate)' ".claude/skills/speckit-$command/SKILL.md" \
               || { echo "::error::speckit-$command has no (boilerplate) section"; exit 1; }
+          done
+
+      - name: Check the extension skills and their aliases
+        working-directory: ${{ runner.temp }}/blank
+        run: |
+          for command in prd design epics prototype; do
+            for skill in "speckit-artefact-product-$command" "speckit-$command"; do
+              test -f ".claude/skills/$skill/SKILL.md" \
+                || { echo "::error::skill $skill is missing"; exit 1; }
+            done
           done
