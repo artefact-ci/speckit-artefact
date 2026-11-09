@@ -27,7 +27,7 @@ provides:
     - type: 'template'
       name: 'plan-template'
       file: 'templates/plan-template.md'
-      description: 'Plan template: boilerplate stack, domains, flag, events, migrations, access rules, test strategy'
+      description: 'Plan template: stack read from the repo, constitution check, decisions for the user, flag, test strategy'
       replaces: 'plan-template'
 
     - type: 'template'
@@ -35,6 +35,12 @@ provides:
       file: 'templates/tasks-template.md'
       description: 'Tasks template: mandatory tests, red-green-refactor, one user story per pull request'
       replaces: 'tasks-template'
+
+    - type: 'template'
+      name: 'constitution-template'
+      file: 'templates/constitution-template.md'
+      description: 'Constitution template: the four principles of the Artefact CI base, then the project principles'
+      replaces: 'constitution-template'
 
     - type: 'command'
       name: 'speckit.specify'
@@ -45,7 +51,7 @@ provides:
     - type: 'command'
       name: 'speckit.plan'
       file: 'commands/speckit.plan.md'
-      description: 'Decisions left to the user, example code, research from the repo, appended to plan'
+      description: 'Decisions left to the user, research from the repo and its conventions, prototype, appended to plan'
       strategy: 'append'
 
     - type: 'command'

@@ -1,0 +1,35 @@
+# boilerplate-nx: the Nx NestJS React sections of the plan and tasks templates, layered above
+# artefact-sdd in nx-react-nestjs. Copied there in phase 6a (tools/spec-kit/preset/); install with
+# `uvx --from specify-cli==1.3.2 specify preset add --dev tools/spec-kit/preset --priority 5`.
+schema_version: '1.0'
+
+preset:
+  id: 'boilerplate-nx'
+  name: 'Nx NestJS React boilerplate'
+  version: '1.0.0'
+  description: 'Plan and tasks templates of the Nx NestJS React boilerplate, above artefact-sdd'
+  author: 'nx-react-nestjs boilerplate'
+  repository: 'https://github.com/AlMoustapha01/monorepo-nx-react-nestjs'
+  license: 'MIT'
+
+requires:
+  speckit_version: '>=1.3.2'
+
+provides:
+  templates:
+    - type: 'template'
+      name: 'plan-template'
+      file: 'templates/plan-template.md'
+      description: 'Plan template: boilerplate stack, domains, flag, events, migrations, access rules, test strategy'
+      replaces: 'plan-template'
+
+    - type: 'template'
+      name: 'tasks-template'
+      file: 'templates/tasks-template.md'
+      description: 'Tasks template: mandatory tests, red-green-refactor, one user story per pull request'
+      replaces: 'tasks-template'
+
+tags:
+  - 'nx'
+  - 'nestjs'
+  - 'react'
