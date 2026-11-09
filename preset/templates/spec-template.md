@@ -7,7 +7,7 @@
 **Status**: Draft
 
 <!--
-  Status (one word, checked by `pnpm -s spec:trace`):
+  Status (one word, checked by the trace command, `commands.trace` of `.specify/stack.yml`):
   - Draft: being written or implemented; scenarios may still wait for their test.
   - Implemented: every active scenario has a test (set by /speckit-converge).
   - Shipped: the feature flag is removed; set in that pull request.
@@ -19,7 +19,7 @@
 **Product Requirements**: None
 
 <!--
-  Product requirements (checked by `pnpm -s spec:trace`): when specs/product.yml
+  Product requirements (checked by the trace command): when specs/product.yml
   exists, the ids of the requirements this feature implements, comma-separated (`PAY-03, PAY-04`),
   or `None` (technical feature, or no requirement in the index). Each id must be in the index.
   The state of a requirement is derived from the status of its specs: never record it elsewhere.
@@ -43,7 +43,7 @@
 
   Every Given/When/Then acceptance scenario MUST be verifiable by an automated test
   (unit, integration, API end-to-end or browser journey), without relying on human
-  judgment: each scenario becomes a test written before the code (constitution VIII).
+  judgment: each scenario becomes a test written before the code (Test-First principle of the constitution).
 
   Scenario numbers are identifiers: tests cite them as `<feature number>-US<story>-AS<n>`
   (e.g. `003-US1-AS2`). Never renumber existing scenarios: give a new scenario the next
@@ -142,7 +142,7 @@ _Example of marking unclear requirements:_
 
   Criteria that only a human can judge (user tests, field conditions, visual quality,
   e.g. "4 users out of 5 find the screen in under 3 minutes") belong here, never in the
-  acceptance scenarios: every scenario needs an automated test (`pnpm -s spec:trace`).
+  acceptance scenarios: every scenario needs an automated test, which the trace command checks.
   Reference prototype captures, if any, live in `prototypes/` next to this spec.
 -->
 
