@@ -13,13 +13,15 @@ Le plan de création, ses décisions et son calendrier sont dans [`docs/plan.md`
 
 ## État
 
-Phases 1 et 2 terminées :
+Phases 1, 2 et 3 terminées (publication npm en attente du choix du registre) :
 
 - `preset/` est le preset générique `artefact-sdd`. Ses six commandes et ses templates (spec, plan, tasks, constitution) ne citent plus aucune stack : ils lisent `.specify/stack.yml`, dont le schéma est dans [`docs/stack.md`](docs/stack.md).
 - `extension/` est l'extension `artefact-product` : prd, design, epics, prototype. Les anciens noms restent en alias. Ses commandes lisent aussi `stack.yml`, et leurs étapes front dépendent de `ui`. Elles ont besoin des consignes d'agents dans `docs/agents/`, que l'installeur posera en phase 4.
 - `examples/stack/` contient des `stack.yml` types, et `examples/nx-preset/` le preset local qui rend au boilerplate ses templates Nx.
 
-`agents/` et `packages/` ne contiennent qu'un README qui dit à quelle phase ils se remplissent.
+- `packages/spec-trace` et `packages/prototype` sont les outils `@artefact-ci/spec-trace` (matrice scénarios → tests) et `@artefact-ci/prototype` (maquettes HTML), sortis du boilerplate. Ils lisent aussi `stack.yml` (`tests.globs`, `ui.theme`). `pnpm install && pnpm test` à la racine les teste.
+
+`agents/` et `packages/sdd` ne contiennent qu'un README qui dit à quelle phase ils se remplissent.
 
 ## Tester en local
 

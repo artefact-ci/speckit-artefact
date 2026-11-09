@@ -17,7 +17,7 @@ Exemples complets dans [`examples/stack/`](../examples/stack/) : `nx.yml` (nx-re
 | `commands.fresh` | commande | `commands.affected` sans cache, avant **Converged** | converge | `commands.affected` |
 | `commands.check` | commande | vérification complète du dépôt, en Polish et après `/speckit-design` | tasks, design | étape sautée (design : `commands.affected`) |
 | `commands.trace` | commande | matrice scénarios → tests (`@artefact-ci/spec-trace`) ; prend un dossier de spec en argument | specify, analyze, converge, prd, epics, prototype | specify, prd et epics lisent `**Status**` et `**Product Requirements**` des specs ; analyze et prototype vérifient les ids de `spec.md` ; converge cherche les ids dans les fichiers de `tests.globs` |
-| `tests.globs` | liste de motifs | fichiers de tests où chercher les ids de scénario | converge, plan, tasks | — |
+| `tests.globs` | liste de motifs | fichiers de tests où chercher les ids de scénario | converge, plan, tasks, `@artefact-ci/spec-trace` | spec-trace : `**/*.spec.ts` et `**/*.spec.tsx` |
 | `tests.needs` | liste | ce que les tests d'intégration et les parcours exigent (`docker`…) | implement | rien de particulier |
 | `shared` | liste de chemins | code partagé : après une tâche qui le touche, `commands.affected` tourne tout de suite | implement, tasks, analyze | pas de vérification anticipée |
 | `ui` | objet ou `null` | front du projet ; `null` : pas de front, `/speckit-design` n'écrit que la partie non visuelle et `/speckit-prototype` s'arrête | specify, plan, tasks, design, prototype | `null` |
