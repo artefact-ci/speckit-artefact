@@ -9,12 +9,13 @@ docs:
   - libs/web/AGENTS.md
 commands:
   test: pnpm nx test {project}
-  affected: pnpm nx affected -t lint typecheck test e2e
-  fresh: pnpm nx affected -t lint typecheck test e2e --skip-nx-cache
+  affected: pnpm nx affected -t lint typecheck test
+  fresh: pnpm nx affected -t lint typecheck test --skip-nx-cache
   check: pnpm check
   trace: pnpm -s spec:trace
 tests:
   globs: ['**/*.spec.ts', '**/*.spec.tsx']
+  needs: [docker] # Testcontainers
 shared:
   - libs/api/core
   - libs/shared/contracts
@@ -26,5 +27,5 @@ ui:
   theme: libs/web/ui/src/lib/styles/theme.css
 e2e:
   dir: apps/web-e2e
+  command: pnpm nx affected -t e2e # --skip-nx-cache avant Converged
   setup: pnpm exec playwright install chromium
-  needs: [docker]

@@ -2,7 +2,7 @@
 
 ## Project Stack (artefact-sdd)
 
-Read `.specify/stack.yml` first: it names this project's branches, commands, test files and convention files. A key that is absent or `null` skips the step that uses it: say so in the report, never invent a command. When the file itself is missing, stop and ask the user to write it.
+Read `.specify/stack.yml` first: it names this project's branches, commands, test files and convention files. `commands.test` and `commands.affected` are required: when one is missing, or the file itself, stop and ask the user to write it. Any other key that is absent or `null` skips the step that uses it: say so in the report, never invent a command. An absent key never removes a test: tests always run, with what `tests.needs` lists.
 
 ## What to Read (artefact-sdd)
 

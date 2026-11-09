@@ -12,11 +12,12 @@ commands:
   trace: pnpm dlx @artefact-ci/spec-trace
 tests:
   globs: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'e2e/**/*.spec.ts']
+  needs: []
 ui:
   components: src/components/ui
   storybook: false
   theme: src/app/globals.css
 e2e:
   dir: e2e
+  command: pnpm exec playwright test
   setup: pnpm exec playwright install chromium
-  needs: []

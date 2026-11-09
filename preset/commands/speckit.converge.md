@@ -2,7 +2,7 @@
 
 ## Project Stack (artefact-sdd)
 
-Read `.specify/stack.yml` first: it names this project's branches, commands, test files and convention files. A key that is absent or `null` skips the step that uses it: say so in the report, never invent a command. When the file itself is missing, stop and ask the user to write it.
+Read `.specify/stack.yml` first: it names this project's branches, commands, test files and convention files. `commands.test` and `commands.affected` are required: when one is missing, or the file itself, stop and ask the user to write it. Any other key that is absent or `null` skips the step that uses it: say so in the report, never invent a command. An absent key never removes a test: tests always run, with what `tests.needs` lists.
 
 ## Test Coverage of Acceptance Scenarios (artefact-sdd)
 
@@ -13,7 +13,7 @@ These rules come from the constitution (Test-First principle) and take precedenc
 - A scenario without a covering test is a gap, even when the code seems to implement it. In the Convergence phase you append, emit the test task first, before any implementation task appended for the same scenario.
 - An orphan id means the spec changed or the test is mislabeled: append a task to fix the test title or the spec.
 - A test that cites a retired scenario (`N. **Retired** …` in `spec.md`, or any scenario of a `Retired` spec) is stale: append a task to remove the test, or to retire the behavior it checks.
-- When every active scenario of the spec has a test and you report **Converged**, set the spec's `**Status**` from `Draft` to `Implemented` (the only edit to `spec.md` allowed here). From then on, the trace command fails in CI if a scenario loses its test.
+- When every active scenario of the spec has a test and you report **Converged**, set the spec's `**Status**` from `Draft` to `Implemented` (the only edit to `spec.md` allowed here). From then on, when CI runs the trace command, it fails if a scenario loses its test.
 - Never report **Converged** while a scenario has no test or while the trace command exits with an error. Quote its final matrix in your report.
 
 ## Gaps and Tasks (artefact-sdd)
@@ -25,13 +25,13 @@ These rules also take precedence over the instructions above, including "Little 
 - **Blocked from outside.** A task that cannot be done as planned (an image or a service no longer available, a dependency that does not do what `research.md` assumed) is a decision for the user: append one task that names the blocker and the options, says that the decision goes back to `/speckit-plan`, and names the blocked tasks it must be done before. It is appended first in the new phase, like any other task: never move an existing task.
 - **Unrequested but justified.** Code that no task asked for but that a done task made necessary (a test fixed because a route became public), with its reason in the commit or in `tasks.md`, is not a gap.
 - **Severity in the task.** End a task appended for a CRITICAL or HIGH finding with its severity: `… per FR-001 (missing, CRITICAL)`.
-- **Fresh test runs.** Before reporting **Converged**, run the end-of-story checks without cache (`commands.fresh`, or `commands.affected` when it has no cache): a cached result proves nothing about the code as it is now.
+- **Fresh test runs.** Before reporting **Converged**, run the end-of-story checks without cache (`commands.fresh`, or `commands.affected` when it has no cache) and, when `e2e` is set, `e2e.command`: a cached result proves nothing about the code as it is now.
 
 ## Independent Review (artefact-sdd)
 
 An agent judges its own work generously: the work is reviewed by a reviewer that did not write it, in a fresh context, before converge concludes.
 
-- When this pass finds no remaining gap for the user stories implemented on this branch (one story per pull request), get an independent review following `docs/agents/relecteur.md`, before handing the story over and before reporting **Converged**. In Claude Code, launch the `relecteur` subagent. With another agent, ask the user to run that review in a new session and paste its report.
+- When this pass finds no remaining gap for the user stories implemented on this branch (one story per pull request), get an independent review following `docs/agents/relecteur.md`, before handing the story over and before reporting **Converged**. In Claude Code, launch the `relecteur` subagent. With another agent, ask the user to run that review in a new session and paste its report. When the project has no `docs/agents/relecteur.md` yet, ask the user who reviews and how; never report **Converged** on your own review.
 - Give the reviewer only the base (`origin/<branches.base>`, or the default branch without it) and the feature directory: never your summary, your reasoning or your opinion of the work.
 - Each blocking finding becomes appended tasks, under the append-only contract above; when it concerns an acceptance scenario, the test task comes first. Do not hand the story over, nor report **Converged**, while a blocking finding is open.
 - You may dispute a finding only with evidence (the code or test that disproves it). A disputed finding stays open: report it with that evidence, do not report **Converged**, and let the user decide (they close it, or it becomes a task); never drop it silently.

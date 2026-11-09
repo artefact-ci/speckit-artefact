@@ -22,7 +22,7 @@ description: 'Task list template for feature implementation'
 
 - Paths come from the plan's Project Structure and Test Strategy, which follow the code and the convention files listed under `docs` in `.specify/stack.yml`: a task never invents a layout. When those docs give a generator for a new module or screen, the task uses it instead of copying another one's configuration.
 - Test files match `tests.globs` of `.specify/stack.yml`.
-- Run one test: `commands.test` of `.specify/stack.yml`. Everything the change affects: `commands.affected`. Browser journeys, when `e2e` is set, live under `e2e.dir`.
+- Run one test: `commands.test` of `.specify/stack.yml`. Everything the change affects: `commands.affected`. Browser journeys, when `e2e` is set, live under `e2e.dir` and run with `e2e.command`.
 
 <!--
   ============================================================================
@@ -92,7 +92,7 @@ description: 'Task list template for feature implementation'
 ### Red: tests for User Story 2 (write first, run, confirm they FAIL)
 
 - [ ] T009 [P] [US2] [Level] test titled `[###]-US2-AS1: …` in [test path]; confirm it FAILS
-- [ ] T010 [P] [US2] Browser journey titled `[###]-US2-AS2: …` under `e2e.dir`, only for what the lower levels cannot see (when `e2e` is set); confirm it FAILS
+- [ ] T010 [P] [US2] Browser journey titled `[###]-US2-AS2: …` under `e2e.dir`, only for what the lower levels cannot see (when `e2e` is set); run it with `e2e.command` and confirm it FAILS
 
 ### Green: implementation for User Story 2
 
@@ -101,7 +101,7 @@ description: 'Task list template for feature implementation'
 
 ### Refactor
 
-- [ ] T013 [US2] Refactor with all User Story 2 tests green; `commands.affected` passes
+- [ ] T013 [US2] Refactor with all User Story 2 tests green; `commands.affected` and `e2e.command` pass
 
 **Checkpoint**: User Stories 1 AND 2 both work independently.
 
@@ -132,7 +132,7 @@ description: 'Task list template for feature implementation'
 
 ## Notes
 
-- `commands.*`, `tests.globs` and `e2e.dir` are keys of `.specify/stack.yml`: in the generated tasks.md, write the actual command or path, not the key. A step whose key is absent is left out.
+- `commands.*`, `tests.*` and `e2e.*` are keys of `.specify/stack.yml`: in the generated tasks.md, write the actual command or path, not the key. A step whose key is absent is left out.
 - Never check a test task before seeing the test fail for the expected reason.
 - Check an implementation task once the tests it drives pass; require `commands.affected` at each story's refactor task and checkpoint.
 - Commit after each green step or logical group; open one pull request per user story.

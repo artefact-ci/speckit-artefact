@@ -25,8 +25,9 @@ Les commandes d'`artefact-sdd` ne portent plus les règles propres au boilerplat
 | Tests d'intégration avec Docker (Testcontainers) (implement) | `AGENTS.md` |
 | Journeys Playwright lancés seulement si le front, l'API ou l'identité ont changé ; rapport dans `dist/.playwright/apps/web-e2e` (implement) | `AGENTS.md`, `apps/web/AGENTS.md` |
 | Titres de test en anglais, même dans un fichier aux titres encore en français (implement) | `AGENTS.md` |
-| Modèle tenant et lectures cross-tenant comme décisions de design (plan, analyze) | constitution I |
+| Modèle tenant et lectures cross-tenant comme décisions de design (plan, analyze) | constitution (Tenant Isolation) |
+| Plan confronté au code : routes et layouts de `apps/web/src/routes/`, facades, `api-core`, service d'identité ; une route sous `_authenticated` que le layout redirigerait (tasks, analyze) | `apps/web/AGENTS.md` (`_authenticated`) ; facades et `api-core` à vérifier |
 
 ## Constitution
 
-Le socle d'`artefact-sdd` numérote ses principes I à IV (Test-First, Flagged Increments, Independent Review, Living Specs) ; les commandes les citent par leur nom. En phase 6a, la constitution du boilerplate garde ses principes propres (Tenant Isolation, Typed Business Errors, Secure by Default, Bounded External Calls, Generated Migrations, Domain Boundaries) après le socle, et le Constitution Check de son `plan-template` suit le nouvel ordre.
+Le socle d'`artefact-sdd` numérote ses principes I à IV (Test-First, Flagged Increments, Independent Review, Living Specs) ; les commandes les citent par leur nom. En phase 6a, la constitution du boilerplate garde ses principes propres (Tenant Isolation, Typed Business Errors, Secure by Default, Bounded External Calls, Generated Migrations, Domain Boundaries) après le socle, à partir de V : leurs numéros changent. Le Constitution Check de son `plan-template` et les docs du boilerplate qui citent un principe par son numéro (« constitution VIII ») suivent le nouvel ordre, ou le citent par son nom.

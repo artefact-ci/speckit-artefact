@@ -8,13 +8,13 @@
   details it (a file listed under `docs` in `.specify/stack.yml`).
 -->
 
-The convention files listed under `docs` in `.specify/stack.yml` are the detailed reference for every rule below, and they prevail whenever the two differ. This constitution names the principles that every spec, plan and task is checked against; it does not restate those files.
+The convention files listed under `docs` in `.specify/stack.yml` are the detailed reference for the project's principles below, and they prevail over this text when the two differ on a detail. They never loosen the four principles of the Artefact CI base: a convention that contradicts one of them is a deviation, justified in Complexity Tracking and decided by the user. This constitution names the principles that every spec, plan and task is checked against; it does not restate those files.
 
 ## Core Principles
 
 ### I. Test-First (NON-NEGOTIABLE)
 
-No production code is written without a test that failed first, for the expected reason. Every change follows red → green → refactor. Every acceptance scenario of a spec is covered by an automated test whose title starts with the scenario id (`003-US1-AS2: …`), which the trace command (`commands.trace` of `.specify/stack.yml`) checks. A scenario is never renumbered nor deleted: it is retired, and no test may cite a retired scenario.
+No production code is written without a test that failed first, for the expected reason. Every change follows red → green → refactor. Every acceptance scenario of a spec is covered by an automated test whose title starts with the scenario id (`003-US1-AS2: …`), which the trace command (`commands.trace` of `.specify/stack.yml`) checks when the project has one. A scenario is never renumbered nor deleted: it is retired, and no test may cite a retired scenario.
 
 [TEST_LEVELS]
 <!-- Example: the test levels of the project, from the lowest to browser journeys, with where each lives. -->
@@ -29,7 +29,7 @@ Whoever produces the work does not validate it. Before a story is handed over, a
 
 ### IV. Living Specs
 
-Once merged, `spec.md` describes the current behavior and stays current: a pull request that changes a specified behavior updates its spec; the spec's status (`Draft`, `Implemented`, `Shipped`, `Retired`) follows the feature's lifecycle. `plan.md` and `tasks.md` are history and are not updated. The trace command enforces it in CI.
+Once merged, `spec.md` describes the current behavior and stays current: a pull request that changes a specified behavior updates its spec; the spec's status (`Draft`, `Implemented`, `Shipped`, `Retired`) follows the feature's lifecycle. `plan.md` and `tasks.md` are history and are not updated. When CI runs the trace command, it enforces it.
 
 ### [PRINCIPLE_5_NAME]
 
