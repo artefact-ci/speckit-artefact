@@ -1,0 +1,3 @@
+packages:
+  - packages/spec-trace
+  - packages/prototype
