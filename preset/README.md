@@ -5,7 +5,7 @@ Source des personnalisations de Spec Kit : templates de spec, de plan et de tâc
 Après une modification ici :
 
 ```sh
-uvx --from specify-cli==1.2.2 specify preset update boilerplate --dev tools/spec-kit/preset
+uvx --from specify-cli==1.3.2 specify preset update boilerplate --dev tools/spec-kit/preset
 ```
 
 Voir `AGENTS.md`, section « Développer une fonctionnalité (Spec Kit) ».
