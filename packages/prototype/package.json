@@ -1,0 +1,32 @@
+{
+  "name": "@artefact-ci/prototype",
+  "version": "0.0.0",
+  "description": "Maquettes HTML cliquables d'une spec, compilées depuis le thème du projet (méthode artefact-sdd)",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/artefact-ci/speckit-artefact.git",
+    "directory": "packages/prototype"
+  },
+  "type": "module",
+  "bin": {
+    "prototype": "dist/cli.mjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=24.11"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node --test 'src/*.test.mts'",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "@tailwindcss/cli": "^4.3.5",
+    "playwright": "~1.65.0",
+    "yaml": "^2.9.1"
+  }
+}
