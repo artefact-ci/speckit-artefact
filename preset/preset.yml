@@ -1,5 +1,5 @@
 # Boilerplate preset for Spec Kit. This directory is the source of truth: edit it here, then
-# reinstall with `uvx --from specify-cli==1.2.2 specify preset update boilerplate --dev tools/spec-kit/preset`.
+# reinstall with `uvx --from specify-cli==1.3.2 specify preset update boilerplate --dev tools/spec-kit/preset`.
 # Never edit the installed copy in .specify/presets/boilerplate/ or .claude/skills/speckit-*/.
 schema_version: '1.0'
 
@@ -13,7 +13,7 @@ preset:
   license: 'MIT'
 
 requires:
-  speckit_version: '>=1.2.2'
+  speckit_version: '>=1.3.2'
 
 provides:
   templates:
