@@ -69,3 +69,32 @@ jobs:
           $SPECIFY preset add --dev "$GITHUB_WORKSPACE/examples/nx-preset" --priority 5
           .specify/scripts/bash/resolve-template.sh plan-template | grep -q 'libs/api' \
             || { echo "::error::the Nx plan template does not take precedence"; exit 1; }
+
+  packages:
+    name: Test and pack the npm tools
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm typecheck
+
+      - run: pnpm test
+
+      - name: Pack the packages and run spec-trace from its tarball
+        run: |
+          pnpm -r exec pnpm pack --pack-destination "$RUNNER_TEMP/packs"
+          npx -y --package="$RUNNER_TEMP/packs/artefact-ci-spec-trace-0.0.0.tgz" spec-trace \
+            | grep -q 'Aucune spec dans specs/' \
+            || { echo "::error::spec-trace does not run from its tarball"; exit 1; }
+          npx -y --package="$RUNNER_TEMP/packs/artefact-ci-prototype-0.0.0.tgz" prototype --help \
+            | grep -q 'Usage : prototype' \
+            || { echo "::error::prototype does not run from its tarball"; exit 1; }
