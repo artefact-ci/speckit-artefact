@@ -13,25 +13,31 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty).
 
+## Project Stack
+
+Read `.specify/stack.yml` first: it names this project's branches, commands and front end. A key that is absent or `null` skips the step that uses it: say so in the report, never invent a command. When the file itself is missing, stop and ask the user to write it.
+
 ## Goal
 
-Turn the requirements of `specs/product.yml` into a delivery plan: epics (`E01`), each with a goal, the requirements it groups, the epics it waits for (`depends_on`) and its end-to-end journeys (`E01-J1`). `pnpm -s spec:trace` then derives the state of each epic from the specs, requires a test per journey once an epic is done, and warns when a feature advances on an epic whose dependencies are not done.
+Turn the requirements of `specs/product.yml` into a delivery plan: epics (`E01`), each with a goal, the requirements it groups, the epics it waits for (`depends_on`) and its end-to-end journeys (`E01-J1`). The trace command (`commands.trace`) then derives the state of each epic from the specs, requires a test per journey once an epic is done, and warns when a feature advances on an epic whose dependencies are not done.
 
 The index belongs to the product, that is to the user. You propose, as the product owner of `docs/agents/po.md`; the `relecteur-produit` agent reviews the proposal cold; you show both to the user, and the user decides the grouping and the order. Nothing is committed before the user has approved it.
 
+This command works with the agents of the method (`docs/agents/po.md`, `relecteur-produit`): their instructions are in `docs/agents/`, installed with the method. When one of these files is missing, stop and tell the user: the review cannot be skipped.
+
 ## Steps
 
-1. **Branch.** Stop if the working tree has uncommitted changes. On `dev` (on `main`, switch to `dev` and pull it first), create and switch to `docs/product-epics` (or `docs/product-<short-name>` for a revision; `git switch -c`); on a `docs/product-*` branch left by `/speckit-prd`, stay on it; on another branch, ask the user before going on.
+1. **Branch.** Stop if the working tree has uncommitted changes. On `branches.base` of `.specify/stack.yml` (on `branches.production`, switch to `branches.base` and pull it first; without `branches.base`, the default branch of the repository), create and switch to `docs/product-epics` (or `docs/product-<short-name>` for a revision; `git switch -c`); on a `docs/product-*` branch left by `/speckit-prd`, stay on it; on another branch, ask the user before going on.
 
-2. **Read.** `docs/agents/po.md` (the standards you propose by, and the reviewer judges by), `specs/product.yml` (stop and point to `/speckit-prd` if it does not exist or has no requirement), `specs/prd.md` (vision, users, problems, constraints), and the output of `pnpm -s spec:trace`: the states of the requirements and of the existing epics.
+2. **Read.** `docs/agents/po.md` (the standards you propose by, and the reviewer judges by), `specs/product.yml` (stop and point to `/speckit-prd` if it does not exist or has no requirement), `specs/prd.md` (vision, users, problems, constraints), and the output of the trace command: the states of the requirements and of the existing epics (without it, read the `**Status**` and `**Product Requirements**` of the specs).
 
 3. **Group.** An epic is a user outcome the product can deliver and demonstrate on its own (`A customer pays and gets refunded without support`), not a technical layer (`database`, `API`, `screens`) nor a team. Each active requirement goes into exactly one epic; a retired one stays where it is, or out of every epic. Aim for epics that a few features, each one a few user stories, can deliver. When a single requirement makes an epic of its own and depends on nothing, say so: it may stay as it is.
 
 4. **Order.** `depends_on` lists the epics whose outcome this one needs before it can be built or used (no payment before an account exists). Only real dependencies: a preference of order is not one. No cycle. Then propose a delivery order: dependencies first, then the epics that bring the most value or remove the most risk, and say why.
 
-5. **Journeys.** For each epic, the paths a user takes across several features to reach its outcome, written as steps a browser test can follow (`sign up`, `order`, `pay by mobile money`, `ask for a refund`). One to three per epic, the ones that prove the outcome. A journey belongs to the epic it completes, even when its first steps come from the epics it depends on. Their tests are written when the epic is done, in `apps/web-e2e`, titled `'<journey id>: …'`.
+5. **Journeys.** For each epic, the paths a user takes across several features to reach its outcome, written as steps an end-to-end test can follow (`sign up`, `order`, `pay by mobile money`, `ask for a refund`). One to three per epic, the ones that prove the outcome. A journey belongs to the epic it completes, even when its first steps come from the epics it depends on. Their tests are written when the epic is done, as end-to-end tests (under `e2e.dir` when the project has browser journeys, otherwise at the level its convention files give), titled `'<journey id>: …'`.
 
-6. **Write the draft** in place, so that the reviewer reads the real file (step 8 restores it if the user declines). First check the proposal against `specs/product.yml`: every active requirement is in exactly one epic, every dependency names an epic of the proposal, and no dependency loops; fix it before writing, `spec:trace` must not be the first to find a forgotten requirement. Then write the `epics` list of `specs/product.yml`. Keep the `requirements` list and the comments as they are. Titles, goals and steps are in English, like the specs. An epic has `id`, `title`, `goal`, `requirements`, `depends_on` (may be empty) and `journeys`; a journey has `id`, `title`, `steps` (at least one) and, once dropped, `retired`:
+6. **Write the draft** in place, so that the reviewer reads the real file (step 8 restores it if the user declines). First check the proposal against `specs/product.yml`: every active requirement is in exactly one epic, every dependency names an epic of the proposal, and no dependency loops; fix it before writing, the trace command must not be the first to find a forgotten requirement. Then write the `epics` list of `specs/product.yml`. Keep the `requirements` list and the comments as they are. Titles, goals and steps are in English, like the specs. An epic has `id`, `title`, `goal`, `requirements`, `depends_on` (may be empty) and `journeys`; a journey has `id`, `title`, `steps` (at least one) and, once dropped, `retired`:
 
    ```yaml
    epics:
@@ -58,7 +64,7 @@ The index belongs to the product, that is to the user. You propose, as the produ
 
 8. **Show the proposal, then wait.** Show the user a table (epic, goal, requirements, depends on, journeys), the proposed order with its reasons, for a revision the differences with the current index, and the reviewer's verdict: the issues you fixed, and those left or disputed, with their proof. Commit nothing until the user approves; apply their changes to the file and show again if needed. When the user declines, restore the draft: `git checkout -- specs/product.yml`.
 
-9. **Check.** Run `pnpm -s spec:trace` and fix every error it reports on the index (requirement in no epic or in two, unknown dependency, cycle, journey id that does not start with its epic id). A fix that only corrects the writing (a typo in an id, a missing field) is yours. A fix that changes what the user approved (where a requirement goes, a dependency) goes back to the user: show it and wait before committing. A journey without test is an error only once its epic is done: if the revision makes a done epic gain a journey, tell the user that its test is now owed.
+9. **Check.** Run the trace command (without it, check the rules of step 6 yourself) and fix every error it reports on the index (requirement in no epic or in two, unknown dependency, cycle, journey id that does not start with its epic id). A fix that only corrects the writing (a typo in an id, a missing field) is yours. A fix that changes what the user approved (where a requirement goes, a dependency) goes back to the user: show it and wait before committing. A journey without test is an error only once its epic is done: if the revision makes a done epic gain a journey, tell the user that its test is now owed.
 
 10. **Commit.** Stage only `specs/product.yml` (never `git add .`), and commit with a Conventional Commits message in English, such as `docs(product): group the requirements into epics`.
 
