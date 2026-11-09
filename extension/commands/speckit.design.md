@@ -17,7 +17,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 Read `.specify/stack.yml` first: it names this project's branches, commands and front end. A key that is absent or `null` skips the step that uses it: say so in the report, never invent a command. When the file itself is missing, stop and ask the user to write it.
 
-- With `ui` set, this command writes `specs/design.md` and applies its visual direction to the theme file `ui.theme`.
+- With `ui` set, this command writes `specs/design.md` and applies its visual direction to the theme file `ui.theme`, which is then required: when it is missing, stop and ask the user to add it.
 - With `ui: null` (no front end), it writes `specs/design.md` without visual direction: users and contexts, UX principles, voice and tone (the product still speaks, by message, voice or email), accessibility. The steps marked « (ui) » below are skipped, and the sections Visual Direction and Theme say `N/A: no front end`.
 
 ## Goal
@@ -38,20 +38,21 @@ This command works with the agents of the method (`designer`, `relecteur-design`
 
 4. **Draft.** Launch the `designer` subagent in mode `cadrage`, with the paths to read, the user's answers and, when `ui` is `null`, that the project has no front end. It drafts in place: `specs/design.md` and (ui) the tokens of the theme file, with a chosen font installed (see step 7), so that the review and the preview see the real files. With an agent other than Claude Code, ask the user to run `docs/agents/designer.md` in a new session and paste its report.
 
-5. **Review.** Launch the `relecteur-design` subagent in mode `cadrage`, with the paths only, never the designer's report. When it reports a blocking issue, send that report to the `designer` once for a fix, then go on: no second round. With another agent, ask the user to run `docs/agents/relecteur-design.md` in a new session, as for the designer.
+5. **Review.** Launch the `relecteur-design` subagent in mode `cadrage`, with the paths only and, when `ui` is `null`, the fact that the project has no front end (so Visual Direction and Theme are `N/A` on purpose); never the designer's report. When it reports a blocking issue, send that report to the `designer` once for a fix, then go on: no second round. With another agent, ask the user to run `docs/agents/relecteur-design.md` in a new session, as for the designer.
 
 6. **Show, then wait.** Show the user:
    - a summary of each section of the draft `design.md`;
    - (ui) the token pairs before and after, with their contrast, and the font if one is chosen;
-   - (ui) a preview of the theme, font included, on the existing components, with `ui.preview` and the draft theme; without `ui.preview`, say that there is no preview and show the token values;
+   - (ui) a preview of the theme, font included, on the existing components: start `ui.preview` in the background with the draft theme, give the user the URL it prints, and stop it once the user has decided; without `ui.preview`, say that there is no preview and show the token values;
    - the blocking issues the reviewer left, and the ones the designer disputes, with their proof.
 
-   Write nothing final until the user approves; apply their changes (through the designer when they are more than a value) and show again if needed. When the user declines, restore every file of the draft: `git checkout --` each tracked file it changed (`git status --short` lists them: the theme, and for a font the manifest, the lockfile and any configuration it touched), then reinstall the dependencies when the lockfile was restored; `specs/design.md` is restored the same way when it was already tracked, and deleted only when this run created it.
+   Write nothing final until the user approves; apply their changes (through the designer when they are more than a value) and show again if needed. When the user declines, restore every file of the draft: `git checkout --` each tracked file it changed and delete each untracked file it created (`git status --short` lists them: the theme, and for a font the manifest, the lockfile and any configuration it touched), then reinstall the dependencies when the lockfile was restored; `specs/design.md` is restored the same way when it was already tracked, and deleted only when this run created it.
 
 7. **Finalize** the draft the user approved (the designer wrote it in step 4; these are the rules it follows):
    - `specs/design.md` from the template (`.specify/scripts/bash/resolve-template.sh design-template` prints its content), all placeholders replaced, template comments removed, in English.
    - (ui) The theme file `ui.theme`: the approved tokens, written in the form the file already uses (light and dark values, radius), never a new mechanism.
-   - (ui) A font: added as a dependency of the project with its package manager, imported and set as the main font where the theme file does it, following the convention files (a check of unused dependencies may need to be told about a package imported from CSS only).
+   - (ui) A font: added as a dependency of the project, imported and set as the main font where the theme file does it, with a generic fallback after it (`ui-sans-serif, system-ui, sans-serif`), following the convention files (a check of unused dependencies may need to be told about a package imported from CSS only).
+   - Installing a font and reinstalling dependencies use the project's package manager, as the convention files or the lockfile show it: that is reading the project, not inventing a command. When neither shows it, ask the user.
 
 8. **Stale prototypes** (ui). List the `specs/NNN-*/prototypes/` of the specs whose status is neither `Implemented` nor `Shipped`: their captures no longer show the theme. Name them in the report; `/speckit-plan` warns about them too.
 
