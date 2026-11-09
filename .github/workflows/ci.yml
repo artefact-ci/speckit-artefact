@@ -21,10 +21,10 @@ jobs:
 
       - uses: astral-sh/setup-uv@v6
 
-      - name: Check that the preset names no stack
+      - name: Check that the preset and the extension name no stack
         run: |
-          if grep -rnE '\bnx\b|libs/|apps/|pnpm' preset/; then
-            echo "::error::preset/ cites a stack: move it to .specify/stack.yml or to the project docs"
+          if grep -rnE '\bnx\b|libs/|apps/|pnpm' preset/ extension/ --exclude=README.md; then
+            echo "::error::a stack is cited: move it to .specify/stack.yml or to the project docs"
             exit 1
           fi
 

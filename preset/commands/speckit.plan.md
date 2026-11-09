@@ -31,6 +31,6 @@ These rules take precedence over any instruction above that contradicts them. Th
 
 When `ui` is set in `.specify/stack.yml` and `specs/NNN-<name>/prototypes/` exists (written by `/speckit-prototype`), the plan builds on it; otherwise nothing changes and nothing blocks.
 
-- Read `prototypes/journeys.md` and look at the captures of `prototypes/captures/`. In the plan, cite next to each screen to build the captures that fix it (`prototypes/captures/cart-desktop.png`, `cart-mobile.png`): they are the visual contract of `/speckit-implement`.
+- Read `prototypes/journeys.md` and, when there is a mockup, look at the captures of `prototypes/captures/` (a prototype may have journeys only). In the plan, cite next to each screen to build the captures that fix it, when they exist (`prototypes/captures/cart-desktop.png`, `cart-mobile.png`): they are the visual contract of `/speckit-implement`.
 - The components drawn in the mockup that the component library (`ui.components`) lacks, listed in `journeys.md`, are added to that library by the plan, test first and, when `ui.storybook` is true, with their Storybook story, before the screens that use them.
 - When the captures are older than the design direction (`git log -1 --format=%cI -- specs/NNN-<name>/prototypes/captures` before `git log -1 --format=%cI -- specs/design.md`), write it in the plan and tell the user: the theme changed since, and `/speckit-prototype` can refresh them.

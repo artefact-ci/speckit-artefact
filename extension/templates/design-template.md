@@ -5,13 +5,14 @@
 <!--
   The design direction of the whole product, derived from specs/prd.md, and the one every
   prototype (/speckit-prototype) and every screen inherits. The visual direction is applied in
-  code by the theme (libs/web/ui/src/lib/styles/theme.css): the Theme section records the values
-  written there, it does not replace them.
+  code by the theme file (`ui.theme` of .specify/stack.yml): the Theme section records the values
+  written there, it does not replace them. Without a front end (`ui: null`), Visual Direction and
+  Theme say "N/A: no front end".
 -->
 
 ## Users and Contexts
 
-<!-- For each kind of user of the PRD: where, on what device and in what conditions they use the product. -->
+<!-- For each kind of user of the PRD: where, on what device or channel and in what conditions they use the product. -->
 
 - **[Kind of user]**: [device, place, conditions (connection, light, hurry), frequency of use]
 
@@ -35,7 +36,7 @@
 
 ## Theme
 
-<!-- The values written in theme.css by /speckit-design: main token pairs with their contrast, radius, font (package). -->
+<!-- The values written in the theme file by /speckit-design: main token pairs with their contrast, radius, font (package). -->
 
 | Token pair                       | Light | Dark | Contrast |
 | -------------------------------- | ----- | ---- | -------- |
@@ -43,6 +44,6 @@
 
 ## Deferred
 
-<!-- What the direction asks for that theme.css cannot carry (dark mode turned on, density beyond the spacing scale), left to a feature. -->
+<!-- What the direction asks for that the theme file cannot carry (dark mode turned on, density beyond the spacing scale), left to a feature. -->
 
 - [Item]: [why it is deferred]

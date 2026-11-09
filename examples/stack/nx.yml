@@ -25,6 +25,8 @@ ui:
   components: libs/web/ui
   storybook: true
   theme: libs/web/ui/src/lib/styles/theme.css
+  preview: pnpm nx run web-ui:storybook # http://localhost:6006
+  prototype: pnpm prototype
 e2e:
   dir: apps/web-e2e
   command: pnpm nx affected -t e2e # --skip-nx-cache avant Converged

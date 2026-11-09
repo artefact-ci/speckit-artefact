@@ -23,8 +23,8 @@
 
 - `[screen-state]`: [when it shows up, what the user can do from it]
 
-## Components to add to web-ui
+## Components to add to the component library
 
-<!-- Filled in with the mockup: what the screens need that libs/web/ui lacks, read by /speckit-plan. -->
+<!-- Filled in with the mockup: what the screens need that the component library (`ui.components` of .specify/stack.yml) lacks, read by /speckit-plan. -->
 
 - [Component]: [screens that use it] (or None)

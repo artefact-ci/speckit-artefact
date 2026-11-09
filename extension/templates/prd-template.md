@@ -5,9 +5,9 @@
 <!--
   The why and the what of the whole product, for people: no technology, no screens, no data model.
   The structured part lives in specs/product.yml: every requirement listed under "Requirements"
-  below has an entry there with the same id and title, and spec:trace checks that index.
+  below has an entry there with the same id and title, and the trace command checks that index.
   This document never records a state: what is specified, implemented or shipped is derived from
-  the specs (`pnpm -s spec:trace`).
+  the specs (the trace command of .specify/stack.yml).
 -->
 
 ## Vision

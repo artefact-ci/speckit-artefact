@@ -12,5 +12,5 @@ commands:
   trace: bunx @artefact-ci/spec-trace
 tests:
   globs: ['src/**/*.test.ts']
-ui: null # pas de front : /speckit-design et /speckit-prototype sautent ces étapes
+ui: null # pas de front : /speckit-design n'écrit que la partie non visuelle, /speckit-prototype s'arrête
 e2e: null
