@@ -1,8 +1,8 @@
 {
   "name": "@artefact-ci/prototype",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Maquettes HTML cliquables d'une spec, compilées depuis le thème du projet (méthode artefact-sdd)",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/artefact-ci/speckit-artefact.git",
