@@ -49,7 +49,7 @@ Applique ceux que ces fichiers posent comme non négociables ; les principes cou
 - Fonctionnalité nouvelle hors feature flag, côté API ou front.
 - Dépendance qui franchit une frontière de domaine ou de couche que les règles du projet interdisent.
 - Création à effet métier sans clé d'idempotence, agrégat modifiable sans verrou optimiste, montant en flottant.
-- Secret ou donnée personnelle dans le code, les tests, les logs ou Sentry.
+- Secret ou donnée personnelle dans le code, les tests, les logs ou l'outil de suivi d'erreurs du projet.
 
 ## Hors grille
 

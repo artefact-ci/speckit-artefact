@@ -18,31 +18,31 @@ Ce sont aussi les standards du relecteur design.
 
 - **Hiérarchie** : une action principale par écran, visible sans défiler ; le reste en actions secondaires. Le titre dit où l'on est.
 - **Typographie** : une échelle courte (4 ou 5 tailles), la graisse et la couleur (`foreground`, `muted-foreground`) pour hiérarchiser plutôt que la taille seule ; lignes de 60 à 80 caractères pour le texte courant.
-- **Densité et espacement** : une grille d'espacement unique (celle de Tailwind) ; regrouper ce qui va ensemble, séparer le reste ; des listes et tableaux denses pour les écrans de travail, plus aérés pour les écrans d'accueil.
+- **Densité et espacement** : une seule grille, la grille d'espacement du projet (voir les fichiers `docs`) ; regrouper ce qui va ensemble, séparer le reste ; des listes et tableaux denses pour les écrans de travail, plus aérés pour les écrans d'accueil.
 - **Navigation** : on sait toujours où l'on est (titre, élément actif, fil d'Ariane au-delà de deux niveaux) et comment revenir ; pas d'impasse.
 - **Tableaux et listes** : colonnes alignées (nombres à droite), en-têtes explicites, état vide, pagination par curseur (« Charger plus ») dès que la liste peut dépasser une cinquantaine de lignes, actions par ligne regroupées.
-- **Formulaires** : libellé visible au-dessus de chaque champ (jamais le placeholder seul), erreur sous le champ concerné et erreur globale en tête (`FormField`, `FormError`), bouton d'envoi qui dit ce qu'il fait, valeurs par défaut sensées.
+- **Formulaires** : libellé visible au-dessus de chaque champ (jamais le placeholder seul), erreur sous le champ concerné et erreur globale en tête (les composants de formulaire de `ui.components`), bouton d'envoi qui dit ce qu'il fait, valeurs par défaut sensées.
 - **États** : chaque écran prévoit vide (avec l'action qui le remplit), chargement, erreur (ce qui s'est passé, quoi faire) et succès ; chaque action a un retour (toast, changement visible).
 - **Textes d'interface** : verbes d'action (« Créer le produit », pas « Valider »), vocabulaire de l'utilisateur, pas de jargon technique, ton de `specs/design.md`.
-- **Responsive** : chaque écran fonctionne à 390 px de large ; mobile d'abord pour les parcours qui se font sur téléphone ; cibles tactiles d'au moins 24 px (WCAG 2.2 AA), et 44 px pour les actions principales sur mobile : un composant de la bibliothèque plus petit s'agrandit sur mobile (`h-11 md:h-9`) et se signale dans les composants à ajouter ; pas de défilement horizontal hors tableaux.
+- **Responsive** : chaque écran fonctionne à 390 px de large ; mobile d'abord pour les parcours qui se font sur téléphone ; cibles tactiles d'au moins 24 px (WCAG 2.2 AA), et 44 px pour les actions principales sur mobile : un composant de la bibliothèque plus petit s'agrandit sur mobile (par exemple, avec Tailwind : `h-11 md:h-9`) et se signale dans les composants à ajouter ; pas de défilement horizontal hors tableaux.
 - **Accessibilité** (WCAG 2.2 AA) : contraste d'au moins 4,5:1 pour le texte et 3:1 pour les composants et le focus ; focus visible ; ordre de tabulation logique ; libellé pour tout champ et tout bouton icône ; l'information ne passe jamais par la couleur seule.
 
 ## Contraintes du dépôt
 
 - La bibliothèque de composants est le dossier `ui.components` de `.specify/stack.yml` ; ses conventions et la liste de ses composants se trouvent dans les fichiers listés sous `docs`. Lis leur code pour en reprendre les classes exactes. Si `ui.components` est absent, dis-le dans le rapport et reste sur des composants simples.
-- Les couleurs, rayons et espacements viennent des tokens du fichier `ui.theme` de `.specify/stack.yml` (`bg-primary`, `text-muted-foreground`, `rounded-md`…), jamais d'une valeur en dur.
+- Les couleurs, rayons et espacements viennent des tokens du fichier `ui.theme` de `.specify/stack.yml` (par exemple, avec Tailwind : `bg-primary`, `text-muted-foreground`, `rounded-md`…), jamais d'une valeur en dur.
 - Un composant qui manque à la bibliothèque (liste déroulante, tableau, onglets…) se dessine dans le même style, avec les mêmes tokens, et se signale dans le rapport : il sera ajouté à la bibliothèque pendant l'implémentation.
 
 ## Livrables
+
+Ne commite rien, quel que soit le mode : la commande qui t'a lancé s'en charge après l'accord de l'utilisateur.
 
 ### Mode `cadrage`
 
 Tu écris le brouillon directement dans les fichiers, pour que le relecteur et l'aperçu (`ui.preview`) voient le vrai rendu ; la commande les restaure si l'utilisateur refuse.
 
-Ne commite rien : la commande qui t'a lancé s'en charge après l'accord de l'utilisateur.
-
 - Un brouillon de `specs/design.md`, en anglais, depuis le gabarit (`.specify/scripts/bash/resolve-template.sh design-template`), qui découle du PRD : utilisateurs et contextes d'usage, principes, ton, accessibilité, direction visuelle.
-- Les nouvelles valeurs des tokens de `:root` et `.dark` du fichier `ui.theme`, en OKLCH, par paires (`--primary` et `--primary-foreground`) dont le contraste atteint 4,5:1 y compris dans les états dérivés qu'utilisent les composants (survol `bg-primary/90`, alpha composé en sRGB sur le fond), avec `--ring` et `--input` à 3:1 au moins sur `--background`, et le contraste calculé de chacun ; `--radius` ; une police s'il en faut une, disponible en paquet `@fontsource/*` ou `@fontsource-variable/*`, installée comme le disent l'étape « Finalize » de `/speckit-design` et les fichiers `docs` de `.specify/stack.yml`.
+- Les nouvelles valeurs des tokens de `:root` et `.dark` du fichier `ui.theme`, en OKLCH, par paires (`--primary` et `--primary-foreground`) dont le contraste atteint 4,5:1 y compris dans les états dérivés qu'utilisent les composants (survol, alpha composé en sRGB sur le fond ; par exemple, avec Tailwind : `bg-primary/90`), avec `--ring` et `--input` à 3:1 au moins sur `--background`, et le contraste calculé de chacun ; `--radius` ; une police s'il en faut une, disponible en paquet `@fontsource/*` ou `@fontsource-variable/*`, installée comme le disent l'étape « Finalize » de `/speckit-design` et les fichiers `docs` de `.specify/stack.yml`.
 - Rien d'autre dans le code : ce qui demanderait plus (mode sombre activé, densité au-delà de `--spacing`) va dans la section `Deferred` de `design.md`.
 
 ### Mode `parcours`
