@@ -16,4 +16,4 @@
 
 ## [0.1.0] - 2026-11-09
 
-- Première publication à la main, le 9 novembre 2026, de `@artefact-ci/spec-trace` (0.1.0) et `@artefact-ci/prototype` (0.1.0, puis 0.1.1) sur npm. `@artefact-ci/sdd` 0.1.0 (installeur avec `--source`) n'a jamais été publié : son premier paquet npm est la 0.2.0.
+- Première publication à la main, le 9 novembre 2026, de `@artefact-ci/spec-trace` (0.1.0) et `@artefact-ci/prototype` (0.1.0, puis 0.1.1) sur npm. `@artefact-ci/sdd` 0.1.0 (installeur avec `--source`) n'a jamais été publié : sa première version fonctionnelle sur npm est la 0.2.0 (un paquet provisoire `0.0.0-stage` est publié avant, voir [`docs/release.md`](docs/release.md)).

@@ -9,7 +9,10 @@ Une seule version pour tout le dépôt : `preset/preset.yml`, `extension/extensi
 3. PR vers `dev`, puis fusion de `dev` dans `main`.
 4. Tag sur le commit de `main` : `git tag vX.Y.Z && git push origin vX.Y.Z`.
 5. Suivre `.github/workflows/release.yml` : `verify`, `ci`, `release` (release GitHub et zips), `npm` (publication avec provenance), `smoke` (installation depuis npm).
-6. En cas d'échec, relancer le job concerné : chaque étape peut être relancée sans dégât (ce qui est déjà publié est sauté). Une release n'est jamais supprimée et un zip publié n'est jamais écrasé. Si un relancement signale « déjà publié avec un autre contenu » sans que la source ait changé, c'est que la version de Node épinglée dans le job `release` a changé (la sortie deflate dépend du zlib de Node) : remettre la version d'origine.
+6. En cas d'échec, relancer le job concerné. Un relancement exécute le workflow du commit tagué : les fichiers, et la version de Node épinglée, ne changent pas. Ce qui est déjà publié est sauté ; une release n'est jamais supprimée et un zip publié n'est jamais écrasé. La release est créée en brouillon et publiée seulement une fois les deux zips attachés.
+   - `verify` ou `ci` en échec : rien n'est publié. Corriger, supprimer le tag en local et sur GitHub (`git tag -d vX.Y.Z && git push origin :refs/tags/vX.Y.Z`), puis le repousser sur le nouveau commit.
+   - `release` en échec sur « déjà publié avec un autre contenu » : la cause probable est un envoi interrompu, qui a laissé un zip incomplet. Tant que la release est encore un brouillon et que `npm` n'a pas tourné, supprimer ce seul zip (`gh release delete-asset vX.Y.Z <zip>`) puis relancer est sans danger. Une fois les paquets publiés sur npm, ne plus toucher à la release : corriger dans une nouvelle version.
+7. Le premier vrai téléchargement depuis github.com (recherche de la release via api.github.com, redirection vers un autre hôte) n'est testé que par le job `smoke`.
 
 ## Toute première release (0.2.0) : étapes manuelles
 
