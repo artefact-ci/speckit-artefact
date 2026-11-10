@@ -13,6 +13,7 @@
     "version:check": "node scripts/version.mts check",
     "version:set": "node scripts/version.mts set",
     "notes": "node scripts/version.mts notes",
+    "zips": "node scripts/zip.mts",
     "test:scripts": "node --test 'scripts/*.test.mts'"
   },
   "devDependencies": {
