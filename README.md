@@ -13,7 +13,7 @@ Le plan de création, ses décisions et son calendrier sont dans [`docs/plan.md`
 
 ## État
 
-Phases 1 à 4 terminées (publication sur npm public avec la release, en phase 5) :
+Phases 1 à 3 terminées, phase 4 faite sauf la vérification dans l'app Antigravity (publication sur npm public avec la release, en phase 5) :
 
 - `preset/` est le preset générique `artefact-sdd`. Ses six commandes et ses templates (spec, plan, tasks, constitution) ne citent plus aucune stack : ils lisent `.specify/stack.yml`, dont le schéma est dans [`docs/stack.md`](docs/stack.md).
 - `extension/` est l'extension `artefact-product` : prd, design, epics, prototype. Les anciens noms restent en alias. Ses commandes lisent aussi `stack.yml`, et leurs étapes front dépendent de `ui`. Ses consignes d'agents (designer, relecteurs, PO) sont dans `extension/agents/` : Spec Kit les copie dans `.specify/extensions/artefact-product/agents/`, et les commandes s'arrêtent si elles manquent.

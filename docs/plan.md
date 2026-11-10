@@ -105,7 +105,7 @@ Fini quand : `grep` ne trouve plus `nx`, `libs/`, `apps/` ni `pnpm` dans le pres
 
 ### Phase 2 — Extension `artefact-product`
 
-- [x] Réécrire les quatre commandes pour lire `stack.yml` au lieu des chemins Nx, comme celles du cœur en phase 1. Le schéma gagne `ui.preview` (aperçu du thème, Storybook pour le boilerplate) et `ui.prototype` (outil de maquette). Les commandes s'arrêtent quand une consigne d'agent manque dans `docs/agents/` : la relecture ne se saute pas.
+- [x] Réécrire les quatre commandes pour lire `stack.yml` au lieu des chemins Nx, comme celles du cœur en phase 1. Le schéma gagne `ui.preview` (aperçu du thème, Storybook pour le boilerplate) et `ui.prototype` (outil de maquette). Les commandes s'arrêtent quand une consigne d'agent manque dans `docs/agents/` : la relecture ne se saute pas. (Depuis la phase 4, les consignes sont dans `.specify/extensions/artefact-product/agents/`, livrées par l'extension.)
 - [x] Rendre les étapes front (thème, Storybook, maquettes) conditionnelles à `ui` dans `stack.yml`. Sans front, `/speckit-design` écrit `design.md` sans direction visuelle ni thème, et `/speckit-prototype` s'arrête ; les parcours des epics deviennent des tests de bout en bout, pas forcément navigateur.
 
 Vérifié le 9 novembre 2026 sur un projet vierge avec `examples/stack/bun-hono.yml` et les agents du boilerplate copiés à la main : les quatre commandes se lancent en mode non interactif (`claude -p`) ; prototype s'arrête, design, prd et epics vont jusqu'à leur question ou leur proposition, epics avec la relecture de `relecteur-produit`.
@@ -132,11 +132,45 @@ Fini quand : `npx @artefact-ci/spec-trace` donne la même matrice que `pnpm -s s
 - [x] Déduit `stack.yml` (`nx.json`, `next.config.*`, `bun.lock`, gestionnaire de paquets) sans poser de question : les clés non déduites restent vides avec `# à compléter`, et le rapport dit ce qui est deviné. Écrit la constitution de base quand elle est absente ou encore le gabarit vierge.
 - [x] `update` : réinstalle l'extension (`extension add --force`) et le preset (`preset update --dev`, soit un retrait puis un ajout), puis régénère agents et hooks, sans toucher `stack.yml` ni la constitution. `installed_at` change alors dans les registres : c'est attendu pour une mise à jour. `extension update` de 1.3.2 n'accepte ni `--dev` ni `--from`.
 - [x] Migration depuis le preset `boilerplate` : `init` fait les étapes 1 et 2 de la procédure (voir Versionnement). Les anciens `docs/agents/` ne sont jamais supprimés : le rapport les liste comme obsolètes et dit si la consigne est identique à celle du boilerplate ou modifiée sur place.
-- [ ] Vérifier dans Antigravity qu'un `/speckit-converge` invoque le sous-agent `relecteur`, et trouver le nom de l'outil d'écriture pour le designer (projet de démonstration : `/private/tmp/claude-501/-Users-almoustaphadoumbia-Documents-Fabric-speckit-artefact/151a11e5-353f-4520-a984-622b7654ae7d/scratchpad/agy-demo`, créé par `init --integration agy`). L'app Antigravity est installée sur le poste mais sans CLI (`agy`) : le lancement n'a pas pu se faire depuis le terminal, il est à faire à la main.
+- [ ] Vérifier dans Antigravity qu'un `/speckit-converge` invoque le sous-agent `relecteur`, et trouver le nom de l'outil d'écriture pour le designer (pour recréer le projet de démonstration : `pnpm --filter @artefact-ci/sdd build`, puis dans un dossier vide `node <speckit-artefact>/packages/sdd/dist/cli.mjs init --source <speckit-artefact> --integration agy`). L'app Antigravity est installée sur le poste mais sans CLI (`agy`) : le lancement n'a pas pu se faire depuis le terminal, il est à faire à la main.
 
 Vérifié le 10 novembre 2026 avec le vrai Spec Kit 1.3.2 (test de bout en bout, `SDD_E2E=1 pnpm --filter @artefact-ci/sdd test:e2e`, et la CI) : `init` lancé deux fois sur un dépôt jetable laisse `git status` vide la deuxième fois ; `update` garde un `stack.yml` et une constitution modifiés à la main ; un projet qui a le preset `boilerplate` migre (preset retiré, `artefact-sdd` ajouté, `docs/agents/` gardé et signalé). Sur un dossier vide avec `--integration agy`, `init` génère `.agents/agents/{relecteur,relecteur-produit,relecteur-design}/agent.md` avec le frontmatter attendu (`name`, `description`, `tools`, `commandExecutionPolicy: sandbox`), et la skill `.agents/skills/speckit-converge/SKILL.md` cite `.specify/extensions/artefact-product/agents/relecteur.md`. Les outils des sous-agents Antigravity sont `view_file`, `grep_search` et `run_command` : ce sont les seuls noms vérifiés dans https://antigravity.google/docs/subagents (le 10 novembre 2026). Tant que le nom d'un outil d'écriture n'est pas vérifié, il n'y a pas de fichier designer pour Antigravity (un nom faux peut bloquer le sous-agent) : `/speckit-design` et `/speckit-prototype` font alors travailler l'agent principal, et la relecture reste indépendante.
 
 Fini quand : `init` lancé deux fois de suite laisse le dépôt identique (`git status` vide la deuxième fois). Rempli le 10 novembre 2026.
+
+### Phase 5 — Release et publication
+
+- [ ] CI de release sur tag `vX.Y.Z` : zips du preset et de l'extension attachés à la release GitHub, publication des paquets npm.
+- [ ] L'installeur porte les URL du tag qu'il installe et écrit la version installée dans `.specify/artefact.json`.
+- [ ] Dans la CI de chaque PR : `specify preset add --dev` et `specify extension add --dev` sur un projet vierge.
+
+Fini quand : `npx @artefact-ci/sdd@1.0.0 init` installe la version taguée sur un projet vierge, sans catalogue.
+
+## Phase 6 — Validation
+
+Le boilerplate devient le premier client du dépôt ; AVIA ne passe qu'une fois le boilerplate validé sans régression.
+
+**6a. Non-régression sur nx-react-nestjs**
+
+- [ ] Sur une branche, retirer `tools/spec-kit/preset/` et installer avec `npx @artefact-ci/sdd init`, avec un `stack.yml` Nx.
+- [ ] Comparer les skills générées avant et après : seules les références à `stack.yml` doivent changer.
+- [ ] `pnpm check` passe, et `npx @artefact-ci/spec-trace` donne la même matrice qu'avant.
+- [ ] Rejouer `docs/tutorial/premiere-fonctionnalite.md` de bout en bout.
+- [ ] Même chose sur Afri Café, après sa montée en 1.3.2.
+
+**6b. Première installation sur AVIA**
+
+- [ ] Trancher où vivent les specs des fonctionnalités qui touchent l'agent et le front (voir Risques et questions ouvertes).
+- [ ] Installer dans avia-agent puis avia-client, écrire leurs `stack.yml`.
+- [ ] Compléter la constitution AVIA : consentement tracé, vocabulaire multi-secteur (« client », jamais « patient »).
+- [ ] Ne pas reprendre l'historique : les specs `docs/superpowers` restent en place.
+
+**6c. Passation au junior**
+
+- [ ] Première fonctionnalité menée par le junior avec la méthode : la tâche ClickUp « Retirer le vocabulaire santé hérité ».
+- [ ] Relecture indépendante par le relecteur, puis par toi.
+
+Fini quand : le junior a fusionné une story qui atteint **Converged** sans aide sur la méthode.
 
 ## Versionnement, release et maintenance
 
