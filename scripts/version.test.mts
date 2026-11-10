@@ -34,6 +34,14 @@ describe('versions', () => {
     assert.match(after, /^ {2}version: '0\.2\.0'$/m);
   });
 
+  it('set refuses a version that is not X.Y.Z and writes no file', () => {
+    const before = VERSION_FILES.map((file) => readFileSync(join(tmp, file), 'utf8'));
+    for (const bad of ['0.2', '0.2.0-rc.1', "0.2.0'", 'v0.2.0', '']) {
+      assert.throws(() => setVersions(tmp, bad), /version invalide/);
+    }
+    assert.deepEqual(VERSION_FILES.map((file) => readFileSync(join(tmp, file), 'utf8')), before);
+  });
+
   it('names a forgotten file and its found version', () => {
     const file = join(tmp, 'packages/prototype/package.json');
     const pkg = JSON.parse(readFileSync(file, 'utf8'));

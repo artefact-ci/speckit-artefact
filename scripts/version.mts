@@ -31,6 +31,7 @@ export function checkVersions(root: string, expected: string): string[] {
 }
 
 export function setVersions(root: string, version: string): void {
+  if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error(`version invalide : « ${version} », attendu X.Y.Z (par exemple 0.2.0)`);
   for (const file of VERSION_FILES) {
     const path = join(root, file);
     const re = pattern(file);
@@ -68,7 +69,12 @@ function main(argv: string[]): number {
     return 0;
   }
   if (command === 'set') {
-    setVersions(root, version);
+    try {
+      setVersions(root, version);
+    } catch (e) {
+      console.error((e as Error).message);
+      return 1;
+    }
     return 0;
   }
   const changelog = join(root, 'CHANGELOG.md');
