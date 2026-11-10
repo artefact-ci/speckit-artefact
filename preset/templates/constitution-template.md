@@ -25,7 +25,7 @@ Every new feature ships behind a feature flag, disabled by default. Each user st
 
 ### III. Independent Review
 
-Whoever produces the work does not validate it. Before a story is handed over, an independent reviewer, in a fresh context and without the author's summary, applies `docs/agents/relecteur.md`; each blocking finding becomes a task, and a disputed one goes to a human.
+Whoever produces the work does not validate it. Before a story is handed over, an independent reviewer, in a fresh context and without the author's summary, applies `.specify/extensions/artefact-product/agents/relecteur.md`; each blocking finding becomes a task, and a disputed one goes to a human.
 
 ### IV. Living Specs
 

@@ -26,7 +26,7 @@ Produce the design level of the product, between `/speckit-prd` and `/speckit-ep
 
 The design direction belongs to the product, that is to the user. The `designer` agent drafts, the `relecteur-design` agent reviews it cold, you show both to the user, and the user decides. Nothing is committed before the user has approved it.
 
-This command works with the agents of the method (`designer`, `relecteur-design`): their instructions are in `docs/agents/`, installed with the method. When one of these files is missing, stop and tell the user: the review cannot be skipped.
+This command works with the agents of the method (`designer`, `relecteur-design`): their instructions are in `.specify/extensions/artefact-product/agents/`, installed with the `artefact-product` extension. When one of these files is missing, stop and tell the user: the review cannot be skipped.
 
 ## Steps
 
@@ -36,9 +36,9 @@ This command works with the agents of the method (`designer`, `relecteur-design`
 
 3. **Ask.** At most 5 questions, one at a time, each with a recommended answer and the options, as `/speckit-clarify` does, and only on what changes the direction: the devices, channels and conditions of use, the image the product must give (references the user likes or dislikes), an existing brand (colors, font, tone), the accessibility level. Skip what the PRD or the user input already answers.
 
-4. **Draft.** Launch the `designer` subagent in mode `cadrage`, with the paths to read, the user's answers and, when `ui` is `null`, that the project has no front end. It drafts in place: `specs/design.md` and (ui) the tokens of the theme file, with a chosen font installed (see step 7), so that the review and the preview see the real files. With an agent other than Claude Code, ask the user to run `docs/agents/designer.md` in a new session and paste its report.
+4. **Draft.** Launch the `designer` subagent in mode `cadrage`, with the paths to read, the user's answers and, when `ui` is `null`, that the project has no front end. It drafts in place: `specs/design.md` and (ui) the tokens of the theme file, with a chosen font installed (see step 7), so that the review and the preview see the real files. If your agent cannot launch it, ask the user to run `.specify/extensions/artefact-product/agents/designer.md` in a new session, with the same inputs only, and paste its report: the review is never skipped.
 
-5. **Review.** Launch the `relecteur-design` subagent in mode `cadrage`, with the paths only and, when `ui` is `null`, the fact that the project has no front end (so Visual Direction and Theme are `N/A` on purpose); never the designer's report. When it reports a blocking issue, send that report to the `designer` once for a fix, then go on: no second round. With another agent, ask the user to run `docs/agents/relecteur-design.md` in a new session, as for the designer.
+5. **Review.** Launch the `relecteur-design` subagent in mode `cadrage`, with the paths only and, when `ui` is `null`, the fact that the project has no front end (so Visual Direction and Theme are `N/A` on purpose); never the designer's report. When it reports a blocking issue, send that report to the `designer` once for a fix, then go on: no second round. If your agent cannot launch it, ask the user to run `.specify/extensions/artefact-product/agents/relecteur-design.md` in a new session, with the same inputs only, and paste its report: the review is never skipped.
 
 6. **Show, then wait.** Show the user:
    - a summary of each section of the draft `design.md`;

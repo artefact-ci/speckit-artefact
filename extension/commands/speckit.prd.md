@@ -21,15 +21,15 @@ Read `.specify/stack.yml` first: it names this project's branches, commands and 
 
 Produce the level above the features: `specs/prd.md` (the why and the what of the whole product, for people) and the `requirements` list of `specs/product.yml` (the ids that specs cite and the trace command, `commands.trace`, checks). The epics are not part of this command: `/speckit-epics` comes next.
 
-The PRD and the index belong to the product, that is to the user. You draft, as the product owner of `docs/agents/po.md`; the `relecteur-produit` agent reviews the draft cold; you show both to the user, and the user decides. Nothing is committed before the user has approved it.
+The PRD and the index belong to the product, that is to the user. You draft, as the product owner of `.specify/extensions/artefact-product/agents/po.md`; the `relecteur-produit` agent reviews the draft cold; you show both to the user, and the user decides. Nothing is committed before the user has approved it.
 
-This command works with the agents of the method (`docs/agents/po.md`, `relecteur-produit`): their instructions are in `docs/agents/`, installed with the method. When one of these files is missing, stop and tell the user: the review cannot be skipped.
+This command works with the agents of the method (`.specify/extensions/artefact-product/agents/po.md`, `relecteur-produit`): their instructions are in `.specify/extensions/artefact-product/agents/`, installed with the `artefact-product` extension. When one of these files is missing, stop and tell the user: the review cannot be skipped.
 
 ## Steps
 
 1. **Branch.** Stop if the working tree has uncommitted changes. On `branches.base` of `.specify/stack.yml` (on `branches.production`, switch to `branches.base` and pull it first; without `branches.base`, the default branch of the repository), create and switch to `docs/product-<short-name>` (`git switch -c`); on another branch, ask the user before going on.
 
-2. **Read what exists.** `docs/agents/po.md` (the standards you draft by, and the reviewer judges by), `specs/prd.md` and `specs/product.yml` if they exist, and the output of the trace command (states of the requirements and epics; without it, the `**Status**` and `**Product Requirements**` of the specs). When the user input is a path, read that document: it is the source, the PRD restates it, it does not invent beyond it.
+2. **Read what exists.** `.specify/extensions/artefact-product/agents/po.md` (the standards you draft by, and the reviewer judges by), `specs/prd.md` and `specs/product.yml` if they exist, and the output of the trace command (states of the requirements and epics; without it, the `**Status**` and `**Product Requirements**` of the specs). When the user input is a path, read that document: it is the source, the PRD restates it, it does not invent beyond it.
 
 3. **Find the gaps.** Check the source and the existing PRD against each section of the template (`.specify/scripts/bash/resolve-template.sh prd-template` prints its content, not its path): vision, users, problems, scope and non-goals, constraints, success metrics, requirements. Ask at most 5 questions, one at a time, each with a recommended answer and the options, as `/speckit-clarify` does. Ask only what changes the requirements or the scope; anything else goes to **Open Questions**.
 
@@ -37,7 +37,7 @@ This command works with the agents of the method (`docs/agents/po.md`, `relecteu
    - an id `<PREFIX>-<number>` (uppercase prefix, dash, digits: `PAY-03`), the only form the trace command accepts: the source's own id when it has that form, otherwise a short prefix per area (`ACC`, `PAY`, `ORD`) and the next free number of that prefix. When the source numbers its requirements another way (`REQ-1.2`, `F12`), keep the mapping in the PRD, after the title: `**PAY-03** Pay by mobile money (source: REQ-1.2): …`;
    - a short title, the same in the PRD and in the index;
    - no technology, no screen, no data model: those belong to `/speckit-plan`;
-   - the other standards of `docs/agents/po.md` (testable, one capability, one actor, the rule that matters).
+   - the other standards of `.specify/extensions/artefact-product/agents/po.md` (testable, one capability, one actor, the rule that matters).
 
    Then check the coverage: every problem of the PRD is answered by at least one requirement. A problem left without one is either a missing requirement or a constraint (`order in the evening, delivered the next day`): say which in the draft, do not drop it silently.
 
@@ -64,7 +64,7 @@ This command works with the agents of the method (`docs/agents/po.md`, `relecteu
          retired: replaced by PAY-05 (payment on pickup only)
      ```
 
-6. **Review.** Launch the `relecteur-produit` subagent in mode `prd`, with the paths only: `specs/prd.md`, `specs/product.yml`, and the source (the path of the requirements document, or the user's own words from the user input, verbatim, never your summary). Never pass your notes nor the user's answers. When it reports a blocking issue, fix the draft once, or keep your version with a proof (the source line, the user's answer); then go on: no second round. With an agent other than Claude Code, ask the user to run `docs/agents/relecteur-produit.md` in a new session and paste its report.
+6. **Review.** Launch the `relecteur-produit` subagent in mode `prd`, with the paths only: `specs/prd.md`, `specs/product.yml`, and the source (the path of the requirements document, or the user's own words from the user input, verbatim, never your summary). Never pass your notes nor the user's answers. When it reports a blocking issue, fix the draft once, or keep your version with a proof (the source line, the user's answer); then go on: no second round. If your agent cannot launch it, ask the user to run `.specify/extensions/artefact-product/agents/relecteur-produit.md` in a new session, with the same inputs only, and paste its report: the review is never skipped.
 
 7. **Show the draft, then wait.** Show the user the requirement table (id, title, area, source id, and for a revision: added, changed, retired), a summary of the PRD sections, and in a list of its own what the PRD leaves out of the source and why (a technology choice, a vendor not signed, a vague wish turned into a constraint or an open question). Nothing from the source disappears without the user seeing it. Then the reviewer's verdict: the issues you fixed, and those left or disputed, with their proof. Commit nothing until the user approves; apply their changes to the files and show again if needed. When the user declines, restore the draft: `git checkout -- specs/prd.md specs/product.yml` for the files already tracked, and delete those this run created.
 

@@ -39,6 +39,8 @@ Ce sont aussi les standards du relecteur design.
 
 Tu écris le brouillon directement dans les fichiers, pour que le relecteur et l'aperçu (`ui.preview`) voient le vrai rendu ; la commande les restaure si l'utilisateur refuse.
 
+Ne commite rien : la commande qui t'a lancé s'en charge après l'accord de l'utilisateur.
+
 - Un brouillon de `specs/design.md`, en anglais, depuis le gabarit (`.specify/scripts/bash/resolve-template.sh design-template`), qui découle du PRD : utilisateurs et contextes d'usage, principes, ton, accessibilité, direction visuelle.
 - Les nouvelles valeurs des tokens de `:root` et `.dark` du fichier `ui.theme`, en OKLCH, par paires (`--primary` et `--primary-foreground`) dont le contraste atteint 4,5:1 y compris dans les états dérivés qu'utilisent les composants (survol `bg-primary/90`, alpha composé en sRGB sur le fond), avec `--ring` et `--input` à 3:1 au moins sur `--background`, et le contraste calculé de chacun ; `--radius` ; une police s'il en faut une, disponible en paquet `@fontsource/*` ou `@fontsource-variable/*`, installée comme le disent l'étape « Finalize » de `/speckit-design` et les fichiers `docs` de `.specify/stack.yml`.
 - Rien d'autre dans le code : ce qui demanderait plus (mode sombre activé, densité au-delà de `--spacing`) va dans la section `Deferred` de `design.md`.
