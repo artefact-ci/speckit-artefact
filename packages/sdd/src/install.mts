@@ -1,10 +1,12 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { basename, dirname, join } from 'node:path';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { basename, join } from 'node:path';
 import { agentFiles, readAgentSpecs, readIntegrations, skippedAgents } from './agents.mts';
+import { compareVersions, readInstalled, writeInstalled, type Installed } from './artefact.mts';
 import { baseConstitution, isBlankConstitution } from './constitution.mts';
 import { applyGitHooks } from './hooks.mts';
 import { legacyAgents } from './legacy.mts';
 import { SetupError } from './errors.mts';
+import { writeIfChanged } from './fs.mts';
 import { componentArgs, zipUrl, type ComponentId, type Source } from './source.mts';
 import { hasUv, specify, SpecifyError, type Run } from './specify.mts';
 import { deduceStack, defaultExamplesDir, type Branches, type Deduction } from './stack.mts';
@@ -30,23 +32,17 @@ export type Report = {
   constitution: 'written' | 'kept';
   legacy: ReturnType<typeof legacyAgents>;
   dirty: boolean;
+  /** `installed` est null quand `init` n'a pas écrit `.specify/artefact.json` (version inconnue). */
+  version: { installed: Installed | null; previous: Installed | null; downgrade: boolean };
 };
 
-export { SetupError };
+export { SetupError, writeIfChanged };
 
 const UV_MISSING = 'uv manque : https://docs.astral.sh/uv/getting-started/installation/';
 const CONSTITUTION = '.specify/memory/constitution.md';
 const STACK = '.specify/stack.yml';
 const EXTENSIONS_YML = '.specify/extensions.yml';
 const PRESET_TEMPLATE = '.specify/presets/artefact-sdd/templates/constitution-template.md';
-
-/** Écrit `content` seulement s'il diffère du fichier (crée les dossiers) ; vrai si écrit. */
-export function writeIfChanged(path: string, content: string): boolean {
-  if (existsSync(path) && readFileSync(path, 'utf8') === content) return false;
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, content);
-  return true;
-}
 
 type Kind = 'extensions' | 'presets';
 
@@ -66,7 +62,7 @@ function registered(root: string, kind: Kind, id: string): boolean {
 }
 
 type Component = {
-  id: string;
+  id: 'git' | ComponentId;
   kind: Kind;
   install: (source: Source, present: boolean) => { args: string[]; input?: string };
 };
@@ -107,7 +103,7 @@ async function isDirty(o: Options): Promise<boolean> {
   return ((await git(o, ['status', '--porcelain'])) ?? '').trim() !== '';
 }
 
-type Common = Omit<Report, 'mode' | 'stack' | 'constitution' | 'dirty'>;
+type Common = Omit<Report, 'mode' | 'stack' | 'constitution' | 'dirty' | 'version'>;
 
 /** Étapes 3 à 6 communes à init et update, puis le relevé des anciens agents. */
 async function common(o: Options, mode: 'init' | 'update'): Promise<Common> {
@@ -127,8 +123,8 @@ async function common(o: Options, mode: 'init' | 'update'): Promise<Common> {
     try {
       await specify(o.runner, root, args, input);
     } catch (e) {
-      if (o.source.kind === 'release' && e instanceof SpecifyError) {
-        const url = zipUrl(o.source, c.id as ComponentId);
+      if (o.source.kind === 'release' && c.id !== 'git' && e instanceof SpecifyError) {
+        const url = zipUrl(o.source, c.id);
         throw new SetupError(`impossible d'installer ${c.id} ${o.source.version} depuis ${url} : ${e.message}`);
       }
       throw e;
@@ -178,6 +174,15 @@ async function common(o: Options, mode: 'init' | 'update'): Promise<Common> {
 export async function init(o: Options): Promise<Report> {
   const { root } = o;
   if (!(await hasUv(o.runner))) throw new SetupError(UV_MISSING);
+
+  // Le garde passe avant toute commande Spec Kit, migration du boilerplate comprise.
+  const previous = readInstalled(root);
+  if (previous && previous.version !== o.source.version) {
+    throw new SetupError(
+      `Spec Kit a déjà la méthode en ${previous.version} (.specify/artefact.json) ; cet installeur installe ${o.source.version} : lance update pour changer de version`,
+    );
+  }
+  const noneInstalled = !registered(root, 'presets', 'artefact-sdd') && !registered(root, 'extensions', 'artefact-product');
   const dirty = await isDirty(o);
 
   if (!existsSync(join(root, '.specify'))) {
@@ -189,6 +194,10 @@ export async function init(o: Options): Promise<Report> {
   }
 
   const done = await common(o, 'init');
+
+  const current: Installed = { version: o.source.version, source: o.source.kind };
+  const record = previous !== null || noneInstalled;
+  if (record) writeInstalled(root, current);
 
   let stack: Deduction | undefined;
   if (!existsSync(join(root, STACK))) {
@@ -207,13 +216,17 @@ export async function init(o: Options): Promise<Report> {
     constitution = 'written';
   }
 
-  return { mode: 'init', ...done, stack, constitution, dirty };
+  return { mode: 'init', ...done, stack, constitution, dirty, version: { installed: record ? current : null, previous, downgrade: false } };
 }
 
 export async function update(o: Options): Promise<Report> {
   if (!(await hasUv(o.runner))) throw new SetupError(UV_MISSING);
   if (!existsSync(join(o.root, '.specify'))) throw new SetupError('.specify/ absent : lance init');
+  const previous = readInstalled(o.root);
   const dirty = await isDirty(o);
   const done = await common(o, 'update');
-  return { mode: 'update', ...done, constitution: 'kept', dirty };
+  const current: Installed = { version: o.source.version, source: o.source.kind };
+  writeInstalled(o.root, current);
+  const downgrade = previous !== null && compareVersions(previous.version, current.version) > 0;
+  return { mode: 'update', ...done, constitution: 'kept', dirty, version: { installed: current, previous, downgrade } };
 }

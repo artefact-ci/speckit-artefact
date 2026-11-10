@@ -90,9 +90,35 @@ const base: Report = {
   constitution: 'kept',
   legacy: { files: [], mentions: [] },
   dirty: false,
+  version: { installed: { version: '0.2.0', source: 'release' }, previous: null, downgrade: false },
 };
 
 describe('formatReport', () => {
+  it('prints the installed version, for init', () => {
+    assert.ok(formatReport(base).split('\n').includes('  Version : 0.2.0 (release)'));
+  });
+
+  it('prints previous and new version, for update', () => {
+    const prev = { version: '0.1.1', source: 'release' } as const;
+    const text = formatReport({ ...base, mode: 'update', version: { ...base.version, previous: prev } });
+    assert.ok(text.split('\n').includes('  Version : 0.1.1 → 0.2.0 (release)'));
+    const unknown = formatReport({ ...base, mode: 'update' });
+    assert.ok(unknown.split('\n').includes('  Version : 0.2.0 (release), version précédente inconnue'));
+  });
+
+  it('says the installed version is unknown', () => {
+    const text = formatReport({ ...base, version: { installed: null, previous: null, downgrade: false } });
+    assert.ok(text.split('\n').includes('  Version installée inconnue : lance update pour aligner tous les composants'));
+    assert.doesNotMatch(text, /  Version : /);
+  });
+
+  it('warns about a downgrade', () => {
+    const prev = { version: '0.3.0', source: 'release' } as const;
+    const text = formatReport({ ...base, mode: 'update', version: { installed: base.version.installed, previous: prev, downgrade: true } });
+    assert.ok(text.split('\n').includes("  Attention : 0.3.0 était plus récente que 0.2.0, l'installeur a remis 0.2.0"));
+    assert.doesNotMatch(formatReport(base), /était plus récente/);
+  });
+
   it('asks to carry a modified legacy agent over to the docs', () => {
     const text = formatReport({
       ...base,

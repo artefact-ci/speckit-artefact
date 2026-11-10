@@ -7,6 +7,7 @@ import {
   mkdtempSync,
   readdirSync,
   readFileSync,
+  rmSync,
   statSync,
   writeFileSync,
 } from 'node:fs';
@@ -16,7 +17,7 @@ import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { init, SetupError, update, type Options } from './install.mts';
 import { releaseSource, devSource, type Source } from './source.mts';
-import { run, type Run } from './specify.mts';
+import { run, SpecifyError, type Run } from './specify.mts';
 
 const source = fileURLToPath(new URL('../../../', import.meta.url));
 const dev: Source = devSource(source);
@@ -349,6 +350,125 @@ describe('install', () => {
     assert.deepEqual(after.get('.specify/memory/constitution.md'), before.get('.specify/memory/constitution.md'));
     // extensions.yml réécrit à 18 hooks par la réinstallation, puis ramené aux 10.
     assert.ok(!read(root, '.specify/extensions.yml').includes('speckit.git.initialize'));
+  });
+
+  it('first init writes artefact.json with the source version', async () => {
+    const root = tempRepo();
+    const { runner } = fakeRunner();
+    const report = await init(options(root, runner));
+    assert.deepEqual(JSON.parse(read(root, '.specify/artefact.json')), { version: dev.version, source: 'dev' });
+    assert.equal(read(root, '.specify/artefact.json'), `${JSON.stringify({ version: dev.version, source: 'dev' }, null, 2)}\n`);
+    assert.deepEqual(report.version, { installed: { version: dev.version, source: 'dev' }, previous: null, downgrade: false });
+  });
+
+  it('second init with the same version leaves artefact.json untouched', async () => {
+    const root = tempRepo();
+    const { runner } = fakeRunner();
+    await init(options(root, runner));
+    const before = snapshot(root).get('.specify/artefact.json');
+    const report = await init(options(root, runner));
+    assert.deepEqual(snapshot(root).get('.specify/artefact.json'), before);
+    assert.deepEqual(report.version.previous, { version: dev.version, source: 'dev' });
+    assert.equal(report.version.downgrade, false);
+  });
+
+  it('init refuses another version and runs no specify command', async () => {
+    const root = tempRepo();
+    const { runner, calls } = fakeRunner();
+    await init(options(root, runner));
+    calls.length = 0;
+    register(root, 'presets', 'boilerplate', true);
+    const other: Source = { kind: 'dev', version: '9.9.9', dir: source };
+    await assert.rejects(init(options(root, runner, { source: other })), (e: unknown) => {
+      assert.ok(e instanceof SetupError);
+      assert.equal(
+        e.message,
+        `Spec Kit a déjà la méthode en ${dev.version} (.specify/artefact.json) ; cet installeur installe 9.9.9 : lance update pour changer de version`,
+      );
+      return true;
+    });
+    assert.deepEqual(calls, []);
+    assert.ok(isRegistered(root, 'presets', 'boilerplate'));
+  });
+
+  it('init on a phase 4 install installs nothing new and writes no artefact.json', async () => {
+    const root = tempRepo();
+    existingSpecify(root);
+    register(root, 'extensions', 'git', true);
+    register(root, 'extensions', 'artefact-product', true);
+    register(root, 'presets', 'artefact-sdd', true);
+    mkdirSync(join(root, '.specify/presets/artefact-sdd/templates'), { recursive: true });
+    cpSync(
+      join(source, 'preset/templates/constitution-template.md'),
+      join(root, '.specify/presets/artefact-sdd/templates/constitution-template.md'),
+    );
+    cpSync(join(source, 'extension/agents'), join(root, '.specify/extensions/artefact-product/agents'), { recursive: true });
+    const { runner, calls } = fakeRunner();
+    const report = await init(options(root, runner));
+    assert.deepEqual(calls, []);
+    assert.deepEqual(report.installed, []);
+    assert.ok(!existsSync(join(root, '.specify/artefact.json')));
+    assert.deepEqual(report.version, { installed: null, previous: null, downgrade: false });
+  });
+
+  it('update writes the new version and reports the previous one', async () => {
+    const root = tempRepo();
+    const { runner } = fakeRunner();
+    await init(options(root, runner));
+    const next: Source = { kind: 'dev', version: '9.9.9', dir: source };
+    const report = await update(options(root, runner, { source: next }));
+    assert.deepEqual(JSON.parse(read(root, '.specify/artefact.json')), { version: '9.9.9', source: 'dev' });
+    assert.deepEqual(report.version, {
+      installed: { version: '9.9.9', source: 'dev' },
+      previous: { version: dev.version, source: 'dev' },
+      downgrade: false,
+    });
+  });
+
+  it('update without artefact.json writes it and knows no previous version', async () => {
+    const root = tempRepo();
+    const { runner } = fakeRunner();
+    await init(options(root, runner));
+    rmSync(join(root, '.specify/artefact.json'));
+    const report = await update(options(root, runner));
+    assert.equal(report.version.previous, null);
+    assert.deepEqual(report.version.installed, { version: dev.version, source: 'dev' });
+    assert.ok(existsSync(join(root, '.specify/artefact.json')));
+  });
+
+  it('update to an older version warns and goes on', async () => {
+    const root = tempRepo();
+    const { runner } = fakeRunner();
+    await init(options(root, runner, { source: { kind: 'dev', version: '9.9.9', dir: source } }));
+    const report = await update(options(root, runner));
+    assert.equal(report.version.downgrade, true);
+    assert.deepEqual(report.installed, ['git', 'artefact-product', 'artefact-sdd']);
+    assert.deepEqual(JSON.parse(read(root, '.specify/artefact.json')), { version: dev.version, source: 'dev' });
+  });
+
+  it('a malformed artefact.json stops init and update before any specify command', async () => {
+    const root = tempRepo();
+    existingSpecify(root);
+    writeFileSync(join(root, '.specify/artefact.json'), '{"version":1}');
+    const { runner, calls } = fakeRunner();
+    for (const f of [init, update]) {
+      await assert.rejects(f(options(root, runner)), (e: unknown) => e instanceof SetupError && e.message.includes('.specify/artefact.json'));
+    }
+    assert.deepEqual(calls, []);
+    assert.equal(read(root, '.specify/artefact.json'), '{"version":1}');
+  });
+
+  it('a failing git extension keeps its SpecifyError in release mode', async () => {
+    const root = tempRepo();
+    const { runner } = fakeRunner();
+    const failGit: Run = async (cmd, args, o) =>
+      cmd === 'uvx' && args.includes('git') ? { code: 1, stdout: 'Error: git boom', stderr: '' } : runner(cmd, args, o);
+    const release = releaseSource('0.2.0', { SDD_RELEASE_BASE_URL: releaseUrl });
+    await assert.rejects(init(options(root, failGit, { source: release })), (e: unknown) => {
+      assert.ok(e instanceof SpecifyError, String(e));
+      assert.ok(!/git-0\.2\.0\.zip/.test((e as Error).message));
+      return true;
+    });
   });
 
   it('update without .specify fails', async () => {

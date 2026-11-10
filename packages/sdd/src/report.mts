@@ -21,6 +21,18 @@ export function formatReport(r: Report): string {
     out.push(`  ${r.mode === 'update' ? 'Réinstallé / mis à jour' : 'Installé'} : ${list(r.installed)}`);
   }
   if (r.skipped.length > 0) out.push(`  Déjà installé : ${list(r.skipped)}`);
+  const { installed, previous, downgrade } = r.version;
+  if (installed === null) {
+    out.push('  Version installée inconnue : lance update pour aligner tous les composants');
+  } else {
+    const now = `${installed.version} (${installed.source})`;
+    if (r.mode === 'init') out.push(`  Version : ${now}`);
+    else if (previous) out.push(`  Version : ${previous.version} → ${now}`);
+    else out.push(`  Version : ${now}, version précédente inconnue`);
+    if (downgrade && previous) {
+      out.push(`  Attention : ${previous.version} était plus récente que ${installed.version}, l'installeur a remis ${installed.version}`);
+    }
+  }
 
   if (r.migrated) {
     out.push(
