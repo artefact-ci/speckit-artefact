@@ -98,3 +98,25 @@ test('keeps hooks of other extensions and comments', () => {
   assert.deepEqual(doc.hooks['after_implement']?.map((h) => h.extension), ['git']);
   assert.equal(applyGitHooks(out), out);
 });
+
+test('input without hooks: gets the header once and is idempotent', () => {
+  const out = applyGitHooks('installed:\n- git\n');
+  assert.equal(out.match(/Wired on purpose/g)?.length, 1);
+  assert.match(out, /reapplies them\.\nhooks:/);
+  assert.equal(applyGitHooks(out), out);
+});
+
+test('empty or whitespace-only input is an empty document', () => {
+  for (const input of ['', '  \n\n']) {
+    const out = applyGitHooks(input);
+    const doc = parse(out) as Doc;
+    assert.equal(doc.settings['auto_execute_hooks'], true);
+    assert.equal(Object.keys(doc.hooks).length, 10);
+    assert.equal(out.match(/Wired on purpose/g)?.length, 1);
+    assert.equal(applyGitHooks(out), out);
+  }
+});
+
+test('throws on invalid YAML', () => {
+  assert.throws(() => applyGitHooks('a: [unclosed\n'));
+});

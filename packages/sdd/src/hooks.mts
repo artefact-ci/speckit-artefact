@@ -56,10 +56,12 @@ const isGit = (item: unknown): boolean =>
  */
 export function applyGitHooks(extensionsYml: string): string {
   const doc = parseDocument(extensionsYml);
+  if (doc.errors.length > 0) throw new Error(`extensions.yml invalide : ${doc.errors[0]?.message}`);
+  if (doc.contents === null) doc.contents = doc.createNode({}) as YAMLMap.Parsed;
   if (!isMap(doc.contents)) throw new Error('extensions.yml invalide : un mapping est attendu à la racine');
   doc.setIn(['settings', 'auto_execute_hooks'], true);
 
-  if (!isMap(doc.get('hooks'))) doc.set('hooks', doc.createNode({}));
+  if (!isMap(doc.get('hooks'))) doc.set(doc.createNode('hooks'), doc.createNode({}));
   const hooks = doc.get('hooks') as YAMLMap;
 
   for (const pair of [...hooks.items]) {
