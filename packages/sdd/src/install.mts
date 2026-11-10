@@ -4,11 +4,13 @@ import { agentFiles, readAgentSpecs, readIntegrations, skippedAgents } from './a
 import { baseConstitution, isBlankConstitution } from './constitution.mts';
 import { applyGitHooks } from './hooks.mts';
 import { legacyAgents } from './legacy.mts';
-import { hasUv, specify, type Run } from './specify.mts';
+import { SetupError } from './errors.mts';
+import { componentArgs, zipUrl, type ComponentId, type Source } from './source.mts';
+import { hasUv, specify, SpecifyError, type Run } from './specify.mts';
 import { deduceStack, defaultExamplesDir, type Branches, type Deduction } from './stack.mts';
 
-/** source : clone de speckit-artefact (phase 4). */
-export type Options = { root: string; source: string; integration?: string; toolsVersion: string; runner: Run };
+/** source : release GitHub ou clone de speckit-artefact (--dev). */
+export type Options = { root: string; source: Source; integration?: string; toolsVersion: string; runner: Run };
 
 export type Report = {
   mode: 'init' | 'update';
@@ -30,12 +32,7 @@ export type Report = {
   dirty: boolean;
 };
 
-export class SetupError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'SetupError';
-  }
-}
+export { SetupError };
 
 const UV_MISSING = 'uv manque : https://docs.astral.sh/uv/getting-started/installation/';
 const CONSTITUTION = '.specify/memory/constitution.md';
@@ -68,22 +65,20 @@ function registered(root: string, kind: Kind, id: string): boolean {
   return typeof map === 'object' && map !== null && id in map;
 }
 
-type Component = { id: string; kind: Kind; add: (source: string) => string[]; update: (source: string) => string[] };
+type Component = {
+  id: string;
+  kind: Kind;
+  install: (source: Source, present: boolean) => { args: string[]; input?: string };
+};
 
 const COMPONENTS: Component[] = [
-  { id: 'git', kind: 'extensions', add: () => ['extension', 'add', 'git'], update: () => ['extension', 'add', 'git', '--force'] },
   {
-    id: 'artefact-product',
+    id: 'git',
     kind: 'extensions',
-    add: (s) => ['extension', 'add', '--dev', join(s, 'extension')],
-    update: (s) => ['extension', 'add', '--dev', join(s, 'extension'), '--force'],
+    install: (_s, present) => ({ args: ['extension', 'add', 'git', ...(present ? ['--force'] : [])] }),
   },
-  {
-    id: 'artefact-sdd',
-    kind: 'presets',
-    add: (s) => ['preset', 'add', '--dev', join(s, 'preset')],
-    update: (s) => ['preset', 'update', 'artefact-sdd', '--dev', join(s, 'preset')],
-  },
+  { id: 'artefact-product', kind: 'extensions', install: (s, present) => componentArgs(s, 'artefact-product', present) },
+  { id: 'artefact-sdd', kind: 'presets', install: (s, present) => componentArgs(s, 'artefact-sdd', present) },
 ];
 
 /** stdout d'une commande git, ou null si elle échoue (pas un dépôt, pas de commit…). */
@@ -128,7 +123,16 @@ async function common(o: Options, mode: 'init' | 'update'): Promise<Common> {
       skipped.push(c.id);
       continue;
     }
-    await specify(o.runner, root, present ? c.update(o.source) : c.add(o.source));
+    const { args, input } = c.install(o.source, present);
+    try {
+      await specify(o.runner, root, args, input);
+    } catch (e) {
+      if (o.source.kind === 'release' && e instanceof SpecifyError) {
+        const url = zipUrl(o.source, c.id as ComponentId);
+        throw new SetupError(`impossible d'installer ${c.id} ${o.source.version} depuis ${url} : ${e.message}`);
+      }
+      throw e;
+    }
     installed.push(c.id);
   }
 
