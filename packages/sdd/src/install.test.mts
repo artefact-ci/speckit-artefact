@@ -228,6 +228,23 @@ describe('install', () => {
     });
   });
 
+  it('a failing preset update --from during update names the URL and says to rerun', async () => {
+    const root = tempRepo();
+    const { runner } = fakeRunner();
+    const release = releaseSource('0.2.0', { SDD_RELEASE_BASE_URL: `${releaseUrl}/` });
+    await init(options(root, runner, { source: release }));
+    const failing: Run = async (cmd, args, o) =>
+      cmd === 'uvx' && args.includes('preset') && args.includes('update') && args.includes('--from')
+        ? { code: 1, stdout: 'Error: download failed', stderr: '' }
+        : runner(cmd, args, o);
+    await assert.rejects(update(options(root, failing, { source: release })), (e: Error) => {
+      assert.ok(e instanceof SetupError, String(e));
+      assert.match(e.message, /impossible d'installer artefact-sdd 0\.2\.0 depuis http:\/\/localhost:1\/artefact-sdd-0\.2\.0\.zip/);
+      assert.match(e.message, /relance la même commande une fois le réseau rétabli$/);
+      return true;
+    });
+  });
+
   it('init in a git repo without commit forces (.git counts) and finds no branch', async () => {
     const root = tempRepo(false);
     const { runner, calls } = fakeRunner();

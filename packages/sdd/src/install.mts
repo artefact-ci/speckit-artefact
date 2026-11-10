@@ -125,7 +125,9 @@ async function common(o: Options, mode: 'init' | 'update'): Promise<Common> {
     } catch (e) {
       if (o.source.kind === 'release' && c.id !== 'git' && e instanceof SpecifyError) {
         const url = zipUrl(o.source, c.id);
-        throw new SetupError(`impossible d'installer ${c.id} ${o.source.version} depuis ${url} : ${e.message}`);
+        throw new SetupError(
+          `impossible d'installer ${c.id} ${o.source.version} depuis ${url} : ${e.message} ; relance la même commande une fois le réseau rétabli`,
+        );
       }
       throw e;
     }
