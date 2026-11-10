@@ -186,6 +186,7 @@ describe('artefact-sdd end to end, real Spec Kit', { skip: process.env['SDD_E2E'
       assert.match(first, /Installé : git, artefact-product, artefact-sdd/);
       assert.ok(first.includes(`Version : ${installerVersion} (release)`), first);
       assert.deepEqual(json(join(repo, '.specify', 'artefact.json')), { version: installerVersion, source: 'release' });
+      assert.equal(componentVersion, installerVersion, 'one version for the whole repository');
       assert.equal(json(join(repo, '.specify', 'presets', '.registry')).presets['artefact-sdd'].version, componentVersion);
       assert.equal(json(join(repo, '.specify', 'extensions', '.registry')).extensions['artefact-product'].version, componentVersion);
       commit(repo, 'artefact-sdd');

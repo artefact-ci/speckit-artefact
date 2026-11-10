@@ -66,7 +66,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '24.22.0' # exact: the zips' deflate output depends on the zlib bundled with Node
 
       - uses: actions/download-artifact@v4
         with:

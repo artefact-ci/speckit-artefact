@@ -21,11 +21,19 @@ Phases 1 à 3 terminées, phase 4 faite sauf la vérification dans l'app Antigra
 
 - `packages/spec-trace` et `packages/prototype` sont les outils `@artefact-ci/spec-trace` (matrice scénarios → tests) et `@artefact-ci/prototype` (maquettes HTML), sortis du boilerplate. Ils lisent aussi `stack.yml` (`tests.globs`, `ui.theme`). `pnpm install && pnpm test` à la racine les teste.
 
-- `packages/sdd` est l'installeur `@artefact-ci/sdd` (`artefact-sdd init|update --source <clone>`). Il installe Spec Kit, l'extension git, l'extension et le preset, réapplique les hooks git, génère les fichiers d'agent de l'outil du projet (Claude Code, Antigravity), déduit `stack.yml` et écrit la constitution de base. Voir [`packages/sdd/README.md`](packages/sdd/README.md). La source « release GitHub » arrive en phase 5 : d'ici là, `--source` pointe sur un clone de ce dépôt.
+- `packages/sdd` est l'installeur `@artefact-ci/sdd` (`artefact-sdd init|update --source <clone>`). Il installe Spec Kit, l'extension git, l'extension et le preset, réapplique les hooks git, génère les fichiers d'agent de l'outil du projet (Claude Code, Antigravity), déduit `stack.yml` et écrit la constitution de base. Voir [`packages/sdd/README.md`](packages/sdd/README.md).  Sans `--source`, il installe les zips de la release GitHub de sa propre version ; avec `--source`, il installe un clone en `--dev`.
 
 ## Installer sur un projet
 
 Il faut [uv](https://docs.astral.sh/uv/) et Node 24. Dans le dépôt du projet :
+
+```sh
+npx @artefact-ci/sdd@0.2.0 init
+```
+
+L'installeur télécharge les zips du preset et de l'extension depuis la release `v0.2.0` de ce dépôt et écrit la version installée dans `.specify/artefact.json`. La procédure de release est dans [`docs/release.md`](docs/release.md).
+
+Pour installer depuis un clone de ce dépôt (développement) :
 
 ```sh
 pnpm --filter @artefact-ci/sdd build   # dans ce clone, une fois

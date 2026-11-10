@@ -140,11 +140,11 @@ Fini quand : `init` lancé deux fois de suite laisse le dépôt identique (`git 
 
 ### Phase 5 — Release et publication
 
-- [ ] CI de release sur tag `vX.Y.Z` : zips du preset et de l'extension attachés à la release GitHub, publication des paquets npm.
-- [ ] L'installeur porte les URL du tag qu'il installe et écrit la version installée dans `.specify/artefact.json`.
-- [ ] Dans la CI de chaque PR : `specify preset add --dev` et `specify extension add --dev` sur un projet vierge.
+- [x] CI de release sur tag `vX.Y.Z` : zips du preset et de l'extension attachés à la release GitHub, publication des paquets npm.
+- [x] L'installeur porte les URL du tag qu'il installe et écrit la version installée dans `.specify/artefact.json`.
+- [x] Dans la CI de chaque PR : `specify preset add --dev` et `specify extension add --dev` sur un projet vierge.
 
-Fini quand : `npx @artefact-ci/sdd@1.0.0 init` installe la version taguée sur un projet vierge, sans catalogue.
+Fini quand : `npx @artefact-ci/sdd@0.2.0 init` installe la version taguée sur un projet vierge, sans catalogue (la 1.0.0 viendra après la phase 6). Code fait ; la vérification finale attend le premier tag `v0.2.0` (étapes manuelles dans [`docs/release.md`](release.md)).
 
 ## Phase 6 — Validation
 
