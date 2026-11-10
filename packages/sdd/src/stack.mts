@@ -14,7 +14,7 @@ type Example = {
   tests?: { globs?: string[]; needs?: string[] };
   shared?: string[];
   ui?: { components?: string; storybook?: boolean; theme?: string; preview?: string } | null;
-  e2e?: { dir: string; command?: string; setup?: string } | null;
+  e2e?: { dir: string; command?: string; fresh?: string; setup?: string } | null;
 };
 
 const TODO = '# à compléter';
@@ -155,6 +155,9 @@ export function deduceStack(
     if (shared.length > 0) guessed.add('shared');
   }
 
+  // flags : livrer derrière un feature flag est une décision de l'équipe, jamais devinée.
+  put(0, 'flags', undefined);
+
   // ui : objet dès qu'un front est détecté
   guessed.add('ui');
   if (kind === 'nx' || kind === 'nextjs') {
@@ -174,7 +177,8 @@ export function deduceStack(
   if (ex.e2e && has(ex.e2e.dir)) {
     lines.push('e2e:');
     put(2, 'e2e.dir', scalar(ex.e2e.dir));
-    if (ex.e2e.command) put(2, 'e2e.command', scalar(swap(ex.e2e.command)), kind === 'nx' ? '# --skip-nx-cache avant Converged' : undefined);
+    if (ex.e2e.command) put(2, 'e2e.command', scalar(swap(ex.e2e.command)));
+    if (ex.e2e.fresh) put(2, 'e2e.fresh', scalar(swap(ex.e2e.fresh)));
     if (ex.e2e.setup) put(2, 'e2e.setup', scalar(swap(ex.e2e.setup)));
   } else {
     lines.push('e2e: null');

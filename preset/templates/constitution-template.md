@@ -19,9 +19,9 @@ No production code is written without a test that failed first, for the expected
 [TEST_LEVELS]
 <!-- Example: the test levels of the project, from the lowest to browser journeys, with where each lives. -->
 
-### II. Flagged Increments
+### II. Incremental Delivery
 
-Every new feature ships behind a feature flag, disabled by default. Each user story is delivered in its own pull request.
+Each user story is delivered in its own pull request. When `flags` is `true` in `.specify/stack.yml`, every new feature also ships behind a feature flag, disabled by default, declared and guarded as the convention files say.
 
 ### III. Independent Review
 

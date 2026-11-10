@@ -20,6 +20,7 @@ Exemples complets dans [`examples/stack/`](../examples/stack/) : `nx.yml` (nx-re
 | `tests.globs` | liste de motifs | fichiers de tests où chercher les ids de scénario | converge, plan, tasks, `@artefact-ci/spec-trace` | spec-trace : `**/*.spec.ts` et `**/*.spec.tsx` |
 | `tests.needs` | liste | ce que les tests d'intégration et les parcours exigent (`docker`…) | implement | rien de particulier |
 | `shared` | liste de chemins | code partagé : après une tâche qui le touche, `commands.affected` tourne tout de suite | implement, tasks, analyze | pas de vérification anticipée |
+| `flags` | booléen | toute nouvelle fonctionnalité est livrée derrière un feature flag désactivé par défaut (principe II du socle) ; comment déclarer et garder un flag est dans les fichiers de `docs` | constitution, plan, tasks, relecteur | `false` : pas de flag, le plan n'a pas de section Feature Flag |
 | `ui` | objet ou `null` | front du projet ; `null` : pas de front, `/speckit-design` n'écrit que la partie non visuelle et `/speckit-prototype` s'arrête | specify, plan, tasks, design, prototype | `null` |
 | `ui.components` | chemin | bibliothèque de composants où le plan ajoute ce que la maquette dessine | plan, tasks, prototype | — |
 | `ui.storybook` | booléen | un composant ajouté vient avec sa story | plan, tasks | `false` |
@@ -29,6 +30,7 @@ Exemples complets dans [`examples/stack/`](../examples/stack/) : `nx.yml` (nx-re
 | `e2e` | objet ou `null` | parcours navigateur ; `null` : pas de parcours | implement, tasks | `null` |
 | `e2e.dir` | chemin | où vivent les parcours | implement, tasks | — |
 | `e2e.command` | commande | lancer les parcours (un seul, ou ceux que le changement touche) ; au checkpoint, après `commands.affected` | implement, tasks, converge | — |
+| `e2e.fresh` | commande | `e2e.command` sans cache, avant **Converged** | converge | `e2e.command` |
 | `e2e.setup` | commande | à lancer une fois avant le premier parcours | implement | — |
 
 ## Ce qui n'y va pas

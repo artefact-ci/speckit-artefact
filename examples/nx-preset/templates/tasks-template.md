@@ -8,7 +8,7 @@ description: 'Task list template for feature implementation'
 
 **Prerequisites**: plan.md (required), spec.md (required for user stories), research.md, data-model.md, contracts/
 
-**Tests**: MANDATORY. Every acceptance scenario of spec.md has a test task, listed BEFORE the implementation it drives (constitution VIII, Test-First). Use the levels and files from the plan's Test Strategy. The title of each test starts with its scenario id, e.g. `it('[###]-US1-AS2: refuses …')`, so that `pnpm -s spec:trace` can map scenarios to tests.
+**Tests**: MANDATORY. Every acceptance scenario of spec.md has a test task, listed BEFORE the implementation it drives (constitution I, Test-First). Use the levels and files from the plan's Test Strategy. The title of each test starts with its scenario id, e.g. `it('[###]-US1-AS2: refuses …')`, so that `pnpm -s spec:trace` can map scenarios to tests.
 
 **Organization**: Tasks are grouped by user story. Each user story is delivered in its own pull request.
 
@@ -23,9 +23,23 @@ description: 'Task list template for feature implementation'
 - API domain: a new domain is created with `pnpm new:domain <domain>` (lib, facade, module registered in the AppModule; first task of the first phase that needs it: Foundational when every story does), never by copying another domain's configuration; `libs/api/<domain>/src/lib/{domain,application,infra,http}/`, use cases in `application/use-cases/<use-case>.ts`, one Drizzle schema per domain in `infra/<domain>.schema.ts`, public facade in `libs/api/<domain>/src/index.ts`
 - Shared contracts and events: `libs/shared/contracts/src/lib/<domain>/`
 - API tests: unit tests next to the code (`domain/<entity>.spec.ts`, `application/<domain>.application.spec.ts` with fakes in `application/testing/`); integration tests `*.int.spec.ts`; API end-to-end `apps/api/tests/<domain>.e2e.spec.ts`
-- Front end (see `apps/web/AGENTS.md`, `libs/web/AGENTS.md`): screens and logic in a feature lib `libs/web/<feature>`, created with `pnpm new:web-feature <feature>` (never by copying another lib's configuration), with Vitest + Testing Library component tests next to them; `apps/web/src/routes/` only assembles (a protected page goes in `routes/_authenticated/`, flag guard `beforeLoad: requireFeature('<flag>')`); new strings go through Lingui and the catalogs (`web:i18n-check`)
+- Front end (see `apps/web/AGENTS.md`, `libs/web/AGENTS.md`): screens and logic in a feature lib `libs/web/<feature>`, created with `pnpm new:web-feature <feature>` (never by copying another lib's configuration), with Vitest + Testing Library component tests next to them; `apps/web/src/routes/` only assembles (a protected page goes in `routes/_authenticated/`); new strings go through Lingui and the catalogs (`web:i18n-check`)
+
+<!-- option:feature-flags:start -->
+
+- A route behind a flag is guarded with `beforeLoad: requireFeature('<flag>')`.
+
+<!-- option:feature-flags:end -->
+
 - Browser journeys (`apps/web-e2e/src/<journey>.spec.ts`, Playwright) only for what Vitest cannot see: redirects between services, emails, cookies, several tenants
-- Every new page gets an accessibility check (axe) in `apps/web-e2e/src/accessibility.spec.ts`, with its form in error if it has one; a page behind a flag needs the flag in `E2E_FEATURE_FLAGS` (`apps/web-e2e/src/stack.ts`), or it answers 404
+- Every new page gets an accessibility check (axe) in `apps/web-e2e/src/accessibility.spec.ts`, with its form in error if it has one.
+
+<!-- option:feature-flags:start -->
+
+- A page behind a flag needs the flag in `E2E_FEATURE_FLAGS` (`apps/web-e2e/src/stack.ts`), or it answers 404
+
+<!-- option:feature-flags:end -->
+
 - Run one project's tests: `pnpm nx test <project>`: `api-<domain>` and `web-<feature>` for the libs, `api` for the API end-to-end tests (`apps/api/tests`, there is no `e2e` target for them), `auth` for the identity service; browser journeys: `pnpm nx run web-e2e:e2e`; everything affected: `pnpm nx affected -t lint typecheck test e2e` (`e2e` only runs the browser journeys)
 
 <!--
@@ -34,8 +48,8 @@ description: 'Task list template for feature implementation'
 
   The /speckit-tasks command MUST replace these with actual tasks based on:
   - User stories from spec.md (with their priorities P1, P2, P3...)
-  - The plan's Domains, Feature Flag, Integration Events, Data & Migrations,
-    Access Rules and Test Strategy sections
+  - The plan's Domains, Integration Events, Data & Migrations, Access Rules
+    and Test Strategy sections (and Feature Flag, when the plan has one)
   - Entities from data-model.md
   - Endpoints from contracts/
 
@@ -52,7 +66,12 @@ description: 'Task list template for feature implementation'
 
 **Purpose**: What every user story needs. No user story work begins before this phase is complete. Delivered in the pull request of the first user story.
 
+<!-- option:feature-flags:start -->
+
 - [ ] T001 Declare the `[domain].[feature]` flag (default `false`) in `FEATURE_FLAGS` in `libs/shared/contracts`
+
+<!-- option:feature-flags:end -->
+
 - [ ] T002 [P] Add the zod schemas (and `defineIntegrationEvent` declarations, if any) in `libs/shared/contracts/src/lib/[domain]/`
 - [ ] T003 Write the failing unit test for the [aggregate] invariants and `restore` in `libs/api/[domain]/src/lib/domain/[aggregate].spec.ts`; run it and confirm it FAILS
 - [ ] T004 Implement the [aggregate] entity with `restore` in `libs/api/[domain]/src/lib/domain/[aggregate].ts` until T003 passes
@@ -82,7 +101,13 @@ description: 'Task list template for feature implementation'
 
 - [ ] T011 [US1] Implement [rule] in `libs/api/[domain]/src/lib/domain/[aggregate].ts` until T008 passes
 - [ ] T012 [US1] Implement [use case] in `libs/api/[domain]/src/lib/application/use-cases/[use-case].ts` until T009 passes
-- [ ] T013 [US1] Add the controller and DTOs in `libs/api/[domain]/src/lib/http/` (`@RequireFeature`, `@RequireRole` if needed) until T010 passes
+- [ ] T013 [US1] Add the controller and DTOs in `libs/api/[domain]/src/lib/http/` (`@RequireRole` if needed) until T010 passes
+
+<!-- option:feature-flags:start -->
+
+- Routes behind the flag carry `@RequireFeature('[domain].[feature]')`.
+
+<!-- option:feature-flags:end -->
 
 ### Refactor
 
@@ -104,13 +129,25 @@ description: 'Task list template for feature implementation'
 
 - [ ] T015 [P] [US2] [Test titled `[###]-US2-AS1: …`] in [path]; confirm it FAILS
 - [ ] T016 [P] [US2] Component test (Vitest + Testing Library) for [screen] titled `[###]-US2-AS2: …` in `libs/web/[feature]/src/lib/components/[screen].spec.tsx`; confirm it FAILS
-- [ ] T017 [P] [US2] Browser journey for [flow that crosses services, emails or tenants] titled `[###]-US2-AS3: …` in `apps/web-e2e/src/[journey].spec.ts`, and the accessibility check of the new page in `apps/web-e2e/src/accessibility.spec.ts` (flag in `E2E_FEATURE_FLAGS`); confirm they FAIL
+- [ ] T017 [P] [US2] Browser journey for [flow that crosses services, emails or tenants] titled `[###]-US2-AS3: …` in `apps/web-e2e/src/[journey].spec.ts`, and the accessibility check of the new page in `apps/web-e2e/src/accessibility.spec.ts`; confirm they FAIL
+
+<!-- option:feature-flags:start -->
+
+- With the flag in `E2E_FEATURE_FLAGS` (`apps/web-e2e/src/stack.ts`).
+
+<!-- option:feature-flags:end -->
 
 ### Green: implementation for User Story 2
 
 - [ ] T018 [US2] Implement [behavior] in [path] until T015 passes
 - [ ] T019 [US2] Implement the screen in `libs/web/[feature]/src/lib/components/[screen].tsx` (strings through Lingui) until T016 passes
-- [ ] T020 [US2] Add the thin route in `apps/web/src/routes/_authenticated/[route].tsx` with `beforeLoad: requireFeature('[domain].[feature]')`, update the Lingui catalogs, until T017 passes
+- [ ] T020 [US2] Add the thin route in `apps/web/src/routes/_authenticated/[route].tsx` and update the Lingui catalogs, until T017 passes
+
+<!-- option:feature-flags:start -->
+
+- Guarded by `beforeLoad: requireFeature('[domain].[feature]')`.
+
+<!-- option:feature-flags:end -->
 
 ### Refactor
 

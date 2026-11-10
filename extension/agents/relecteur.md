@@ -46,7 +46,7 @@ Applique ceux que ces fichiers posent comme non négociables ; les principes cou
 - Route sans authentification hors des routes déclarées publiques, route qui modifie des données partagées du tenant sans contrôle de rôle, ressource interdite qui répond autre chose que 404.
 - Clé de cache sans durée de vie, appel externe sans timeout.
 - Migration éditée à la main ou non rétrocompatible.
-- Fonctionnalité nouvelle hors feature flag, côté API ou front.
+- Fonctionnalité nouvelle hors feature flag, côté API ou front, quand `flags` vaut `true` dans `.specify/stack.yml`.
 - Dépendance qui franchit une frontière de domaine ou de couche que les règles du projet interdisent.
 - Création à effet métier sans clé d'idempotence, agrégat modifiable sans verrou optimiste, montant en flottant.
 - Secret ou donnée personnelle dans le code, les tests, les logs ou l'outil de suivi d'erreurs du projet.

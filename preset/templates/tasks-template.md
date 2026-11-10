@@ -30,7 +30,7 @@ description: 'Task list template for feature implementation'
 
   The /speckit-tasks command MUST replace these with actual tasks based on:
   - User stories from spec.md (with their priorities P1, P2, P3...)
-  - The plan's Feature Flag, Test Strategy and Project Structure sections
+  - The plan's Test Strategy and Project Structure sections (and Feature Flag, when the plan has one)
   - Entities from data-model.md
   - Endpoints from contracts/
 
@@ -47,7 +47,7 @@ description: 'Task list template for feature implementation'
 
 **Purpose**: What every user story needs. No user story work begins before this phase is complete. Delivered in the pull request of the first user story.
 
-- [ ] T001 Declare the `[feature flag]` flag, disabled by default, where the project declares its flags
+- [ ] T001 Declare the `[feature flag]` flag, disabled by default, where the project declares its flags (only when the plan has a Feature Flag section)
 - [ ] T002 Write the failing test for [shared rule or entity] in [test path]; run it and confirm it FAILS
 - [ ] T003 Implement [shared rule or entity] in [path] until T002 passes
 
@@ -71,7 +71,7 @@ description: 'Task list template for feature implementation'
 ### Green: implementation for User Story 1
 
 - [ ] T006 [US1] Implement [rule] in [path] until T004 passes
-- [ ] T007 [US1] Implement [behavior] in [path], behind the flag, until T005 passes
+- [ ] T007 [US1] Implement [behavior] in [path] (behind the flag, when the plan has one) until T005 passes
 
 ### Refactor
 

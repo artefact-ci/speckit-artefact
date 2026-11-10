@@ -13,6 +13,7 @@ commands:
 tests:
   globs: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'e2e/**/*.spec.ts']
   needs: []
+flags: false
 ui:
   components: src/components/ui
   storybook: false

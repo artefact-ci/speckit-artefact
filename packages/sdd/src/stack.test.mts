@@ -32,6 +32,11 @@ test('nx repo', () => {
   assert.equal(s.ui.prototype, 'pnpm dlx @artefact-ci/prototype@0.1.0');
   assert.deepEqual(s.shared, ['libs/shared/contracts']);
   assert.equal(s.e2e.dir, 'apps/web-e2e');
+  assert.equal(s.e2e.command, 'pnpm nx affected -t e2e');
+  assert.equal(s.e2e.fresh, 'pnpm nx affected -t e2e --skip-nx-cache');
+  // Livrer derrière un flag est une décision d'équipe : jamais devinée.
+  assert.equal(s.flags, null);
+  assert.ok(d.empty.includes('flags'));
   assert.deepEqual(s.branches, { base: 'dev', production: 'main' });
   assert.deepEqual(s.docs, ['AGENTS.md']);
   assert.ok(d.guessed.includes('e2e'));
@@ -49,7 +54,7 @@ test('bun-hono repo', () => {
   assert.equal(s.e2e, null);
   assert.equal(s.commands.trace, 'bunx @artefact-ci/spec-trace@0.1.0');
   assert.ok(d.guessed.includes('ui') && d.guessed.includes('e2e'));
-  assert.deepEqual(d.empty, []);
+  assert.deepEqual(d.empty, ['flags']);
 });
 
 test('nextjs repo without theme', () => {
