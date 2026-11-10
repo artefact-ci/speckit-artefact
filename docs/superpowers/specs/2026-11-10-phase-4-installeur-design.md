@@ -11,7 +11,7 @@ Le premier utilisateur réel est AVIA (phase 6b), précédé par le boilerplate 
 ## Objectifs
 
 1. `init` installe la méthode complète sur un projet vierge ou existant : Spec Kit 1.3.2 si besoin, extension git, extension `artefact-product`, preset `artefact-sdd`, hooks git du boilerplate, fichiers d'agents de l'outil du projet, `stack.yml` déduit, socle de constitution.
-2. `update` réinstalle tout sauf `stack.yml` et la constitution.
+2. `update` réinstalle (`extension add --force`, `preset update --dev`) tout sauf `stack.yml` et la constitution.
 3. Les consignes des agents sont neutres vis-à-vis de l'outil et livrées par l'extension ; l'installeur ne génère que de fins fichiers d'agent par outil (Claude Code et Antigravity en v1).
 4. Les commandes de la méthode marchent aussi avec un outil sans sous-agents : la relecture indépendante se fait alors en contexte neuf, jamais sautée.
 
@@ -55,9 +55,9 @@ Le premier utilisateur réel est AVIA (phase 6b), précédé par le boilerplate 
 - **Pas de question** : `init` déduit et écrit, puis affiche un rapport (ce qui a été installé, ce qui a été deviné dans `stack.yml`, ce qui reste à relire ou à compléter).
 - **`init`, dans l'ordre :**
   1. Vérifie que `uv` (`uvx`) est disponible ; sinon s'arrête avec la commande d'installation.
-  2. Si `.specify/` est absent : `uvx --from specify-cli==1.3.2 specify init --here --script sh --non-interactive`, avec `--force` quand le dossier n'est pas vide, et `--integration <x>` (option `--integration` de l'installeur, `claude` par défaut). Si `.specify/` existe, l'intégration du projet est gardée.
+  2. Si `.specify/` est absent : `uvx --from specify-cli==1.3.2 specify init --here --script sh --non-interactive`, avec `--force` dès que le dossier n'est pas vide (`.git` compris), et `--integration <x>` (option `--integration` de l'installeur, `claude` par défaut). Si `.specify/` existe, l'intégration du projet est gardée.
   3. Si le preset `boilerplate` est installé : `specify preset remove boilerplate` (étape 1 de la procédure de migration de `docs/plan.md`), puis la suite fait l'étape 2.
-  4. Installe l'extension git (`specify extension add git`, version figée par Spec Kit 1.3.2), puis `artefact-product`, puis le preset `artefact-sdd`. Source en phase 4 : `--source <clone de speckit-artefact>` → `--dev <clone>/extension` et `--dev <clone>/preset`. Déjà installé : `init` ne réinstalle pas, il le signale (en 1.3.2, `add` réécrit `installed_at` dans les `.registry` versionnés, ce qui casserait l'idempotence) ; c'est `update` qui réinstalle, par le chemin de mise à jour de Spec Kit, qui garde `installed_at`. *Choix du concepteur.*
+  4. Installe l'extension git (`specify extension add git`, version figée par Spec Kit 1.3.2), puis `artefact-product`, puis le preset `artefact-sdd`. Source en phase 4 : `--source <clone de speckit-artefact>` → `--dev <clone>/extension` et `--dev <clone>/preset`. Déjà installé : `init` ne réinstalle pas, il le signale (en 1.3.2, `add` réécrit `installed_at` dans les `.registry` versionnés, ce qui casserait l'idempotence) ; c'est `update` qui réinstalle : `extension add --dev <clone>/extension --force`, et `preset update artefact-sdd --dev <clone>/preset` (un retrait puis un ajout). `installed_at` change alors dans les registres : c'est attendu pour une mise à jour. *Correction après vérification en 1.3.2 : `extension update` n'accepte ni `--dev` ni `--from`, il ne pouvait pas servir.*
   5. Réécrit la clé `hooks:` de `.specify/extensions.yml` avec les 10 hooks du boilerplate, à l'identique (`before_specify` → `speckit.git.feature` ; `after_specify`, `after_clarify`, `after_plan`, `after_tasks`, `after_checklist`, `after_analyze`, `after_implement`, `after_converge`, `after_constitution` → `speckit.git.commit`, avec les prompts et descriptions du boilerplate), et `settings.auto_execute_hooks: true`. Le reste du fichier (`installed`…) est conservé.
   6. Génère les fichiers d'agent de chaque intégration connue.
   7. Si `.specify/stack.yml` est absent : le déduit et l'écrit (voir plus bas).

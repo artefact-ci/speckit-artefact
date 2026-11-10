@@ -30,7 +30,7 @@ On ne forke pas Spec Kit : toutes les personnalisations passent par les mécanis
 | Bundle | Testé et fonctionnel dès 1.2.2, mais il ne remplace pas l'installeur et impose un catalogue | pas de bundle en v1 ; prévu comme évolution (voir Versionnement) |
 | Installation sans bundle | `preset add --from` et `extension add --from` acceptent l'URL d'un zip (vérifié en 1.3.2) | l'installeur installe depuis la release GitHub, sans catalogue |
 | Contraintes d'un bundle, pour plus tard | versions toutes figées (`git` 1.0.1 compris), `strategy` obligatoire pour un preset, composants venant d'un catalogue, `releases` limité aux anciennes versions, cache d'une heure | à appliquer le jour où on passe au bundle |
-| Agents Claude Code | Une extension ne peut pas les installer dans `.claude/agents/` | l'installeur les copie |
+| Agents Claude Code | Une extension ne peut pas les installer dans `.claude/agents/` | les consignes vivent dans l'extension ; l'installeur génère de fins fichiers d'agent par outil |
 | Hooks git | L'extension git arrive avec ses 18 hooks par défaut ; le boilerplate n'en garde que 10 | l'installeur réapplique la configuration |
 | Montée de version | La procédure du guide passe en 1.3.2 sans toucher constitution, hooks ni sections « (boilerplate) » | procédure réutilisable telle quelle |
 
@@ -43,7 +43,7 @@ Un dépôt produit quatre pièces et un installeur : `npx @artefact-ci/sdd init`
 | `artefact-sdd` | preset Spec Kit | templates spec, plan, tasks ; ajouts TDD à specify, plan, tasks, analyze, implement, converge ; socle de constitution | l'installeur, `specify preset add --from <zip>` |
 | `artefact-product` | extension Spec Kit | `/speckit-prd`, `/speckit-design`, `/speckit-epics`, `/speckit-prototype` et leurs templates (prd, design, journeys) | l'installeur, `specify extension add --from <zip>` |
 | `@artefact-ci/spec-trace`, `@artefact-ci/prototype` | paquets npm | traçabilité scénarios → tests ; maquettes HTML | `npx` / `bunx` à l'usage |
-| `@artefact-ci/sdd` | installeur npm | installe l'extension git, l'extension et le preset ; copie les agents ; réapplique les hooks git ; génère `stack.yml` et la constitution | `npx @artefact-ci/sdd init` |
+| `@artefact-ci/sdd` | installeur npm | installe l'extension git, l'extension et le preset ; génère les fichiers d'agent ; réapplique les hooks git ; génère `stack.yml` et la constitution | `npx @artefact-ci/sdd init` |
 
 ![Du dépôt au projet : 2 canaux de publication, 1 commande](img/architecture.png)
 
@@ -54,8 +54,7 @@ Arborescence proposée :
 ```
 speckit-artefact/
 ├── preset/              # artefact-sdd : preset.yml, templates/, commands/
-├── extension/           # artefact-product : extension.yml, commands/, templates/
-├── agents/              # designer, relecteur, relecteur-produit, relecteur-design + consignes
+├── extension/           # artefact-product : extension.yml, commands/, templates/, agents/ (consignes)
 ├── packages/
 │   ├── spec-trace/
 │   ├── prototype/
@@ -126,47 +125,18 @@ Fini quand : `npx @artefact-ci/spec-trace` donne la même matrice que `pnpm -s s
 
 ### Phase 4 — Installeur `@artefact-ci/sdd`
 
-- [ ] `init` : vérifie `uv`, lance `uvx --from specify-cli==1.3.2 specify init --here` si besoin (avec `--force` dans un dépôt existant, que `--non-interactive` refuse sinon), puis installe l'extension git, l'extension et le preset depuis les zips de la release (`--from`).
-- [ ] Copie les agents dans `.claude/agents/` et leurs consignes dans `docs/agents/`.
-- [ ] Réapplique les 10 hooks git du boilerplate dans `extensions.yml`.
-- [ ] Détecte la stack (`nx.json`, `bun.lock`, `next.config.*`), propose un `stack.yml` à valider, écrit la constitution de base.
-- [ ] `update` : même chose, sans écraser `stack.yml` ni la constitution du projet.
+- [x] `init` : vérifie `uv`, lance `uvx --from specify-cli==1.3.2 specify init --here` si `.specify/` est absent (avec `--force` dès que le dossier n'est pas vide, `.git` compris, que `--non-interactive` refuse sinon), puis installe l'extension git, l'extension et le preset. Avant la phase 5, la source est un clone (`--source <clone>`, installé en `--dev`) ; les zips de la release viendront avec elle.
+- [x] Les consignes des agents vivent dans `extension/agents/` (neutres, sans stack ni outil) avec leurs métadonnées dans `agents.yml` ; Spec Kit les copie dans `.specify/extensions/artefact-product/agents/`. Les commandes et le preset pointent vers ce dossier : plus de `docs/agents/` dans le projet.
+- [x] L'installeur génère de fins fichiers d'agent selon l'intégration du projet : `.claude/agents/<nom>.md` pour Claude Code, `.agents/agents/<nom>/agent.md` pour Antigravity (les trois relecteurs ; pas de designer, voir plus bas). Un outil sans sous-agents lance la relecture dans une nouvelle session : elle ne se saute pas.
+- [x] Réapplique les 10 hooks git du boilerplate dans `extensions.yml`.
+- [x] Déduit `stack.yml` (`nx.json`, `next.config.*`, `bun.lock`, gestionnaire de paquets) sans poser de question : les clés non déduites restent vides avec `# à compléter`, et le rapport dit ce qui est deviné. Écrit la constitution de base quand elle est absente ou encore le gabarit vierge.
+- [x] `update` : réinstalle l'extension (`extension add --force`) et le preset (`preset update --dev`, soit un retrait puis un ajout), puis régénère agents et hooks, sans toucher `stack.yml` ni la constitution. `installed_at` change alors dans les registres : c'est attendu pour une mise à jour. `extension update` de 1.3.2 n'accepte ni `--dev` ni `--from`.
+- [x] Migration depuis le preset `boilerplate` : `init` fait les étapes 1 et 2 de la procédure (voir Versionnement). Les anciens `docs/agents/` ne sont jamais supprimés : le rapport les liste comme obsolètes et dit si la consigne est identique à celle du boilerplate ou modifiée sur place.
+- [ ] Vérifier dans Antigravity qu'un `/speckit-converge` invoque le sous-agent `relecteur`, et trouver le nom de l'outil d'écriture pour le designer (projet de démonstration : `/private/tmp/claude-501/-Users-almoustaphadoumbia-Documents-Fabric-speckit-artefact/151a11e5-353f-4520-a984-622b7654ae7d/scratchpad/agy-demo`, créé par `init --integration agy`). L'app Antigravity est installée sur le poste mais sans CLI (`agy`) : le lancement n'a pas pu se faire depuis le terminal, il est à faire à la main.
 
-Fini quand : `init` lancé deux fois de suite laisse le dépôt identique (`git status` vide la deuxième fois).
+Vérifié le 10 novembre 2026 avec le vrai Spec Kit 1.3.2 (test de bout en bout, `SDD_E2E=1 pnpm --filter @artefact-ci/sdd test:e2e`, et la CI) : `init` lancé deux fois sur un dépôt jetable laisse `git status` vide la deuxième fois ; `update` garde un `stack.yml` et une constitution modifiés à la main ; un projet qui a le preset `boilerplate` migre (preset retiré, `artefact-sdd` ajouté, `docs/agents/` gardé et signalé). Sur un dossier vide avec `--integration agy`, `init` génère `.agents/agents/{relecteur,relecteur-produit,relecteur-design}/agent.md` avec le frontmatter attendu (`name`, `description`, `tools`, `commandExecutionPolicy: sandbox`), et la skill `.agents/skills/speckit-converge/SKILL.md` cite `.specify/extensions/artefact-product/agents/relecteur.md`. Les outils des sous-agents Antigravity sont `view_file`, `grep_search` et `run_command` : ce sont les seuls noms vérifiés dans https://antigravity.google/docs/subagents (le 10 novembre 2026). Tant que le nom d'un outil d'écriture n'est pas vérifié, il n'y a pas de fichier designer pour Antigravity (un nom faux peut bloquer le sous-agent) : `/speckit-design` et `/speckit-prototype` font alors travailler l'agent principal, et la relecture reste indépendante.
 
-### Phase 5 — Release et publication
-
-- [ ] CI de release sur tag `vX.Y.Z` : zips du preset et de l'extension attachés à la release GitHub, publication des paquets npm.
-- [ ] L'installeur porte les URL du tag qu'il installe et écrit la version installée dans `.specify/artefact.json`.
-- [ ] Dans la CI de chaque PR : `specify preset add --dev` et `specify extension add --dev` sur un projet vierge.
-
-Fini quand : `npx @artefact-ci/sdd@1.0.0 init` installe la version taguée sur un projet vierge, sans catalogue.
-
-## Phase 6 — Validation
-
-Le boilerplate devient le premier client du dépôt ; AVIA ne passe qu'une fois le boilerplate validé sans régression.
-
-**6a. Non-régression sur nx-react-nestjs**
-
-- [ ] Sur une branche, retirer `tools/spec-kit/preset/` et installer avec `npx @artefact-ci/sdd init`, avec un `stack.yml` Nx.
-- [ ] Comparer les skills générées avant et après : seules les références à `stack.yml` doivent changer.
-- [ ] `pnpm check` passe, et `npx @artefact-ci/spec-trace` donne la même matrice qu'avant.
-- [ ] Rejouer `docs/tutorial/premiere-fonctionnalite.md` de bout en bout.
-- [ ] Même chose sur Afri Café, après sa montée en 1.3.2.
-
-**6b. Première installation sur AVIA**
-
-- [ ] Trancher où vivent les specs des fonctionnalités qui touchent l'agent et le front (voir Risques et questions ouvertes).
-- [ ] Installer dans avia-agent puis avia-client, écrire leurs `stack.yml`.
-- [ ] Compléter la constitution AVIA : consentement tracé, vocabulaire multi-secteur (« client », jamais « patient »).
-- [ ] Ne pas reprendre l'historique : les specs `docs/superpowers` restent en place.
-
-**6c. Passation au junior**
-
-- [ ] Première fonctionnalité menée par le junior avec la méthode : la tâche ClickUp « Retirer le vocabulaire santé hérité ».
-- [ ] Relecture indépendante par le relecteur, puis par toi.
-
-Fini quand : le junior a fusionné une story qui atteint **Converged** sans aide sur la méthode.
+Fini quand : `init` lancé deux fois de suite laisse le dépôt identique (`git status` vide la deuxième fois). Rempli le 10 novembre 2026.
 
 ## Versionnement, release et maintenance
 
@@ -175,7 +145,7 @@ Une seule version pour tout le dépôt : le tag `vX.Y.Z` publie le preset, l'ext
 - **SemVer** : MAJOR quand une commande ou un champ de `stack.yml` disparaît ou change de sens ; MINOR pour une commande ou une clé ajoutée ; PATCH pour la formulation.
 - **Release GitHub** : les zips du preset et de l'extension, attachés au tag. Pas de catalogue Spec Kit en v1.
 - **Version installée** : écrite par l'installeur dans `.specify/artefact.json`, lue par `update`.
-- **Mise à jour d'un projet** : `npx @artefact-ci/sdd update`, qui réinstalle l'extension (`extension add --force`) et le preset (`preset update`) depuis la nouvelle release, puis réapplique agents et hooks.
+- **Mise à jour d'un projet** : `npx @artefact-ci/sdd update`, qui réinstalle l'extension (`extension add --force`) et le preset (`preset update --dev`) depuis la nouvelle release, puis régénère les fichiers d'agent et réapplique les hooks.
 - **Montée de Spec Kit** : faite d'abord dans `speckit-artefact` avec la procédure de `docs/guides/spec-kit.md`, validée sur le boilerplate, puis publiée en MINOR. Renovate ne suit pas Spec Kit : à vérifier chaque mois avec `specify self check`.
 - **Changelog** : un `CHANGELOG.md` par release, avec ce qui change pour un projet déjà installé.
 - **Migration depuis le preset `boilerplate`** : le changement d'id casse `specify preset update boilerplate`. Un projet qui l'a (nx-react-nestjs, Afri Café) migre ainsi, testé en 1.3.2 :
@@ -185,7 +155,7 @@ Une seule version pour tout le dépôt : le tag `vX.Y.Z` publie le preset, l'ext
   4. remplacer dans la documentation du projet (`AGENTS.md`, guides, tutoriel) la commande `preset update boilerplate`. Les anciens noms de skills restent valables, en alias ;
   5. vérifier avec `specify preset list` et `git status` que seuls `.specify/` et `.claude/skills/` ont changé, en plus de la documentation.
 
-  À partir de la phase 4, `npx @artefact-ci/sdd init` détecte le preset `boilerplate` et fait les étapes 1 et 2.
+  Depuis la phase 4, `npx @artefact-ci/sdd init` détecte le preset `boilerplate` et fait les étapes 1 et 2 (vérifié en 1.3.2).
 - **Bundle, plus tard** : quand d'autres équipes d'Artefact voudront la méthode sans passer par nous, ou qu'il faudra combiner plusieurs presets. On ajoute alors le catalogue et un `bundle.yml`, et l'installeur remplace ses trois commandes par `specify bundle add artefact`.
 
 ## Répartition et calendrier
@@ -216,6 +186,6 @@ Le plus gros risque est la réécriture des commandes autour de `stack.yml` : un
 **À trancher**
 
 - [ ] Où vivent les specs d'AVIA quand une fonctionnalité touche l'agent et le front : dans avia-agent, dans un dépôt `avia-specs`, ou en regroupant les deux dépôts en monorepo ?
-- [ ] Les agents : copiés dans `.claude/agents/` par l'installeur, ou lus depuis `.specify/extensions/artefact-product/agents/` par un sous-agent générique (plus rien à copier, mais sans réglages d'outils ni de modèle) ?
+- [x] Les agents : tranché le 10 novembre 2026. Les consignes restent dans l'extension (`.specify/extensions/artefact-product/agents/`), neutres vis-à-vis de l'outil ; l'installeur génère de fins fichiers d'agent par outil (Claude Code, Antigravity) qui les lisent, avec leurs réglages d'outils. Pas de `docs/agents/` dans le projet : les anciens sont gardés et signalés par l'installeur.
 - [x] Registre npm : npm public, scope `@artefact-ci` (tranché le 9 novembre 2026). Aucun jeton pour installer : `npx @artefact-ci/…` marche partout. Le code compilé des paquets devient public alors que ce dépôt est privé : ils sont sous licence MIT.
 - [ ] Langue des commandes et des templates : anglais, comme aujourd'hui pour les specs, ou français ?
