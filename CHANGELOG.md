@@ -9,9 +9,11 @@
 - `init` refuse un projet installé à une autre version et renvoie vers `update`.
 - CI de release sur tag `vX.Y.Z` : release GitHub avec `artefact-sdd-X.Y.Z.zip` et `artefact-product-X.Y.Z.zip`, puis publication des trois paquets npm avec provenance, sans jeton, et test de fumée.
 - Dans la CI de chaque PR : installation des zips construits sur un projet vierge.
+- `stack.yml` : clé `flags` (toute nouvelle fonctionnalité derrière un feature flag désactivé par défaut ; absente : pas de flag) et `e2e.fresh` (parcours sans cache, lancés par `/speckit-converge` avant **Converged** ; absente : `e2e.command`). `init` ne devine jamais `flags` : la clé reste à compléter.
 
 ### Modifié
 
+- Le principe II du socle de constitution devient **Incremental Delivery** (une story par PR) ; le feature flag n'y est obligatoire que si `flags` vaut `true`. Le plan, les tâches, la spec (`Shipped`) et le relecteur suivent `flags`. Une constitution déjà écrite avec « II. Flagged Increments » est à renommer à la main (`update` ne touche pas la constitution).
 - Une seule version pour tout le dépôt : le preset, l'extension et les trois paquets npm portent le même numéro, celui du tag. Le preset `artefact-sdd` et l'extension `artefact-product` **descendent de 1.0.0 à 0.2.0**. Les projets installés avec `--dev` (source clone) gardent un registre Spec Kit en 1.0.0 : relancer `update` pour l'aligner sur 0.2.0.
 
 ## [0.1.0] - 2026-11-09

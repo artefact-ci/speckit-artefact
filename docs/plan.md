@@ -152,11 +152,19 @@ Le boilerplate devient le premier client du dépôt ; AVIA ne passe qu'une fois 
 
 **6a. Non-régression sur nx-react-nestjs**
 
-- [ ] Sur une branche, retirer `tools/spec-kit/preset/` et installer avec `npx @artefact-ci/sdd init`, avec un `stack.yml` Nx.
-- [ ] Comparer les skills générées avant et après : seules les références à `stack.yml` doivent changer.
+- [x] Sur une branche, retirer `tools/spec-kit/preset/` et installer avec `npx @artefact-ci/sdd init`, avec un `stack.yml` Nx. Fait avec le clone (`init --source`, branche `chore/speckit-artefact` du boilerplate), en attendant la release : `tools/spec-kit/preset/` devient le preset local `examples/nx-preset/`.
+- [x] Comparer les skills générées avant et après : seules les références à `stack.yml` doivent changer.
 - [ ] `pnpm check` passe, et `npx @artefact-ci/spec-trace` donne la même matrice qu'avant.
 - [ ] Rejouer `docs/tutorial/premiere-fonctionnalite.md` de bout en bout.
 - [ ] Même chose sur Afri Café, après sa montée en 1.3.2.
+
+Constats du 10 novembre 2026 (clone, Spec Kit 1.3.2) :
+
+- Skills du cœur : seules changent les références à `stack.yml` ; les règles Nx sorties des commandes sont dans les `AGENTS.md` du boilerplate, sauf deux règles de `/speckit-design` (police dans `ignoreDependencies` de knip, fichiers à restaurer), ajoutées. Les skills de l'extension perdent leur `argument-hint` (Spec Kit 1.3.2 ne le recopie pas) ; en `--dev`, leurs alias (`/speckit-prd`…) sont des liens vers `.specify-dev/`, à revoir avec la release.
+- Le boilerplate a rendu les feature flags optionnels (option `create:project`) après l'extraction : le principe II du socle devient Incremental Delivery, avec le flag selon `flags` de `stack.yml`. Sa constitution met le socle en tête (I à IV), ses principes propres à partir de V.
+- `/speckit-converge` lançait les parcours sans cache Nx : nouvelle clé `e2e.fresh`.
+- `update` fait passer l'extension git du boilerplate de 1.0.1 (celle de Spec Kit 1.2.2) à 1.0.4, celle de Spec Kit 1.3.2, hooks inchangés.
+- `pnpm check` passe, sauf les tests d'intégration de l'API sur le poste de test, à cause d'un `apps/api/.env` local (`AUTH_JWKS_URL` défini). spec-trace : même sortie (« Aucune spec »), la matrice est à comparer sur la spec du tutoriel.
 
 **6b. Première installation sur AVIA**
 

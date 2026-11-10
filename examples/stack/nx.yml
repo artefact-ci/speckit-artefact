@@ -21,6 +21,7 @@ shared:
   - libs/shared/contracts
   - libs/web/data-access
   - apps/auth
+flags: true # feature flags : catalogue FEATURE_FLAGS, @RequireFeature, requireFeature (AGENTS.md)
 ui:
   components: libs/web/ui
   storybook: true
@@ -29,5 +30,6 @@ ui:
   prototype: pnpm prototype
 e2e:
   dir: apps/web-e2e
-  command: pnpm nx affected -t e2e # --skip-nx-cache avant Converged
+  command: pnpm nx affected -t e2e
+  fresh: pnpm nx affected -t e2e --skip-nx-cache
   setup: pnpm exec playwright install chromium

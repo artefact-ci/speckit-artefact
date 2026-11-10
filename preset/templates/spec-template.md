@@ -10,7 +10,7 @@
   Status (one word, checked by the trace command, `commands.trace` of `.specify/stack.yml`):
   - Draft: being written or implemented; scenarios may still wait for their test.
   - Implemented: every active scenario has a test (set by /speckit-converge).
-  - Shipped: the feature flag is removed; set in that pull request.
+  - Shipped: available to every user; set in the pull request that makes it so (with a feature flag, the one that removes the flag).
   - Retired: the feature was removed; no test may cite its scenarios any more.
   Once merged, this spec describes the current behavior: a pull request that changes it
   updates this file. plan.md and tasks.md stay as they were (history of the build).

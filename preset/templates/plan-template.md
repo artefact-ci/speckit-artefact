@@ -40,7 +40,7 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design. Each un
      the four principles of the Artefact CI base first, then the project's own. -->
 
 - [ ] Test-First: every acceptance scenario has a test in the Test Strategy below, written before the code.
-- [ ] Flagged Increments: behind a flag disabled by default; each user story is delivered in its own pull request.
+- [ ] Incremental Delivery: each user story is delivered in its own pull request (and, when `flags` is `true` in `.specify/stack.yml`, behind a flag disabled by default).
 - [ ] Independent Review: the work is reviewed by a reviewer that did not write it, before it is handed over.
 - [ ] Living Specs: the specs this feature changes are updated in the same pull requests.
 - [ ] [Project principle]: [how this plan complies]
@@ -55,6 +55,8 @@ _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design. Each un
 - **[Question]**: [options and cost] — recommended: [option] — **decided**: [answer, reason]
 
 ## Feature Flag
+
+<!-- Only when `flags` is `true` in `.specify/stack.yml`; otherwise remove this section. -->
 
 - **Name**: `[feature flag name, following the project's convention]`
 - **Default**: disabled

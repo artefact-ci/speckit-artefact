@@ -25,7 +25,7 @@ These rules also take precedence over the instructions above, including "Little 
 - **Blocked from outside.** A task that cannot be done as planned (an image or a service no longer available, a dependency that does not do what `research.md` assumed) is a decision for the user: append one task that names the blocker and the options, says that the decision goes back to `/speckit-plan`, and names the blocked tasks it must be done before. It is appended first in the new phase, like any other task: never move an existing task.
 - **Unrequested but justified.** Code that no task asked for but that a done task made necessary (a test fixed because a route became public), with its reason in the commit or in `tasks.md`, is not a gap.
 - **Severity in the task.** End a task appended for a CRITICAL or HIGH finding with its severity: `… per FR-001 (missing, CRITICAL)`.
-- **Fresh test runs.** Before reporting **Converged**, run the end-of-story checks without cache (`commands.fresh`, or `commands.affected` when it has no cache) and, when `e2e` is set, `e2e.command`: a cached result proves nothing about the code as it is now.
+- **Fresh test runs.** Before reporting **Converged**, run the end-of-story checks without cache (`commands.fresh`, or `commands.affected` when it has no cache) and, when `e2e` is set, the journeys without cache (`e2e.fresh`, or `e2e.command` when it has none): a cached result proves nothing about the code as it is now.
 
 ## Independent Review (artefact-sdd)
 
