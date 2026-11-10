@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
-import { execFileSync, spawnSync } from 'node:child_process';
-import { appendFileSync, copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { execFileSync, spawn, spawnSync } from 'node:child_process';
+import { appendFileSync, copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
-import { after, describe, it } from 'node:test';
+import { basename, dirname, join } from 'node:path';
+import { createServer, type Server } from 'node:http';
+import type { AddressInfo } from 'node:net';
+import { after, before, describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 /**
@@ -16,6 +18,7 @@ const CLI = join(pkg, 'dist', 'cli.mjs');
 const SOURCE = join(pkg, '..', '..');
 const FIXTURE = join(here, 'fixture');
 const SPECIFY = ['--from', 'specify-cli==1.3.2', 'specify'];
+const ZIP_CLI = join(SOURCE, 'scripts', 'zip.mts');
 const TIMEOUT = 10 * 60 * 1000;
 
 const dirs: string[] = [];
@@ -45,11 +48,35 @@ function specify(cwd: string, ...args: string[]): string {
   return r.stdout;
 }
 
-function sdd(cwd: string, ...args: string[]): string {
-  const r = spawnSync(process.execPath, [CLI, ...args], { cwd, encoding: 'utf8' });
+function runSdd(cwd: string, env: NodeJS.ProcessEnv, ...args: string[]) {
+  return spawnSync(process.execPath, [CLI, ...args], { cwd, encoding: 'utf8', env: { ...process.env, ...env } });
+}
+
+/** Asynchrone : le serveur de zips vit dans ce processus, un spawnSync bloquerait sa boucle d'événements. */
+function runSddAsync(cwd: string, env: NodeJS.ProcessEnv, ...args: string[]) {
+  return new Promise<{ status: number | null; stdout: string; stderr: string }>((resolve, reject) => {
+    const child = spawn(process.execPath, [CLI, ...args], { cwd, env: { ...process.env, ...env } });
+    let stdout = '';
+    let stderr = '';
+    child.stdout.setEncoding('utf8').on('data', (c: string) => (stdout += c));
+    child.stderr.setEncoding('utf8').on('data', (c: string) => (stderr += c));
+    child.on('error', reject);
+    child.on('close', (status) => resolve({ status, stdout, stderr }));
+  });
+}
+
+function report(r: { status: number | null; stdout: string; stderr: string }, args: string[], cwd: string): string {
   assert.equal(r.status, 0, `artefact-sdd ${args.join(' ')} :\n${r.stdout}\n${r.stderr}`);
   if (process.env['SDD_E2E_PRINT'] === '1') console.log(`--- artefact-sdd ${args[0]} (${cwd})\n${r.stdout}${r.stderr}`);
   return r.stdout;
+}
+
+function sdd(cwd: string, ...args: string[]): string {
+  return report(runSdd(cwd, {}, ...args), args, cwd);
+}
+
+async function sddEnv(cwd: string, env: NodeJS.ProcessEnv, ...args: string[]): Promise<string> {
+  return report(await runSddAsync(cwd, env, ...args), args, cwd);
 }
 
 describe('artefact-sdd end to end, real Spec Kit', { skip: process.env['SDD_E2E'] !== '1', timeout: TIMEOUT }, () => {
@@ -103,5 +130,86 @@ describe('artefact-sdd end to end, real Spec Kit', { skip: process.env['SDD_E2E'
     assert.match(out, /docs\/agents\/relecteur\.md : identique au boilerplate/);
     assert.match(out, /preset `boilerplate` retiré/);
     assert.match(out, /`npx @artefact-ci\/sdd update`/);
+  });
+
+  describe('release mode, zips served behind a 302 like GitHub', () => {
+    let server: Server;
+    let env: NodeJS.ProcessEnv;
+    let componentVersion: string;
+    let installerVersion: string;
+    let repo: string;
+
+    const manifestVersion = (file: string) => /^ {2}version: '([^']+)'/m.exec(readFileSync(join(SOURCE, file), 'utf8'))![1]!;
+    const json = (path: string) => JSON.parse(readFileSync(path, 'utf8'));
+
+    before(async () => {
+      installerVersion = json(join(pkg, 'package.json')).version;
+      const presetV = manifestVersion('preset/preset.yml');
+      const extensionV = manifestVersion('extension/extension.yml');
+      componentVersion = presetV;
+      assert.equal(extensionV, presetV, 'preset and extension share one version');
+      const out = workDir('zips');
+      execFileSync(process.execPath, [ZIP_CLI, out], { cwd: SOURCE, stdio: 'pipe' });
+      const built: Record<string, string> = {
+        [`artefact-sdd-${installerVersion}.zip`]: `artefact-sdd-${presetV}.zip`,
+        [`artefact-product-${installerVersion}.zip`]: `artefact-product-${extensionV}.zip`,
+      };
+      server = createServer((req, res) => {
+        const url = req.url ?? '';
+        const asked = basename(url);
+        if (url.startsWith(`/v${installerVersion}/`) && built[asked]) {
+          res.writeHead(302, { location: `/files/${built[asked]}` });
+          res.end();
+        } else if (url.startsWith('/files/') && existsSync(join(out, asked))) {
+          res.writeHead(200, { 'content-type': 'application/zip' });
+          res.end(readFileSync(join(out, asked)));
+        } else {
+          res.writeHead(404);
+          res.end();
+        }
+      });
+      await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+      const { port } = server.address() as AddressInfo;
+      env = { SDD_RELEASE_BASE_URL: `http://127.0.0.1:${port}/v${installerVersion}` };
+    });
+    after(() => {
+      server.close();
+    });
+
+    it('release mode: init twice leaves no diff', async () => {
+      repo = workDir('release');
+      cpSync(join(FIXTURE, 'repos', 'bun-hono'), repo, { recursive: true });
+      git(repo, 'init', '-q');
+      commit(repo, 'project');
+
+      const first = await sddEnv(repo, env, 'init');
+      assert.match(first, /Installé : git, artefact-product, artefact-sdd/);
+      assert.ok(first.includes(`Version : ${installerVersion} (release)`), first);
+      assert.deepEqual(json(join(repo, '.specify', 'artefact.json')), { version: installerVersion, source: 'release' });
+      assert.equal(componentVersion, installerVersion, 'one version for the whole repository');
+      assert.equal(json(join(repo, '.specify', 'presets', '.registry')).presets['artefact-sdd'].version, componentVersion);
+      assert.equal(json(join(repo, '.specify', 'extensions', '.registry')).extensions['artefact-product'].version, componentVersion);
+      commit(repo, 'artefact-sdd');
+
+      await sddEnv(repo, env, 'init');
+      assert.equal(git(repo, 'status', '--porcelain'), '');
+    });
+
+    it('release mode: init refuses a project recorded at another version', async () => {
+      writeFileSync(join(repo, '.specify', 'artefact.json'), '{"version":"0.0.1","source":"release"}\n');
+      commit(repo, 'recorded at 0.0.1');
+
+      const r = await runSddAsync(repo, env, 'init');
+      assert.equal(r.status, 1, `${r.stdout}\n${r.stderr}`);
+      assert.match(`${r.stdout}${r.stderr}`, /lance update/);
+      assert.equal(git(repo, 'status', '--porcelain'), '');
+    });
+
+    it('release mode: update records the new version', async () => {
+      const out = await sddEnv(repo, env, 'update');
+      assert.deepEqual(json(join(repo, '.specify', 'artefact.json')), { version: installerVersion, source: 'release' });
+      assert.ok(out.includes(`0.0.1 → ${installerVersion}`), out);
+      assert.doesNotMatch(out, /^ {2}Attention/m);
+    });
   });
 });

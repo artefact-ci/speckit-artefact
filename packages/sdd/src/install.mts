@@ -1,14 +1,18 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { basename, dirname, join } from 'node:path';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { basename, join } from 'node:path';
 import { agentFiles, readAgentSpecs, readIntegrations, skippedAgents } from './agents.mts';
+import { compareVersions, readInstalled, writeInstalled, type Installed } from './artefact.mts';
 import { baseConstitution, isBlankConstitution } from './constitution.mts';
 import { applyGitHooks } from './hooks.mts';
 import { legacyAgents } from './legacy.mts';
-import { hasUv, specify, type Run } from './specify.mts';
+import { SetupError } from './errors.mts';
+import { writeIfChanged } from './fs.mts';
+import { componentArgs, zipUrl, type ComponentId, type Source } from './source.mts';
+import { hasUv, specify, SpecifyError, type Run } from './specify.mts';
 import { deduceStack, defaultExamplesDir, type Branches, type Deduction } from './stack.mts';
 
-/** source : clone de speckit-artefact (phase 4). */
-export type Options = { root: string; source: string; integration?: string; toolsVersion: string; runner: Run };
+/** source : release GitHub ou clone de speckit-artefact (--dev). */
+export type Options = { root: string; source: Source; integration?: string; toolsVersion: string; runner: Run };
 
 export type Report = {
   mode: 'init' | 'update';
@@ -28,28 +32,17 @@ export type Report = {
   constitution: 'written' | 'kept';
   legacy: ReturnType<typeof legacyAgents>;
   dirty: boolean;
+  /** `installed` est null quand `init` n'a pas écrit `.specify/artefact.json` (version inconnue). */
+  version: { installed: Installed | null; previous: Installed | null; downgrade: boolean };
 };
 
-export class SetupError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'SetupError';
-  }
-}
+export { SetupError, writeIfChanged };
 
 const UV_MISSING = 'uv manque : https://docs.astral.sh/uv/getting-started/installation/';
 const CONSTITUTION = '.specify/memory/constitution.md';
 const STACK = '.specify/stack.yml';
 const EXTENSIONS_YML = '.specify/extensions.yml';
 const PRESET_TEMPLATE = '.specify/presets/artefact-sdd/templates/constitution-template.md';
-
-/** Écrit `content` seulement s'il diffère du fichier (crée les dossiers) ; vrai si écrit. */
-export function writeIfChanged(path: string, content: string): boolean {
-  if (existsSync(path) && readFileSync(path, 'utf8') === content) return false;
-  mkdirSync(dirname(path), { recursive: true });
-  writeFileSync(path, content);
-  return true;
-}
 
 type Kind = 'extensions' | 'presets';
 
@@ -68,22 +61,20 @@ function registered(root: string, kind: Kind, id: string): boolean {
   return typeof map === 'object' && map !== null && id in map;
 }
 
-type Component = { id: string; kind: Kind; add: (source: string) => string[]; update: (source: string) => string[] };
+type Component = {
+  id: 'git' | ComponentId;
+  kind: Kind;
+  install: (source: Source, present: boolean) => { args: string[]; input?: string };
+};
 
 const COMPONENTS: Component[] = [
-  { id: 'git', kind: 'extensions', add: () => ['extension', 'add', 'git'], update: () => ['extension', 'add', 'git', '--force'] },
   {
-    id: 'artefact-product',
+    id: 'git',
     kind: 'extensions',
-    add: (s) => ['extension', 'add', '--dev', join(s, 'extension')],
-    update: (s) => ['extension', 'add', '--dev', join(s, 'extension'), '--force'],
+    install: (_s, present) => ({ args: ['extension', 'add', 'git', ...(present ? ['--force'] : [])] }),
   },
-  {
-    id: 'artefact-sdd',
-    kind: 'presets',
-    add: (s) => ['preset', 'add', '--dev', join(s, 'preset')],
-    update: (s) => ['preset', 'update', 'artefact-sdd', '--dev', join(s, 'preset')],
-  },
+  { id: 'artefact-product', kind: 'extensions', install: (s, present) => componentArgs(s, 'artefact-product', present) },
+  { id: 'artefact-sdd', kind: 'presets', install: (s, present) => componentArgs(s, 'artefact-sdd', present) },
 ];
 
 /** stdout d'une commande git, ou null si elle échoue (pas un dépôt, pas de commit…). */
@@ -112,7 +103,7 @@ async function isDirty(o: Options): Promise<boolean> {
   return ((await git(o, ['status', '--porcelain'])) ?? '').trim() !== '';
 }
 
-type Common = Omit<Report, 'mode' | 'stack' | 'constitution' | 'dirty'>;
+type Common = Omit<Report, 'mode' | 'stack' | 'constitution' | 'dirty' | 'version'>;
 
 /** Étapes 3 à 6 communes à init et update, puis le relevé des anciens agents. */
 async function common(o: Options, mode: 'init' | 'update'): Promise<Common> {
@@ -128,7 +119,18 @@ async function common(o: Options, mode: 'init' | 'update'): Promise<Common> {
       skipped.push(c.id);
       continue;
     }
-    await specify(o.runner, root, present ? c.update(o.source) : c.add(o.source));
+    const { args, input } = c.install(o.source, present);
+    try {
+      await specify(o.runner, root, args, input);
+    } catch (e) {
+      if (o.source.kind === 'release' && c.id !== 'git' && e instanceof SpecifyError) {
+        const url = zipUrl(o.source, c.id);
+        throw new SetupError(
+          `impossible d'installer ${c.id} ${o.source.version} depuis ${url} : ${e.message} ; relance la même commande une fois le réseau rétabli`,
+        );
+      }
+      throw e;
+    }
     installed.push(c.id);
   }
 
@@ -174,6 +176,15 @@ async function common(o: Options, mode: 'init' | 'update'): Promise<Common> {
 export async function init(o: Options): Promise<Report> {
   const { root } = o;
   if (!(await hasUv(o.runner))) throw new SetupError(UV_MISSING);
+
+  // Le garde passe avant toute commande Spec Kit, migration du boilerplate comprise.
+  const previous = readInstalled(root);
+  if (previous && previous.version !== o.source.version) {
+    throw new SetupError(
+      `Spec Kit a déjà la méthode en ${previous.version} (.specify/artefact.json) ; cet installeur installe ${o.source.version} : lance update pour changer de version`,
+    );
+  }
+  const noneInstalled = !registered(root, 'presets', 'artefact-sdd') && !registered(root, 'extensions', 'artefact-product');
   const dirty = await isDirty(o);
 
   if (!existsSync(join(root, '.specify'))) {
@@ -185,6 +196,10 @@ export async function init(o: Options): Promise<Report> {
   }
 
   const done = await common(o, 'init');
+
+  const current: Installed = { version: o.source.version, source: o.source.kind };
+  const record = previous !== null || noneInstalled;
+  if (record) writeInstalled(root, current);
 
   let stack: Deduction | undefined;
   if (!existsSync(join(root, STACK))) {
@@ -203,13 +218,17 @@ export async function init(o: Options): Promise<Report> {
     constitution = 'written';
   }
 
-  return { mode: 'init', ...done, stack, constitution, dirty };
+  return { mode: 'init', ...done, stack, constitution, dirty, version: { installed: record ? current : null, previous, downgrade: false } };
 }
 
 export async function update(o: Options): Promise<Report> {
   if (!(await hasUv(o.runner))) throw new SetupError(UV_MISSING);
   if (!existsSync(join(o.root, '.specify'))) throw new SetupError('.specify/ absent : lance init');
+  const previous = readInstalled(o.root);
   const dirty = await isDirty(o);
   const done = await common(o, 'update');
-  return { mode: 'update', ...done, constitution: 'kept', dirty };
+  const current: Installed = { version: o.source.version, source: o.source.kind };
+  writeInstalled(o.root, current);
+  const downgrade = previous !== null && compareVersions(previous.version, current.version) > 0;
+  return { mode: 'update', ...done, constitution: 'kept', dirty, version: { installed: current, previous, downgrade } };
 }

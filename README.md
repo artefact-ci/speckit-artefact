@@ -13,7 +13,7 @@ Le plan de création, ses décisions et son calendrier sont dans [`docs/plan.md`
 
 ## État
 
-Phases 1 à 3 terminées, phase 4 faite sauf la vérification dans l'app Antigravity (publication sur npm public avec la release, en phase 5) :
+Phases 1 à 3 terminées, phase 4 faite sauf la vérification dans l'app Antigravity, phase 5 (release GitHub et publication sur npm) faite dans le code : la première release, la 0.2.0, attend son tag. L'état de npm avant cette release est décrit dans [`docs/release.md`](docs/release.md).
 
 - `preset/` est le preset générique `artefact-sdd`. Ses six commandes et ses templates (spec, plan, tasks, constitution) ne citent plus aucune stack : ils lisent `.specify/stack.yml`, dont le schéma est dans [`docs/stack.md`](docs/stack.md).
 - `extension/` est l'extension `artefact-product` : prd, design, epics, prototype. Les anciens noms restent en alias. Ses commandes lisent aussi `stack.yml`, et leurs étapes front dépendent de `ui`. Ses consignes d'agents (designer, relecteurs, PO) sont dans `extension/agents/` : Spec Kit les copie dans `.specify/extensions/artefact-product/agents/`, et les commandes s'arrêtent si elles manquent.
@@ -21,11 +21,19 @@ Phases 1 à 3 terminées, phase 4 faite sauf la vérification dans l'app Antigra
 
 - `packages/spec-trace` et `packages/prototype` sont les outils `@artefact-ci/spec-trace` (matrice scénarios → tests) et `@artefact-ci/prototype` (maquettes HTML), sortis du boilerplate. Ils lisent aussi `stack.yml` (`tests.globs`, `ui.theme`). `pnpm install && pnpm test` à la racine les teste.
 
-- `packages/sdd` est l'installeur `@artefact-ci/sdd` (`artefact-sdd init|update --source <clone>`). Il installe Spec Kit, l'extension git, l'extension et le preset, réapplique les hooks git, génère les fichiers d'agent de l'outil du projet (Claude Code, Antigravity), déduit `stack.yml` et écrit la constitution de base. Voir [`packages/sdd/README.md`](packages/sdd/README.md). La source « release GitHub » arrive en phase 5 : d'ici là, `--source` pointe sur un clone de ce dépôt.
+- `packages/sdd` est l'installeur `@artefact-ci/sdd` (`npx @artefact-ci/sdd@X.Y.Z init|update`, `--source <clone>` pour développer la méthode). Il installe Spec Kit, l'extension git, l'extension et le preset, réapplique les hooks git, génère les fichiers d'agent de l'outil du projet (Claude Code, Antigravity), déduit `stack.yml` et écrit la constitution de base. Voir [`packages/sdd/README.md`](packages/sdd/README.md). Sans `--source`, il installe les zips de la release GitHub de sa propre version ; avec `--source`, il installe un clone en `--dev`.
 
 ## Installer sur un projet
 
 Il faut [uv](https://docs.astral.sh/uv/) et Node 24. Dans le dépôt du projet :
+
+```sh
+npx @artefact-ci/sdd@0.2.0 init
+```
+
+L'installeur télécharge les zips du preset et de l'extension depuis la release `v0.2.0` de ce dépôt et écrit la version installée dans `.specify/artefact.json`. La procédure de release est dans [`docs/release.md`](docs/release.md).
+
+Pour installer depuis un clone de ce dépôt (développement) :
 
 ```sh
 pnpm --filter @artefact-ci/sdd build   # dans ce clone, une fois

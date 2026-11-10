@@ -44,11 +44,11 @@ export class SpecifyError extends Error {
 }
 
 /** Exécute `specify …args` via uvx, à la version épinglée ; renvoie stdout. */
-export async function specify(runner: Run, cwd: string, args: string[]): Promise<string> {
+export async function specify(runner: Run, cwd: string, args: string[], input?: string): Promise<string> {
   const { code, stdout, stderr } = await runner(
     'uvx',
     ['--from', `specify-cli==${SPECIFY_VERSION}`, 'specify', ...args],
-    { cwd },
+    { cwd, ...(input !== undefined ? { input } : {}) },
   );
   if (code !== 0) throw new SpecifyError(code, stderr, stdout);
   return stdout;
