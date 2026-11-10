@@ -5,13 +5,22 @@ L'installeur de la méthode Artefact CI. Il installe Spec Kit 1.3.2 (via `uvx`),
 ## Usage
 
 ```sh
+npx @artefact-ci/sdd@X.Y.Z init   [--integration <outil>]
+npx @artefact-ci/sdd@X.Y.Z update
+```
+
+Sans `--source`, l'installeur installe la release GitHub de sa propre version : le preset `artefact-sdd` et l'extension `artefact-product` du tag `vX.Y.Z`. Fixer la version dans la commande (`@X.Y.Z`) fixe donc celle de la méthode.
+
+Pour développer la méthode, `--source` installe en `--dev` depuis un clone :
+
+```sh
 artefact-sdd init   --source <clone de speckit-artefact> [--integration <outil>]
 artefact-sdd update --source <clone de speckit-artefact>
 ```
 
 | Option | Rôle |
 | --- | --- |
-| `--source <dir>` | clone de `speckit-artefact` d'où l'extension (`extension/`) et le preset (`preset/`) sont installés en `--dev`. Obligatoire en phase 4 : la source « release GitHub » arrive en phase 5. |
+| `--source <dir>` | clone de `speckit-artefact` d'où l'extension (`extension/`) et le preset (`preset/`) sont installés en `--dev`, pour développer la méthode. Sans cette option, la release GitHub de la version de l'installeur est installée. |
 | `--integration <outil>` | outil du projet pour `specify init` (`claude` par défaut). Ignoré quand `.specify/` existe : l'intégration du projet est gardée. Ignoré par `update`. |
 | `--help` | affiche l'usage |
 
