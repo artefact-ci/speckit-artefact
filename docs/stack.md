@@ -1,6 +1,6 @@
 # `.specify/stack.yml`
 
-Le fichier qui décrit la stack d'un projet aux commandes de la méthode. Le preset `artefact-sdd` et l'extension `artefact-product` ne citent aucun outil ni aucun chemin : ils lisent ce fichier. `commands.test` et `commands.affected` sont obligatoires : sans eux, ou sans le fichier, les commandes s'arrêtent et demandent de les écrire. Toute autre clé absente ou `null` fait sauter l'étape qui l'utilise, et la commande le dit dans son rapport ; elle n'invente jamais une commande. Une clé absente ne supprime jamais un test.
+Le fichier qui décrit la stack d'un projet aux commandes de la méthode. Le preset `artefact-sdd` et l'extension `artefact-product` ne citent aucun outil ni aucun chemin : ils lisent ce fichier. `commands.test` et `commands.affected` sont obligatoires : sans eux, ou sans le fichier, les commandes s'arrêtent et demandent de les écrire. Une clé obligatoire vide ou `null` (`commands.test`, `commands.affected`, et `ui.theme` quand `ui` est défini) compte comme absente : la commande s'arrête. `npx @artefact-ci/sdd init` déduit ce fichier du dépôt ; il y laisse `# à compléter` sur les clés qu'il n'a pas su déduire, et il faut les remplir avant de lancer les commandes. Toute autre clé absente ou `null` fait sauter l'étape qui l'utilise, et la commande le dit dans son rapport ; elle n'invente jamais une commande. Une clé absente ne supprime jamais un test.
 
 Exemples complets dans [`examples/stack/`](../examples/stack/) : `nx.yml` (nx-react-nestjs), `bun-hono.yml`, `nextjs.yml`.
 

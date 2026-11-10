@@ -6,26 +6,37 @@ Elle s'appuie sur [Spec Kit](https://github.com/github/spec-kit) 1.3.2, sans for
 
 - un preset (`artefact-sdd`) : templates spec, plan, tasks et règles TDD ;
 - une extension (`artefact-product`) : `/speckit-prd`, `/speckit-design`, `/speckit-epics`, `/speckit-prototype` ;
-- des agents de relecture et de design ;
+- des consignes d'agents de relecture et de design, avec de fins fichiers d'agent générés pour l'outil du projet ;
 - un installeur, `npx @artefact-ci/sdd init`, qui pose le tout et un `stack.yml` propre au projet.
 
 Le plan de création, ses décisions et son calendrier sont dans [`docs/plan.md`](docs/plan.md).
 
 ## État
 
-Phases 1, 2 et 3 terminées (publication sur npm public avec la release, en phase 5) :
+Phases 1 à 3 terminées, phase 4 faite sauf la vérification dans l'app Antigravity (publication sur npm public avec la release, en phase 5) :
 
 - `preset/` est le preset générique `artefact-sdd`. Ses six commandes et ses templates (spec, plan, tasks, constitution) ne citent plus aucune stack : ils lisent `.specify/stack.yml`, dont le schéma est dans [`docs/stack.md`](docs/stack.md).
-- `extension/` est l'extension `artefact-product` : prd, design, epics, prototype. Les anciens noms restent en alias. Ses commandes lisent aussi `stack.yml`, et leurs étapes front dépendent de `ui`. Elles ont besoin des consignes d'agents dans `docs/agents/`, que l'installeur posera en phase 4.
+- `extension/` est l'extension `artefact-product` : prd, design, epics, prototype. Les anciens noms restent en alias. Ses commandes lisent aussi `stack.yml`, et leurs étapes front dépendent de `ui`. Ses consignes d'agents (designer, relecteurs, PO) sont dans `extension/agents/` : Spec Kit les copie dans `.specify/extensions/artefact-product/agents/`, et les commandes s'arrêtent si elles manquent.
 - `examples/stack/` contient des `stack.yml` types, et `examples/nx-preset/` le preset local qui rend au boilerplate ses templates Nx.
 
 - `packages/spec-trace` et `packages/prototype` sont les outils `@artefact-ci/spec-trace` (matrice scénarios → tests) et `@artefact-ci/prototype` (maquettes HTML), sortis du boilerplate. Ils lisent aussi `stack.yml` (`tests.globs`, `ui.theme`). `pnpm install && pnpm test` à la racine les teste.
 
-`agents/` et `packages/sdd` ne contiennent qu'un README qui dit à quelle phase ils se remplissent.
+- `packages/sdd` est l'installeur `@artefact-ci/sdd` (`artefact-sdd init|update --source <clone>`). Il installe Spec Kit, l'extension git, l'extension et le preset, réapplique les hooks git, génère les fichiers d'agent de l'outil du projet (Claude Code, Antigravity), déduit `stack.yml` et écrit la constitution de base. Voir [`packages/sdd/README.md`](packages/sdd/README.md). La source « release GitHub » arrive en phase 5 : d'ici là, `--source` pointe sur un clone de ce dépôt.
 
-## Tester en local
+## Installer sur un projet
 
-Il faut [uv](https://docs.astral.sh/uv/). Dans un dossier vide, hors du dépôt :
+Il faut [uv](https://docs.astral.sh/uv/) et Node 24. Dans le dépôt du projet :
+
+```sh
+pnpm --filter @artefact-ci/sdd build   # dans ce clone, une fois
+node <chemin vers speckit-artefact>/packages/sdd/dist/cli.mjs init --source <chemin vers speckit-artefact>
+```
+
+Le rapport dit ce qui est installé, ce qui a été deviné dans `.specify/stack.yml` et ce qu'il reste à compléter.
+
+## Tester en local à la main
+
+Dans un dossier vide, hors du dépôt :
 
 ```sh
 uvx --from specify-cli==1.3.2 specify init --here --integration claude --script sh --non-interactive

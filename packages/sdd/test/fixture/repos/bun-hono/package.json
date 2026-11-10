@@ -1,0 +1,1 @@
+{"name":"bun-hono-fixture","private":true,"scripts":{"test":"bun test","lint":"biome check","typecheck":"tsc --noEmit","check":"bun run lint && bun test"}}

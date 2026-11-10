@@ -21,15 +21,15 @@ Read `.specify/stack.yml` first: it names this project's branches, commands and 
 
 Turn the requirements of `specs/product.yml` into a delivery plan: epics (`E01`), each with a goal, the requirements it groups, the epics it waits for (`depends_on`) and its end-to-end journeys (`E01-J1`). The trace command (`commands.trace`) then derives the state of each epic from the specs, requires a test per journey once an epic is done, and warns when a feature advances on an epic whose dependencies are not done.
 
-The index belongs to the product, that is to the user. You propose, as the product owner of `docs/agents/po.md`; the `relecteur-produit` agent reviews the proposal cold; you show both to the user, and the user decides the grouping and the order. Nothing is committed before the user has approved it.
+The index belongs to the product, that is to the user. You propose, as the product owner of `.specify/extensions/artefact-product/agents/po.md`; the `relecteur-produit` agent reviews the proposal cold; you show both to the user, and the user decides the grouping and the order. Nothing is committed before the user has approved it.
 
-This command works with the agents of the method (`docs/agents/po.md`, `relecteur-produit`): their instructions are in `docs/agents/`, installed with the method. When one of these files is missing, stop and tell the user: the review cannot be skipped.
+This command works with the agents of the method (`.specify/extensions/artefact-product/agents/po.md`, `relecteur-produit`): their instructions are in `.specify/extensions/artefact-product/agents/`, installed with the `artefact-product` extension. When one of these files is missing, stop and tell the user: the review cannot be skipped.
 
 ## Steps
 
 1. **Branch.** Stop if the working tree has uncommitted changes. On `branches.base` of `.specify/stack.yml` (on `branches.production`, switch to `branches.base` and pull it first; without `branches.base`, the default branch of the repository), create and switch to `docs/product-epics` (or `docs/product-<short-name>` for a revision; `git switch -c`); on a `docs/product-*` branch left by `/speckit-prd`, stay on it; on another branch, ask the user before going on.
 
-2. **Read.** `docs/agents/po.md` (the standards you propose by, and the reviewer judges by), `specs/product.yml` (stop and point to `/speckit-prd` if it does not exist or has no requirement), `specs/prd.md` (vision, users, problems, constraints), and the output of the trace command: the states of the requirements and of the existing epics (without it, read the `**Status**` and `**Product Requirements**` of the specs).
+2. **Read.** `.specify/extensions/artefact-product/agents/po.md` (the standards you propose by, and the reviewer judges by), `specs/product.yml` (stop and point to `/speckit-prd` if it does not exist or has no requirement), `specs/prd.md` (vision, users, problems, constraints), and the output of the trace command: the states of the requirements and of the existing epics (without it, read the `**Status**` and `**Product Requirements**` of the specs).
 
 3. **Group.** An epic is a user outcome the product can deliver and demonstrate on its own (`A customer pays and gets refunded without support`), not a technical layer (`database`, `API`, `screens`) nor a team. Each active requirement goes into exactly one epic; a retired one stays where it is, or out of every epic. Aim for epics that a few features, each one a few user stories, can deliver. When a single requirement makes an epic of its own and depends on nothing, say so: it may stay as it is.
 
@@ -60,7 +60,7 @@ This command works with the agents of the method (`docs/agents/po.md`, `relecteu
    - a dropped journey gets `retired: <reason>` and keeps its id; an epic is not retired by hand: it is retired once all its requirements are;
    - moving a requirement out of an epic that already has specs is the user's call: name those specs in the proposal.
 
-7. **Review.** Launch the `relecteur-produit` subagent in mode `epics`, with the paths only: `specs/prd.md` and `specs/product.yml`. Never pass your notes nor the reasons of your order. When it reports a blocking issue, fix the draft once, or keep your version with a proof; then go on: no second round. With an agent other than Claude Code, ask the user to run `docs/agents/relecteur-produit.md` in a new session and paste its report.
+7. **Review.** Launch the `relecteur-produit` subagent in mode `epics`, with the paths only: `specs/prd.md` and `specs/product.yml`. Never pass your notes nor the reasons of your order. When it reports a blocking issue, fix the draft once, or keep your version with a proof; then go on: no second round. If your agent cannot launch it, ask the user to run `.specify/extensions/artefact-product/agents/relecteur-produit.md` in a new session, with the same inputs only, and paste its report: the review is never skipped.
 
 8. **Show the proposal, then wait.** Show the user a table (epic, goal, requirements, depends on, journeys), the proposed order with its reasons, for a revision the differences with the current index, and the reviewer's verdict: the issues you fixed, and those left or disputed, with their proof. Commit nothing until the user approves; apply their changes to the file and show again if needed. When the user declines, restore the draft: `git checkout -- specs/product.yml`.
 

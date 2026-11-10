@@ -31,6 +31,12 @@ importers:
         specifier: ^4.3.5
         version: 4.3.5
 
+  packages/sdd:
+    dependencies:
+      yaml:
+        specifier: ^2.9.1
+        version: 2.9.1
+
   packages/spec-trace:
     dependencies:
       yaml:

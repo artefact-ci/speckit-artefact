@@ -27,7 +27,7 @@ Before the technical plan of a feature that has screens, let the user see and ju
 
 This step is optional: the user runs it on the features they judge important, between `/speckit-clarify` and `/speckit-plan`. The `designer` agent produces, the `relecteur-design` agent reviews it cold, you show both to the user, and the user decides, once for the journeys and once for the mockup.
 
-This command works with the agents of the method (`designer`, `relecteur-design`): their instructions are in `docs/agents/`, installed with the method. When one of these files is missing, stop and tell the user: the review cannot be skipped. With an agent other than Claude Code, ask the user to run `docs/agents/designer.md` and `docs/agents/relecteur-design.md` in new sessions and paste their reports, for each mode.
+This command works with the agents of the method (`designer`, `relecteur-design`): their instructions are in `.specify/extensions/artefact-product/agents/`, installed with the `artefact-product` extension. When one of these files is missing, stop and tell the user: the review cannot be skipped. If your agent cannot launch a subagent, ask the user to run `.specify/extensions/artefact-product/agents/designer.md` and `.specify/extensions/artefact-product/agents/relecteur-design.md` in new sessions, with the same inputs only, and paste their reports, for each mode: the review is never skipped.
 
 When the user drops the prototype, at any step, remove the files of this run (`git clean -fd specs/NNN-<name>/prototypes/` for a new prototype, `git checkout --` for a revised one): the next command needs a clean tree.
 

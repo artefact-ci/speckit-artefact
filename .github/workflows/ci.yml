@@ -28,6 +28,13 @@ jobs:
             exit 1
           fi
 
+      - name: Check that the commands and the agents name no tool
+        run: |
+          if grep -rniE 'claude|antigravity' preset/ extension/ --exclude=README.md --exclude=preset.yml --exclude=extension.yml; then
+            echo "::error::a tool is cited: the method must work with any agent"
+            exit 1
+          fi
+
       - name: Create a blank Spec Kit 1.3.2 project
         run: |
           mkdir "$RUNNER_TEMP/blank"
@@ -62,6 +69,8 @@ jobs:
                 || { echo "::error::skill $skill is missing"; exit 1; }
             done
           done
+          test -f .specify/extensions/artefact-product/agents/relecteur.md \
+            || { echo "::error::the agent instructions are not installed"; exit 1; }
 
       - name: Layer the Nx preset example above artefact-sdd
         working-directory: ${{ runner.temp }}/blank
@@ -107,3 +116,34 @@ jobs:
           npx -y --package="$(ls "$RUNNER_TEMP"/packs/artefact-ci-prototype-*.tgz)" artefact-prototype --help \
             | grep -q 'Usage : artefact-prototype' \
             || { echo "::error::prototype does not run from its tarball"; exit 1; }
+          npx -y --package="$(ls "$RUNNER_TEMP"/packs/artefact-ci-sdd-*.tgz)" artefact-sdd --help \
+            | grep -q 'Usage : artefact-sdd' \
+            || { echo "::error::sdd does not run from its tarball"; exit 1; }
+
+  installer:
+    name: Install the method with artefact-sdd, real Spec Kit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm --filter @artefact-ci/sdd build
+
+      # Throwaway git repos: init twice leaves no diff, update keeps stack.yml and the constitution,
+      # a boilerplate project loses its preset and keeps docs/agents/. The test commits with
+      # -c user.name/-c user.email; the identity below covers any commit Spec Kit makes itself.
+      - name: Run the installer end to end
+        run: |
+          git config --global user.name 'CI'
+          git config --global user.email 'ci@example.com'
+          SDD_E2E=1 pnpm --filter @artefact-ci/sdd test:e2e

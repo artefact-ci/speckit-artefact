@@ -1,3 +1,4 @@
 packages:
   - packages/spec-trace
   - packages/prototype
+  - packages/sdd

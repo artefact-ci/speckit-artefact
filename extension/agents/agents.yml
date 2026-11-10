@@ -1,0 +1,23 @@
+# Métadonnées des sous-agents de la méthode, lues par `@artefact-ci/sdd` pour
+# générer les fichiers d'agent de chaque outil (les consignes sont les fichiers
+# `<name>.md` de ce dossier). `access` : read-only (ne modifie rien, ne commite
+# rien) ou writes (écrit des fichiers, ne commite rien). `po` n'a pas d'entrée :
+# ce n'est pas un sous-agent.
+# version: 1
+agents:
+  - name: designer
+    access: writes
+    description: >-
+      Expert UX/UI (SaaS moderne et professionnel) qui produit le cadrage design du produit et les prototypes des fonctionnalités. Lancé par /speckit-design (mode cadrage) et /speckit-prototype (modes parcours, puis maquette), avec le mode et les chemins à lire (specs/prd.md, specs/design.md, specs/NNN-<nom>/), et en reprise le rapport du relecteur-design. Écrit les fichiers, ne parle pas à l'utilisateur, rend un rapport avec ses hypothèses.
+  - name: relecteur
+    access: read-only
+    description: >-
+      Relecteur indépendant d'une branche ou d'une fonctionnalité Spec Kit. Le lancer avant de conclure /speckit-converge, ou pour relire une branche, avec seulement la base (par défaut la branche `branches.base` de .specify/stack.yml) et le dossier specs/NNN-<nom> s'il existe ; ne pas lui transmettre le résumé ni l'avis de l'auteur. Rend un verdict avec les écarts bloquants, preuves à l'appui. Ne modifie rien.
+  - name: relecteur-produit
+    access: read-only
+    description: >-
+      Relecteur indépendant d'un cadrage produit (specs/prd.md et exigences, ou epics de specs/product.yml). Lancé par /speckit-prd (mode prd) et /speckit-epics (mode epics) sur le brouillon, avec seulement le mode et les chemins (la source en mode prd) ; ne pas lui transmettre le résumé ni l'avis de l'auteur. Rend un verdict avec les écarts bloquants, preuves à l'appui. Ne modifie rien.
+  - name: relecteur-design
+    access: read-only
+    description: >-
+      Relecteur indépendant d'un cadrage design (specs/design.md et thème) ou d'un prototype (parcours, maquette HTML et captures). Lancé par /speckit-design et /speckit-prototype après le designer, avec seulement le mode et les chemins (specs/prd.md, specs/design.md, specs/NNN-<nom>/) ; ne pas lui transmettre le résumé ni l'avis du designer. Rend un verdict avec les écarts bloquants, preuves à l'appui. Ne modifie rien.
