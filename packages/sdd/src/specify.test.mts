@@ -26,6 +26,20 @@ describe('specify', () => {
     });
   });
 
+  it('SpecifyError carries stdout and shows its reason', async () => {
+    const out = [...Array.from({ length: 30 }, (_, i) => `line ${i}`), 'Error: Current directory is not empty'].join('\n');
+    const fake: Run = async () => ({ code: 1, stdout: out, stderr: 'warn' });
+    await assert.rejects(specify(fake, '/p', ['init']), (e: unknown) => {
+      assert.ok(e instanceof SpecifyError);
+      assert.equal(e.stdout, out);
+      assert.match(e.message, /Current directory is not empty/);
+      assert.match(e.message, /warn/);
+      assert.match(e.message, /line 29/);
+      assert.doesNotMatch(e.message, /line 5\b/);
+      return true;
+    });
+  });
+
   it('hasUv is false when uvx cannot be spawned', async () => {
     const fake: Run = async () => {
       throw Object.assign(new Error('spawn uvx ENOENT'), { code: 'ENOENT' });

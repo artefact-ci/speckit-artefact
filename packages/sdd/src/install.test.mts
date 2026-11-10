@@ -82,6 +82,10 @@ function fakeRunner(opts: { uv?: boolean } = {}): { runner: Run; calls: string[]
     const fail = (stderr: string) => ({ code: 1, stdout: '', stderr });
     const has = (f: string) => a.includes(f);
     if (a[0] === 'init') {
+      // Comme Spec Kit 1.3.2 : `.git` compte, l'erreur sort sur stdout.
+      if (readdirSync(root).length > 0 && !has('--force')) {
+        return { code: 1, stdout: 'Error: Current directory is not empty. Use --force.', stderr: '' };
+      }
       const integration = a[a.indexOf('--integration') + 1] ?? 'copilot';
       mkdirSync(join(root, '.specify/memory'), { recursive: true });
       writeFileSync(join(root, '.specify/memory/constitution.md'), readFileSync(fixture('constitution-blank.md')));
@@ -181,11 +185,11 @@ describe('install', () => {
     assert.ok(!existsSync(join(root, '.claude/agents/po.md')));
   });
 
-  it('init in a git repo without commit does not force and finds no branch', async () => {
+  it('init in a git repo without commit forces (.git counts) and finds no branch', async () => {
     const root = tempRepo(false);
     const { runner, calls } = fakeRunner();
     const report = await init(options(root, runner));
-    assert.ok(!calls[0]?.includes('--force'));
+    assert.ok(calls[0]?.includes('--force'));
     assert.equal(report.dirty, false);
     assert.ok(report.stack);
   });
@@ -331,6 +335,17 @@ describe('install', () => {
     assert.deepEqual(report.agentsSkipped, [{ integration: 'agy', names: ['designer'] }]);
     assert.ok(report.agents.includes('.agents/agents/relecteur/agent.md'));
     assert.equal(report.agents.length, 7);
+  });
+
+  it('a registered preset without its template asks for update', async () => {
+    const root = tempRepo();
+    existingSpecify(root);
+    register(root, 'presets', 'artefact-sdd', true);
+    const { runner } = fakeRunner();
+    await assert.rejects(
+      init(options(root, runner)),
+      (e: unknown) => e instanceof SetupError && /constitution-template\.md/.test(e.message) && /update/.test(e.message),
+    );
   });
 
   it('a malformed integration.json names the file', async () => {

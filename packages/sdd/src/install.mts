@@ -164,7 +164,8 @@ export async function init(o: Options): Promise<Report> {
   if (!existsSync(join(root, '.specify'))) {
     const args = ['init', '--here', '--script', 'sh', '--non-interactive', '--ignore-agent-tools'];
     args.push('--integration', o.integration ?? 'claude');
-    if (readdirSync(root).some((e) => e !== '.git')) args.push('--force');
+    // Spec Kit 1.3.2 compte `.git` comme contenu : sans --force, il refuse un dossier non vide.
+    if (readdirSync(root).length > 0) args.push('--force');
     await specify(o.runner, root, args);
   }
 
@@ -180,7 +181,9 @@ export async function init(o: Options): Promise<Report> {
   const constFile = join(root, CONSTITUTION);
   if (!existsSync(constFile) || isBlankConstitution(readFileSync(constFile, 'utf8'))) {
     const template = join(root, PRESET_TEMPLATE);
-    if (!existsSync(template)) throw new SetupError(`${PRESET_TEMPLATE} introuvable : le preset artefact-sdd est-il installé ?`);
+    if (!existsSync(template)) {
+      throw new SetupError(`${PRESET_TEMPLATE} introuvable alors que le preset artefact-sdd est enregistré : lance update`);
+    }
     writeIfChanged(constFile, baseConstitution(readFileSync(template, 'utf8'), basename(root)));
     constitution = 'written';
   }
