@@ -17,11 +17,11 @@ Dans l'ordre :
 
 1. **Passer le dépôt en public** : Settings, General, Danger Zone, Change visibility. Avant tout le reste, sinon pas de provenance et des zips illisibles.
 2. **Fusionner** la phase 5 dans `dev`, puis `dev` dans `main`.
-3. **Publier un paquet provisoire de `@artefact-ci/sdd`.** Il n'existe pas encore sur npm, et npm n'accepte un trusted publisher que pour un paquet existant (spec-trace et prototype ont déjà leur `0.0.0-stage`). Dans un dossier vide, avec un `package.json` `{ "name": "@artefact-ci/sdd", "version": "0.0.0-stage" }` :
+3. **Publier un paquet provisoire de `@artefact-ci/sdd`.** Il n'existe pas encore sur npm, et npm n'accepte un trusted publisher que pour un paquet existant (spec-trace et prototype ont déjà leur `0.0.0-stage`). Dans un dossier jetable hors du dépôt, après `npm login`, avec un `package.json` `{ "name": "@artefact-ci/sdd", "version": "0.0.0-stage" }` :
    ```sh
    npm publish --access public --tag stage
    ```
-   avec la 2FA. Le tag `stage` évite que `latest` pointe sur ce paquet provisoire.
+   npm demande le code à usage unique de la 2FA. Le tag `stage` évite que `latest` pointe sur ce paquet provisoire.
 4. **Déclarer le trusted publisher des trois paquets**, au plus 2 jours avant le tag (une déclaration expire au bout de 2 jours sans publication). Sur npmjs.com : Settings, Trusted publishing, GitHub Actions, avec Organization `artefact-ci`, Repository `speckit-artefact`, Workflow filename `release.yml`, sans Environment, et en autorisant la publication directe. Ou en ligne de commande (npm 11.15 ou plus, 2FA activée) :
    ```sh
    for p in sdd spec-trace prototype; do
