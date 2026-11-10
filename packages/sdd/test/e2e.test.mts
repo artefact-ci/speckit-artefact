@@ -61,7 +61,8 @@ describe('artefact-sdd end to end, real Spec Kit', { skip: process.env['SDD_E2E'
 
     const first = sdd(repo, 'init', '--source', SOURCE);
     assert.match(first, /Installé : git, artefact-product, artefact-sdd/);
-    assert.match(first, /\.specify\/stack\.yml déduit du dépôt \(bun-hono\)/);
+    assert.match(first, /\.specify\/stack\.yml déduit du dépôt/);
+    assert.match(first, /Stack détectée : bun-hono/);
     assert.match(first, /constitution\.md écrit/);
     assert.ok(existsSync(join(repo, '.claude', 'agents', 'relecteur.md')));
     commit(repo, 'artefact-sdd');
@@ -78,7 +79,7 @@ describe('artefact-sdd end to end, real Spec Kit', { skip: process.env['SDD_E2E'
     const before = [readFileSync(stack), readFileSync(constitution)];
 
     const updated = sdd(repo, 'update', '--source', SOURCE);
-    assert.match(updated, /Installé : git, artefact-product, artefact-sdd/);
+    assert.match(updated, /Réinstallé \/ mis à jour : git, artefact-product, artefact-sdd/);
     assert.deepEqual([readFileSync(stack), readFileSync(constitution)], before);
   });
 
@@ -91,12 +92,16 @@ describe('artefact-sdd end to end, real Spec Kit', { skip: process.env['SDD_E2E'
     mkdirSync(join(repo, 'docs', 'agents'), { recursive: true });
     copyFileSync(join(FIXTURE, 'legacy', 'relecteur.md'), join(repo, 'docs', 'agents', 'relecteur.md'));
     commit(repo, 'boilerplate project');
+    const legacy = join(repo, 'docs', 'agents', 'relecteur.md');
+    const legacyBefore = readFileSync(legacy);
 
     const out = sdd(repo, 'init', '--source', SOURCE);
     const presets = specify(repo, 'preset', 'list');
     assert.doesNotMatch(presets, /boilerplate/);
     assert.match(presets, /artefact-sdd/);
-    assert.ok(existsSync(join(repo, 'docs', 'agents', 'relecteur.md')));
+    assert.deepEqual(readFileSync(legacy), legacyBefore);
     assert.match(out, /docs\/agents\/relecteur\.md : identique au boilerplate/);
+    assert.match(out, /preset `boilerplate` retiré/);
+    assert.match(out, /`npx @artefact-ci\/sdd update`/);
   });
 });

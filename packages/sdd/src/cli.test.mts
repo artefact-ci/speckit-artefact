@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
@@ -54,6 +54,24 @@ describe('artefact-sdd, command line', () => {
     assert.match(stderr, /la source release arrive en phase 5 : passe --source <clone de speckit-artefact>/);
   });
 
+  it('fails when --source is not a speckit-artefact clone', () => {
+    const { status, stderr } = sdd('init', '--source', project);
+    assert.equal(status, 1);
+    assert.match(stderr, /n'est pas un clone de speckit-artefact/);
+    assert.match(stderr, /extension\/extension\.yml/);
+    assert.ok(!stderr.includes('    at '), stderr);
+  });
+
+  it('fails when --source has the extension but no preset', () => {
+    const src = mkdtempSync(join(tmpdir(), 'sdd-src-'));
+    mkdirSync(join(src, 'extension'));
+    writeFileSync(join(src, 'extension/extension.yml'), 'x: 1\n');
+    const { status, stderr } = sdd('update', '--source', src);
+    rmSync(src, { recursive: true, force: true });
+    assert.equal(status, 1);
+    assert.match(stderr, /preset\/preset\.yml/);
+  });
+
   it('warns that update ignores --integration', () => {
     const { stderr } = sdd('update', '--integration', 'codex');
     assert.match(stderr, /--integration est ignoré par update/);
@@ -61,6 +79,9 @@ describe('artefact-sdd, command line', () => {
 });
 
 const base: Report = {
+  mode: 'init',
+  migrated: false,
+  noIntegration: false,
   installed: [],
   skipped: [],
   agents: [],
@@ -89,10 +110,11 @@ describe('formatReport', () => {
   it('says stack.yml was deduced and must be reread', () => {
     const text = formatReport({
       ...base,
-      stack: { yaml: '', kind: 'bun-hono', guessed: ['commands.test', 'kind'], empty: ['docs'] },
+      stack: { yaml: '', kind: 'bun-hono', guessed: ['commands.test'], empty: ['docs'] },
     });
-    assert.match(text, /\.specify\/stack\.yml déduit du dépôt \(bun-hono\) : relis-le/);
-    assert.match(text, /Devinées : commands\.test, kind/);
+    assert.match(text, /\.specify\/stack\.yml déduit du dépôt : relis-le/);
+    assert.match(text, /Stack détectée : bun-hono/);
+    assert.match(text, /Devinées : commands\.test\n/);
     assert.match(text, /À compléter : docs/);
   });
 
@@ -109,5 +131,38 @@ describe('formatReport', () => {
   it('warns when the working tree was dirty', () => {
     assert.match(formatReport({ ...base, dirty: true }), /Attention : le dépôt avait des changements non commités/);
     assert.doesNotMatch(formatReport(base), /Attention/);
+  });
+
+  it('labels update components as reinstalled', () => {
+    const text = formatReport({ ...base, mode: 'update', installed: ['git', 'artefact-sdd'] });
+    assert.match(text, /Réinstallé \/ mis à jour : git, artefact-sdd/);
+    assert.doesNotMatch(text, /^ {2}Installé/m);
+  });
+
+  it('shows the boilerplate migration', () => {
+    const text = formatReport({ ...base, migrated: true });
+    assert.match(text, /preset `boilerplate` retiré/);
+    assert.match(text, /specify preset add --dev <chemin> --priority 5/);
+    assert.match(text, /examples\/nx-preset\//);
+    assert.match(text, /remplacer `preset update boilerplate` dans `AGENTS\.md` et les guides par `npx @artefact-ci\/sdd update`/);
+    assert.doesNotMatch(formatReport(base), /boilerplate/);
+  });
+
+  it('says when no integration was found', () => {
+    const text = formatReport({ ...base, noIntegration: true });
+    assert.match(text, /aucune intégration trouvée dans \.specify\/integration\.json : aucun fichier d'agent généré/);
+    assert.doesNotMatch(formatReport(base), /aucune intégration/);
+  });
+
+  it('an unchanged legacy agent is deletable once the mentions are updated', () => {
+    const file = { path: 'docs/agents/relecteur.md', state: 'unchanged' } as const;
+    const withMentions = formatReport({ ...base, legacy: { files: [file], mentions: ['.specify/memory/constitution.md'] } });
+    assert.match(
+      withMentions,
+      /docs\/agents\/relecteur\.md : identique au boilerplate : supprimable une fois les mentions ci-dessous mises à jour/,
+    );
+    assert.match(withMentions, /Citent encore docs\/agents\/ : \.specify\/memory\/constitution\.md/);
+    const alone = formatReport({ ...base, legacy: { files: [file], mentions: [] } });
+    assert.match(alone, /docs\/agents\/relecteur\.md : identique au boilerplate, tu peux le supprimer/);
   });
 });

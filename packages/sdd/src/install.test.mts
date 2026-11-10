@@ -172,9 +172,13 @@ describe('install', () => {
     assert.deepEqual(report.agentsSkipped, []);
     assert.equal(report.constitution, 'written');
     assert.equal(report.dirty, false);
+    assert.equal(report.mode, 'init');
+    assert.equal(report.migrated, false);
+    assert.equal(report.noIntegration, false);
     assert.ok(report.stack);
     assert.equal(read(root, '.specify/stack.yml'), report.stack.yaml);
     assert.match(report.stack.yaml, /base: dev/);
+    assert.match(report.stack.yaml, /production: main/);
     const constitution = read(root, '.specify/memory/constitution.md');
     assert.ok(constitution.includes(basename(root)));
     assert.ok(!constitution.includes('[PROJECT_NAME]'));
@@ -192,6 +196,46 @@ describe('install', () => {
     assert.ok(calls[0]?.includes('--force'));
     assert.equal(report.dirty, false);
     assert.ok(report.stack);
+    assert.match(report.stack.yaml, /base: # à compléter/);
+    assert.match(report.stack.yaml, /production: # à compléter/);
+  });
+
+  it('init on chore/x with only main: base main, production to complete', async () => {
+    const root = tempRepo();
+    git(root, 'branch', '-D', 'dev');
+    git(root, 'checkout', '-q', '-b', 'chore/x');
+    const { runner } = fakeRunner();
+    const report = await init(options(root, runner));
+    assert.ok(report.stack);
+    assert.match(report.stack.yaml, /base: main\n/);
+    assert.match(report.stack.yaml, /production: # à compléter/);
+  });
+
+  it('init in a fresh clone of dev: main only on origin is still production', async () => {
+    const origin = tempRepo();
+    const root = mkdtempSync(join(tmpdir(), 'sdd-clone-'));
+    git(root, 'clone', '-q', '-b', 'dev', origin, '.');
+    assert.equal(git(root, 'branch', '--format=%(refname:short)').trim(), 'dev');
+    const { runner } = fakeRunner();
+    const report = await init(options(root, runner));
+    assert.ok(report.stack);
+    assert.match(report.stack.yaml, /base: dev\n/);
+    assert.match(report.stack.yaml, /production: main\n/);
+  });
+
+  it('init in a clone without dev takes the default branch of origin as base', async () => {
+    const origin = tempRepo();
+    git(origin, 'branch', '-D', 'dev');
+    git(origin, 'branch', '-m', 'main', 'trunk');
+    git(origin, 'branch', 'main');
+    git(origin, 'branch', 'feature');
+    const root = mkdtempSync(join(tmpdir(), 'sdd-clone-'));
+    git(root, 'clone', '-q', '-b', 'feature', origin, '.');
+    const { runner } = fakeRunner();
+    const report = await init(options(root, runner));
+    assert.ok(report.stack);
+    assert.match(report.stack.yaml, /base: trunk\n/);
+    assert.match(report.stack.yaml, /production: main\n/);
   });
 
   it('second init calls no install and writes nothing', async () => {
@@ -237,6 +281,7 @@ describe('install', () => {
       ['preset', 'add', '--dev', join(source, 'preset')],
     ]);
     assert.ok(!isRegistered(root, 'presets', 'boilerplate'));
+    assert.equal(report.migrated, true);
     assert.equal(report.constitution, 'written');
   });
 
@@ -256,6 +301,8 @@ describe('install', () => {
       ['preset', 'update', 'artefact-sdd', '--dev', join(source, 'preset')],
     ]);
     assert.deepEqual(report.installed, ['git', 'artefact-product', 'artefact-sdd']);
+    assert.equal(report.mode, 'update');
+    assert.equal(report.migrated, false);
     assert.equal(report.constitution, 'kept');
     assert.equal(report.stack, undefined);
     assert.deepEqual(report.agents, METHOD_AGENTS);
@@ -321,6 +368,17 @@ describe('install', () => {
     assert.deepEqual(report.noAgentGenerator, ['copilot']);
     assert.deepEqual(report.agents, []);
     assert.ok(!existsSync(join(root, '.claude')));
+  });
+
+  it('no integration in integration.json is reported', async () => {
+    const root = tempRepo();
+    existingSpecify(root);
+    writeFileSync(join(root, '.specify/integration.json'), JSON.stringify({ installed_integrations: [] }));
+    const { runner } = fakeRunner();
+    const report = await init(options(root, runner));
+    assert.equal(report.noIntegration, true);
+    assert.deepEqual(report.agents, []);
+    assert.deepEqual(report.noAgentGenerator, []);
   });
 
   it('agy integration reports the agents it skips', async () => {

@@ -5,6 +5,8 @@ import { parse, stringify } from 'yaml';
 
 export type Kind = 'nx' | 'nextjs' | 'bun-hono' | 'unknown';
 export type Deduction = { yaml: string; kind: Kind; guessed: string[]; empty: string[] };
+/** names : branches locales et distantes (`origin/` retiré), dédupliquées ; defaultBranch : cible de `origin/HEAD`. */
+export type Branches = { names: string[]; defaultBranch?: string };
 type Runner = 'bun' | 'pnpm' | 'yarn' | 'npm';
 type Example = {
   docs?: string[];
@@ -26,7 +28,8 @@ export function defaultExamplesDir(): string {
 const RUNNERS: Record<Runner, { run: string; dlx: string }> = {
   bun: { run: 'bun run', dlx: 'bunx' },
   pnpm: { run: 'pnpm', dlx: 'pnpm dlx' },
-  yarn: { run: 'yarn', dlx: 'yarn dlx' },
+  // yarn 1 n'a pas de dlx : npx marche partout où yarn tourne.
+  yarn: { run: 'yarn', dlx: 'npx -y' },
   npm: { run: 'npm run', dlx: 'npx -y' },
 };
 const EXEC: Record<Runner, string> = { bun: 'bunx ', pnpm: 'pnpm ', yarn: 'yarn ', npm: 'npx ' };
@@ -63,7 +66,7 @@ const flow = (v: string[]): string =>
  */
 export function deduceStack(
   root: string,
-  opts: { examplesDir: string; toolsVersion: string; branches: string[] },
+  opts: { examplesDir: string; toolsVersion: string; branches: Branches },
 ): Deduction {
   const has = (p: string): boolean => existsSync(join(root, p));
   const kind = detectKind(root, has);
@@ -82,7 +85,7 @@ export function deduceStack(
     return cmd;
   };
 
-  const guessed = new Set<string>(['kind', 'branches']);
+  const guessed = new Set<string>();
   const empty = new Set<string>();
   const lines: string[] = [`# Déduit par @artefact-ci/sdd ${opts.toolsVersion} : relis chaque clé (voir docs/stack.md).`, 'version: 1'];
 
@@ -102,13 +105,21 @@ export function deduceStack(
     lines.push(`${path}:`, ...values.map((v) => `  - ${scalar(v)}`));
   };
 
-  // branches : base = dev sinon la première de la liste (la courante) ; production = main si présente et différente
-  const base = opts.branches.includes('dev') ? 'dev' : opts.branches[0];
+  // branches : base = dev, sinon la branche par défaut (origin/HEAD, puis main, puis master), jamais la
+  // branche courante ; production = main si présente et différente de base. Sinon vide, à compléter.
+  const names = new Set(opts.branches.names);
+  const def = opts.branches.defaultBranch;
+  const base = names.has('dev') ? 'dev' : [def, 'main', 'master'].find((b) => b !== undefined && names.has(b));
+  const production = names.has('main') && base !== 'main' ? 'main' : undefined;
   lines.push('branches:');
-  put(2, 'branches.base', base);
-  if (opts.branches.includes('main') && base !== 'main') put(2, 'branches.production', 'main');
+  put(2, 'branches.base', base === undefined ? undefined : scalar(base));
+  put(2, 'branches.production', production);
+  if (base !== undefined) guessed.add('branches.base');
+  if (production !== undefined) guessed.add('branches.production');
 
-  putList('docs', (ex.docs ?? ['AGENTS.md']).filter(has));
+  const docs = (ex.docs ?? ['AGENTS.md']).filter(has);
+  putList('docs', docs);
+  if (docs.length > 0) guessed.add('docs');
 
   // commandes
   lines.push('commands:');
@@ -138,7 +149,11 @@ export function deduceStack(
     if (ex.tests.globs) (put(2, 'tests.globs', flow(ex.tests.globs)), guessed.add('tests.globs'));
     if (ex.tests.needs) (put(2, 'tests.needs', flow(ex.tests.needs)), guessed.add('tests.needs'));
   }
-  if (ex.shared) putList('shared', ex.shared.filter(has));
+  if (ex.shared) {
+    const shared = ex.shared.filter(has);
+    putList('shared', shared);
+    if (shared.length > 0) guessed.add('shared');
+  }
 
   // ui : objet dès qu'un front est détecté
   guessed.add('ui');

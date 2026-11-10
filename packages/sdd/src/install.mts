@@ -5,12 +5,17 @@ import { baseConstitution, isBlankConstitution } from './constitution.mts';
 import { applyGitHooks } from './hooks.mts';
 import { legacyAgents } from './legacy.mts';
 import { hasUv, specify, type Run } from './specify.mts';
-import { deduceStack, defaultExamplesDir, type Deduction } from './stack.mts';
+import { deduceStack, defaultExamplesDir, type Branches, type Deduction } from './stack.mts';
 
 /** source : clone de speckit-artefact (phase 4). */
 export type Options = { root: string; source: string; integration?: string; toolsVersion: string; runner: Run };
 
 export type Report = {
+  mode: 'init' | 'update';
+  /** Vrai si le preset `boilerplate` a été retiré pendant cette exécution. */
+  migrated: boolean;
+  /** Vrai si `.specify/integration.json` ne nomme aucune intégration. */
+  noIntegration: boolean;
   installed: string[];
   skipped: string[];
   /** Fichiers d'agent écrits ou déjà à jour (relatifs à la racine). */
@@ -91,28 +96,29 @@ async function git(o: Options, args: string[]): Promise<string | null> {
   }
 }
 
-/** Branche courante d'abord, puis les autres ; [] hors dépôt ou sans commit. */
-async function branches(o: Options): Promise<string[]> {
-  const head = (await git(o, ['rev-parse', '--abbrev-ref', 'HEAD']))?.trim();
-  if (!head) return [];
-  const all = ((await git(o, ['branch', '--format=%(refname:short)'])) ?? '')
+/** Branches locales et de `origin` (préfixe retiré, dédupliquées) et cible de `origin/HEAD` ; vide hors dépôt. */
+async function branches(o: Options): Promise<Branches> {
+  const refs = ((await git(o, ['for-each-ref', '--format=%(refname)', 'refs/heads', 'refs/remotes/origin'])) ?? '')
     .split('\n')
-    .map((b) => b.trim())
-    .filter(Boolean);
-  const first = head === 'HEAD' ? [] : [head];
-  return [...first, ...all.filter((b) => b !== head)];
+    .map((r) => r.trim())
+    .filter((r) => r !== '' && r !== 'refs/remotes/origin/HEAD')
+    .map((r) => r.replace(/^refs\/heads\//, '').replace(/^refs\/remotes\/origin\//, ''));
+  const head = (await git(o, ['symbolic-ref', '--quiet', 'refs/remotes/origin/HEAD']))?.trim();
+  const defaultBranch = head?.startsWith('refs/remotes/origin/') ? head.slice('refs/remotes/origin/'.length) : undefined;
+  return { names: [...new Set(refs)], ...(defaultBranch ? { defaultBranch } : {}) };
 }
 
 async function isDirty(o: Options): Promise<boolean> {
   return ((await git(o, ['status', '--porcelain'])) ?? '').trim() !== '';
 }
 
-type Common = Omit<Report, 'stack' | 'constitution' | 'dirty'>;
+type Common = Omit<Report, 'mode' | 'stack' | 'constitution' | 'dirty'>;
 
 /** Étapes 3 à 6 communes à init et update, puis le relevé des anciens agents. */
 async function common(o: Options, mode: 'init' | 'update'): Promise<Common> {
   const { root } = o;
-  if (registered(root, 'presets', 'boilerplate')) await specify(o.runner, root, ['preset', 'remove', 'boilerplate']);
+  const migrated = registered(root, 'presets', 'boilerplate');
+  if (migrated) await specify(o.runner, root, ['preset', 'remove', 'boilerplate']);
 
   const installed: string[] = [];
   const skipped: string[] = [];
@@ -153,7 +159,16 @@ async function common(o: Options, mode: 'init' | 'update'): Promise<Common> {
     if (names.length > 0) agentsSkipped.push({ integration, names });
   }
 
-  return { installed, skipped, agents, agentsSkipped, noAgentGenerator, legacy: legacyAgents(root) };
+  return {
+    migrated,
+    noIntegration: integrations.length === 0,
+    installed,
+    skipped,
+    agents,
+    agentsSkipped,
+    noAgentGenerator,
+    legacy: legacyAgents(root),
+  };
 }
 
 export async function init(o: Options): Promise<Report> {
@@ -188,7 +203,7 @@ export async function init(o: Options): Promise<Report> {
     constitution = 'written';
   }
 
-  return { ...done, stack, constitution, dirty };
+  return { mode: 'init', ...done, stack, constitution, dirty };
 }
 
 export async function update(o: Options): Promise<Report> {
@@ -196,5 +211,5 @@ export async function update(o: Options): Promise<Report> {
   if (!existsSync(join(o.root, '.specify'))) throw new SetupError('.specify/ absent : lance init');
   const dirty = await isDirty(o);
   const done = await common(o, 'update');
-  return { ...done, constitution: 'kept', dirty };
+  return { mode: 'update', ...done, constitution: 'kept', dirty };
 }

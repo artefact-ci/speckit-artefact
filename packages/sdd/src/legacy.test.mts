@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { appendFileSync, copyFileSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { appendFileSync, chmodSync, copyFileSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
@@ -42,5 +42,39 @@ describe('legacy', () => {
     writeFileSync(join(root, '.claude/agents/po.md'), 'docs/agents/po.md');
     writeFileSync(join(root, 'node_modules/x/a.md'), 'docs/agents/');
     assert.deepEqual(legacyAgents(root).mentions, ['AGENTS.md', 'sub/README.md']);
+  });
+
+  it('legacy: the constitution in .specify/memory/ is scanned, the installed .specify/ folders are not', () => {
+    const root = tempRoot();
+    for (const d of ['memory', 'extensions/x', 'presets/x', 'templates', 'scripts', 'integrations', 'workflows']) {
+      mkdirSync(join(root, '.specify', d), { recursive: true });
+    }
+    writeFileSync(join(root, '.specify/memory/constitution.md'), 'Voir docs/agents/relecteur.md');
+    for (const d of ['extensions/x', 'presets/x', 'templates', 'scripts', 'integrations', 'workflows']) {
+      writeFileSync(join(root, '.specify', d, 'a.md'), 'docs/agents/relecteur.md');
+    }
+    assert.deepEqual(legacyAgents(root).mentions, ['.specify/memory/constitution.md']);
+  });
+
+  it('legacy: build and cache folders are skipped', () => {
+    const root = tempRoot();
+    for (const d of ['.next', '.nx', 'coverage', '.turbo', 'build', 'vendor', 'dist']) {
+      mkdirSync(join(root, d), { recursive: true });
+      writeFileSync(join(root, d, 'a.md'), 'docs/agents/');
+    }
+    assert.deepEqual(legacyAgents(root).mentions, []);
+  });
+
+  it('legacy: an unreadable folder is skipped, not fatal', { skip: process.getuid?.() === 0 }, () => {
+    const root = tempRoot();
+    mkdirSync(join(root, 'locked'));
+    writeFileSync(join(root, 'locked/a.md'), 'docs/agents/');
+    writeFileSync(join(root, 'AGENTS.md'), 'docs/agents/po.md');
+    chmodSync(join(root, 'locked'), 0o000);
+    try {
+      assert.deepEqual(legacyAgents(root).mentions, ['AGENTS.md']);
+    } finally {
+      chmodSync(join(root, 'locked'), 0o755);
+    }
   });
 });

@@ -8,7 +8,7 @@ import { parse } from 'yaml';
 import { deduceStack, defaultExamplesDir } from './stack.mts';
 
 const repo = (name: string): string => fileURLToPath(new URL(`../test/fixture/repos/${name}/`, import.meta.url));
-const opts = { examplesDir: defaultExamplesDir(), toolsVersion: '0.1.0', branches: ['dev', 'main', 'feat/x'] };
+const opts = { examplesDir: defaultExamplesDir(), toolsVersion: '0.1.0', branches: { names: ['dev', 'main', 'feat/x'] } };
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Stack = any;
 const load = (yaml: string): Stack => parse(yaml) as Stack;
@@ -72,13 +72,14 @@ test('nextjs repo with theme and npm runner', () => {
   writeFileSync(join(dir, 'src/app/globals.css'), ':root {}\n');
   rmSync(join(dir, 'pnpm-lock.yaml'));
   writeFileSync(join(dir, 'package-lock.json'), '{}\n');
-  const d = deduceStack(dir, { ...opts, branches: ['feat/x'] });
+  const d = deduceStack(dir, { ...opts, branches: { names: ['feat/x'] } });
   const s = load(d.yaml);
   assert.equal(s.ui.theme, 'src/app/globals.css');
   assert.ok(!d.empty.includes('ui.theme'));
   assert.equal(s.commands.test, 'npm run test -- {file}');
   assert.equal(s.commands.trace, 'npx -y @artefact-ci/spec-trace@0.1.0');
-  assert.deepEqual(s.branches, { base: 'feat/x' });
+  assert.deepEqual(s.branches, { base: null, production: null });
+  assert.ok(d.empty.includes('branches.base') && d.empty.includes('branches.production'));
 });
 
 test('unknown repo without package.json', () => {
@@ -113,9 +114,61 @@ test('the output is deterministic and sorted', () => {
   }
 });
 
-test('branches: base is dev, else the first; production is main when different', () => {
-  const only = deduceStack(repo('unknown'), { ...opts, branches: ['main'] });
-  assert.deepEqual(load(only.yaml).branches, { base: 'main' });
-  const none = deduceStack(repo('unknown'), { ...opts, branches: [] });
-  assert.ok(none.empty.includes('branches.base'));
+const branchesOf = (names: string[], defaultBranch?: string) => {
+  const d = deduceStack(repo('unknown'), { ...opts, branches: defaultBranch ? { names, defaultBranch } : { names } });
+  return { d, b: load(d.yaml).branches };
+};
+
+test('branches (a): dev and main local', () => {
+  const { d, b } = branchesOf(['dev', 'main']);
+  assert.deepEqual(b, { base: 'dev', production: 'main' });
+  assert.ok(d.guessed.includes('branches.base') && d.guessed.includes('branches.production'));
+});
+
+test('branches (b): on chore/x with only main, base main, production to complete', () => {
+  const { d, b } = branchesOf(['chore/x', 'main']);
+  assert.deepEqual(b, { base: 'main', production: null });
+  assert.match(d.yaml, /production: # à compléter/);
+  assert.ok(d.empty.includes('branches.production'));
+});
+
+test('branches (c): dev local and main only on origin', () => {
+  // names = locales + distantes sans origin/, dédupliquées : dev, main
+  const { b } = branchesOf(['dev', 'main'], 'main');
+  assert.deepEqual(b, { base: 'dev', production: 'main' });
+});
+
+test('branches (d): no branch, both to complete', () => {
+  const { d, b } = branchesOf([]);
+  assert.deepEqual(b, { base: null, production: null });
+  assert.ok(d.empty.includes('branches.base') && d.empty.includes('branches.production'));
+  assert.ok(!d.guessed.some((k) => k.startsWith('branches')));
+});
+
+test('branches: without dev, the default branch of origin, then main, then master; never the current one', () => {
+  assert.equal(branchesOf(['feat/y', 'trunk', 'main'], 'trunk').b.base, 'trunk');
+  assert.equal(branchesOf(['trunk', 'main'], 'trunk').b.production, 'main');
+  assert.deepEqual(branchesOf(['feat/y', 'master']).b, { base: 'master', production: null });
+  assert.equal(branchesOf(['feat/y']).b.base, null);
+});
+
+test('guessed: docs and shared taken from the example, never kind', () => {
+  const d = deduceStack(repo('nx'), opts);
+  assert.ok(d.guessed.includes('docs'));
+  assert.ok(d.guessed.includes('shared'));
+  assert.ok(!d.guessed.includes('kind'));
+});
+
+test('yarn runner: dlx is npx -y (yarn 1 has no dlx), run and exec stay yarn', () => {
+  const dir = copy('nextjs');
+  rmSync(join(dir, 'pnpm-lock.yaml'));
+  writeFileSync(join(dir, 'yarn.lock'), '');
+  const s = load(deduceStack(dir, opts).yaml);
+  assert.equal(s.commands.trace, 'npx -y @artefact-ci/spec-trace@0.1.0');
+  assert.equal(s.ui.prototype, 'npx -y @artefact-ci/prototype@0.1.0');
+  assert.equal(s.commands.test, 'yarn test {file}');
+  const nx = copy('nx');
+  rmSync(join(nx, 'pnpm-lock.yaml'), { force: true });
+  writeFileSync(join(nx, 'yarn.lock'), '');
+  assert.equal(load(deduceStack(nx, opts).yaml).commands.affected, 'yarn nx affected -t lint typecheck test');
 });
