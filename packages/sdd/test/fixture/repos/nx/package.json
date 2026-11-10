@@ -1,0 +1,1 @@
+{"name":"nx-fixture","private":true,"scripts":{"check":"nx run-many -t lint test"}}
