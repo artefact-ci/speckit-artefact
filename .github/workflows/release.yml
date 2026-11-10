@@ -1,11 +1,17 @@
 name: Release
 
 # A tag vX.Y.Z on main publishes, in this order: the GitHub release with its two zips, then the three npm
-# packages, then a smoke test of the published installer. A release is never deleted and a published zip is
-# never replaced: a rerun skips what is already published, and stops if a zip would change.
+# packages, then a smoke test of the published installer. The release is created as a draft and published only
+# once both zips are attached. A release is never deleted and a published zip is never replaced: a rerun skips
+# what is already published, and stops if a zip would change.
 on:
   push:
     tags: ['v*.*.*']
+
+# Two runs for the same tag (a rerun while the first is still going) never publish at the same time.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -75,12 +81,14 @@ jobs:
       - name: Build the zips
         run: pnpm zips dist-zips
 
-      - name: Create the release
+      # A draft: nobody sees the release, nor downloads from it, before both zips are there. On a rerun the
+      # existing release, draft or published, is kept (gh release view sees drafts with this token).
+      - name: Create the release as a draft
         run: |
           if gh release view "$TAG" > /dev/null 2>&1; then
             echo "La release $TAG existe déjà"
           else
-            gh release create "$TAG" --title "$TAG" --notes-file notes.md --verify-tag
+            gh release create "$TAG" --draft --title "$TAG" --notes-file notes.md --verify-tag
           fi
 
       # gh release upload without --clobber never replaces an asset; a zip already there is compared instead.
@@ -99,6 +107,10 @@ jobs:
               gh release upload "$TAG" "$path"
             fi
           done
+
+      # Reached only when both zips are there and identical to the build. Idempotent on a published release.
+      - name: Publish the release
+        run: gh release edit "$TAG" --draft=false
 
   npm:
     name: Publish the npm packages
