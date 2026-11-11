@@ -10,7 +10,7 @@ Chaque fonctionnalité part d'une spec écrite et relue. Elle est implémentée 
 | extension `artefact-product` | `/speckit-prd`, `/speckit-design`, `/speckit-epics`, `/speckit-prototype`, et les consignes des agents (relecteur, relecteur produit, designer, relecteur design, PO) |
 | [`@artefact-ci/sdd`](packages/sdd/README.md) | l'installeur : `npx @artefact-ci/sdd init` et `update` |
 | [`@artefact-ci/spec-trace`](packages/spec-trace/README.md) | la matrice scénarios → tests, qui échoue quand un scénario n'a pas de test |
-| [`@artefact-ci/prototype`](packages/prototype/README.md) | les maquettes HTML cliquables de `/speckit-prototype`, dans le thème du projet |
+| [`@artefact-ci/prototype`](packages/prototype/README.md) | le prototype HTML cliquable du produit (`specs/prototype/`), que `/speckit-prototype` complète à chaque fonctionnalité, dans le thème du projet |
 
 Les commandes ne citent aucun outil ni aucun chemin propre à une stack : elles lisent `.specify/stack.yml`, le fichier qui décrit le projet (ses commandes de test, ses branches, ses fichiers de conventions, son front).
 
@@ -65,7 +65,7 @@ e2e: null
 
 ## Travailler avec la méthode
 
-Les specs, plans et tâches sont écrits en anglais ; vous pouvez décrire la fonctionnalité en français.
+Les documents produit, les specs, les plans et les tâches sont écrits dans la langue du projet, fixée par `.specify/memory/language.yml` (`language: fr`, un code BCP 47). `/speckit-prd` la demande quand le fichier manque ; sans lui, tout est en anglais. Quelle que soit la langue, les titres des templates, les marqueurs que lit la trace (`**Status**:`…), les identifiants, les messages de commit, le code et les titres de tests ne changent pas.
 
 **Cadrer le produit**, une fois au départ puis à chaque révision du cahier des charges, sur une branche `docs/product-*` :
 
@@ -73,7 +73,7 @@ Les specs, plans et tâches sont écrits en anglais ; vous pouvez décrire la fo
 | --- | --- |
 | `/speckit-prd <description ou chemin du cahier des charges>` | `specs/prd.md` et les exigences de `specs/product.yml` (`PAY-03`) |
 | `/speckit-design` | `specs/design.md` (utilisateurs, ergonomie, ton, accessibilité, direction visuelle), appliqué au thème quand le projet a un front |
-| `/speckit-epics` | les epics de `specs/product.yml`, ordonnés par leurs dépendances, avec leurs parcours de bout en bout |
+| `/speckit-epics` | les epics de `specs/product.yml`, ordonnés par leurs dépendances et leur priorité (`P1`, `P2`…), avec leurs parcours de bout en bout ; `commands.trace` nomme ensuite le prochain epic à livrer |
 
 L'agent propose, un relecteur produit ou design relit à froid, et vous tranchez avant tout commit.
 
@@ -83,7 +83,7 @@ L'agent propose, un relecteur produit ou design relit à froid, et vous tranchez
 | --- | --- | --- |
 | 1. Spécifier | `/speckit-specify <description>` (ou `/speckit-specify E03`) | chaque scénario se vérifie par un test, sans jugement |
 | 2. Clarifier | `/speckit-clarify` | les réponses sont reportées dans les exigences |
-| (option) Maquetter | `/speckit-prototype` | les parcours et la maquette, avant le plan |
+| (option) Maquetter | `/speckit-prototype` | les parcours et les écrans de la fonctionnalité dans le prototype global, avant le plan |
 | 3. Planifier | `/speckit-plan` | chaque principe de la constitution ; un test prévu par scénario ; les décisions qu'il vous laisse |
 | 4. Découper | `/speckit-tasks`, puis `/speckit-analyze` | les incohérences signalées, corrigées |
 | 5. Implémenter | `/speckit-implement` | chaque test vu en échec avant le code |

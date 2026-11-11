@@ -78,6 +78,18 @@ provides:
       description: 'Acceptance-scenario test coverage and independent review appended to converge'
       strategy: 'append'
 
+    - type: 'command'
+      name: 'speckit.clarify'
+      file: 'commands/speckit.clarify.md'
+      description: 'Language of the artifacts appended to clarify'
+      strategy: 'append'
+
+    - type: 'command'
+      name: 'speckit.checklist'
+      file: 'commands/speckit.checklist.md'
+      description: 'Language of the artifacts appended to checklist'
+      strategy: 'append'
+
 tags:
   - 'tdd'
   - 'sdd'

@@ -4,6 +4,10 @@
 
 Read `.specify/stack.yml` first: it names this project's branches, commands, test files and convention files. `commands.test` and `commands.affected` are required: when one is missing, or the file itself, stop and ask the user to write it. Any other key that is absent or `null` skips the step that uses it: say so in the report, never invent a command. An absent key never removes a test: tests always run, with what `tests.needs` lists.
 
+## Language (artefact-sdd)
+
+Write the artifacts in the project language: `language` in `.specify/memory/language.yml`, a BCP 47 code (`fr`); English when the file does not exist. What stays as the template or the tools write it, in every language: the headings of the templates (`## Requirements`, `### User Story 1 - …`, `## Complexity Tracking`: commands and reviewers find sections by them), the markers that the trace command reads (`**Status**:` and its values `Draft`, `Implemented`, `Shipped`, `Retired`; `**Product Requirements**:`; `**Acceptance Scenarios**`; `**Retired**`), the `[NEEDS CLARIFICATION]` markers that commands look for, the task lines (`- [ ] T001 [P] [US1] …`), the ids (`003-US1-AS2`, `PAY-03`, `E03-J1`, `P1`) and the YAML keys of `specs/product.yml`. Commit messages, code, identifiers and test titles stay in English. A file still written in another language: write what you add or rewrite in the project language, and leave the rest as it is.
+
 ## Feature Branch (artefact-sdd)
 
 These rules take precedence over any instruction above that contradicts them. Every feature is developed on its own branch, created by the mandatory `before_specify` hook (`/speckit-git-feature`, git extension).
@@ -21,11 +25,12 @@ These rules take precedence over any instruction above that contradicts them. Ev
 
 ## Product Requirements (artefact-sdd)
 
-`specs/product.yml` is the product index (the requirements document), owned by the user: `requirements` (`PAY-03`), and optionally `epics` (`E03`) that group them, with `depends_on` (epics to finish first) and `journeys` (end-to-end paths across features, `E03-J1`). When it exists:
+`specs/product.yml` is the product index (the requirements document), owned by the user: `requirements` (`PAY-03`), and optionally `epics` (`E03`) that group them, with `depends_on` (epics to finish first), `priority` (`P1` first) and `journeys` (end-to-end paths across features, `E03-J1`). When it exists:
 
 - Read it before writing the spec, with `specs/prd.md` when it exists: the PRD gives what the titles of the index do not (the rule of each requirement, the users, the constraints, the non-goals). Fill `**Product Requirements**` with the ids of the requirements this feature implements (`PAY-03, PAY-04`), or `None`. If the description names no requirement and several could match, ask the user which ones, as a clarification question.
 - If the description names an epic (`E03`), propose its requirements that no spec covers yet (the trace command, `commands.trace`, shows them as unspecified; without it, read `**Product Requirements**` of every `specs/*/spec.md`), and keep the feature within that epic. Ask the user before creating the branch: all of them, or a part, the rest going to a next feature of the same epic (an epic is done only once all its requirements are). Never cite a retired requirement.
 - If the epic of this feature depends on an epic that is not done yet (`Implemented` or `Shipped` in the table of the trace command; without it, the `**Status**` of the specs of its requirements), tell the user before writing the spec: they may go on, but the order of the epics is theirs to change.
+- If the epics have a priority and the epic of this feature is not among the next ones that the trace command names (`Prochain epic`; without it, the most urgent epics whose dependencies are done), tell the user which epics come first: they may go on, the priorities are theirs to change through `/speckit-epics`.
 - When the feature makes a step of a journey possible, say so in the spec's assumptions (`Step "pay" of E03-J1`): the journey test itself is written once its epic is complete, not in this feature.
 - Never add, rename or remove a requirement, an epic or a journey in the index, and never record a state there: states are derived from the status of the specs. If the feature implements a requirement absent from the index, tell the user and keep `None` until they add it.
 

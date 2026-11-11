@@ -4,6 +4,10 @@
 
 Read `.specify/stack.yml` first: it names this project's branches, commands, test files and convention files. `commands.test` and `commands.affected` are required: when one is missing, or the file itself, stop and ask the user to write it. Any other key that is absent or `null` skips the step that uses it: say so in the report, never invent a command. An absent key never removes a test: tests always run, with what `tests.needs` lists.
 
+## Language (artefact-sdd)
+
+Write the artifacts in the project language: `language` in `.specify/memory/language.yml`, a BCP 47 code (`fr`); English when the file does not exist. What stays as the template or the tools write it, in every language: the headings of the templates (`## Requirements`, `### User Story 1 - …`, `## Complexity Tracking`: commands and reviewers find sections by them), the markers that the trace command reads (`**Status**:` and its values `Draft`, `Implemented`, `Shipped`, `Retired`; `**Product Requirements**:`; `**Acceptance Scenarios**`; `**Retired**`), the `[NEEDS CLARIFICATION]` markers that commands look for, the task lines (`- [ ] T001 [P] [US1] …`), the ids (`003-US1-AS2`, `PAY-03`, `E03-J1`, `P1`) and the YAML keys of `specs/product.yml`. Commit messages, code, identifiers and test titles stay in English. A file still written in another language: write what you add or rewrite in the project language, and leave the rest as it is.
+
 ## Decisions for the User (artefact-sdd)
 
 These rules take precedence over any instruction above that contradicts them. The plan is the agent's proposal; some choices are the user's.
@@ -29,8 +33,8 @@ These rules take precedence over any instruction above that contradicts them. Th
 
 ## Prototype (artefact-sdd)
 
-When `ui` is set in `.specify/stack.yml` and `specs/NNN-<name>/prototypes/` exists (written by `/speckit-prototype`), the plan builds on it; otherwise nothing changes and nothing blocks.
+When `ui` is set in `.specify/stack.yml` and `specs/prototype/journeys/NNN-<name>.md` exists (written by `/speckit-prototype`), the plan builds on it; otherwise nothing changes and nothing blocks.
 
-- Read `prototypes/journeys.md` and, when there is a mockup, look at the captures of `prototypes/captures/` (a prototype may have journeys only). In the plan, cite next to each screen to build the captures that fix it, when they exist (`prototypes/captures/cart-desktop.png`, `cart-mobile.png`): they are the visual contract of `/speckit-implement`.
-- The components drawn in the mockup that the component library (`ui.components`) lacks, listed in `journeys.md`, are added to that library by the plan, test first and, when `ui.storybook` is true, with their Storybook story, before the screens that use them.
-- When the captures are older than the design direction (`git log -1 --format=%cI -- specs/NNN-<name>/prototypes/captures` before `git log -1 --format=%cI -- specs/design.md`), write it in the plan and tell the user: the theme changed since, and `/speckit-prototype` can refresh them.
+- Read `specs/prototype/journeys/NNN-<name>.md` and, when there is a mockup, look at the captures of its screens in `specs/prototype/captures/` (a prototype may have journeys only). In the plan, cite next to each screen to build the captures that fix it, when they exist (`specs/prototype/captures/cart-desktop.png`, `cart-mobile.png`): they are the visual contract of `/speckit-implement`.
+- The components drawn in the mockup that the component library (`ui.components`) lacks, listed in `specs/prototype/journeys/NNN-<name>.md`, are added to that library by the plan, test first and, when `ui.storybook` is true, with their Storybook story, before the screens that use them.
+- When the captures are older than the design direction (`git log -1 --format=%cI -- 'specs/prototype/captures/cart-*.png'`, for the screens of the feature, before `git log -1 --format=%cI -- specs/design.md`), write it in the plan and tell the user: the theme changed since, and `/speckit-prototype` can refresh them.

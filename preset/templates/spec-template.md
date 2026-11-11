@@ -143,7 +143,7 @@ _Example of marking unclear requirements:_
   Criteria that only a human can judge (user tests, field conditions, visual quality,
   e.g. "4 users out of 5 find the screen in under 3 minutes") belong here, never in the
   acceptance scenarios: every scenario needs an automated test, which the trace command checks.
-  Reference prototype captures, if any, live in `prototypes/` next to this spec.
+  Reference prototype captures, if any, live in `specs/prototype/captures/`, and the journeys of this feature in `specs/prototype/journeys/`.
 -->
 
 ### Measurable Outcomes

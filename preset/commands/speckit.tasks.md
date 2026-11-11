@@ -4,6 +4,10 @@
 
 Read `.specify/stack.yml` first: it names this project's branches, commands, test files and convention files. `commands.test` and `commands.affected` are required: when one is missing, or the file itself, stop and ask the user to write it. Any other key that is absent or `null` skips the step that uses it: say so in the report, never invent a command. An absent key never removes a test: tests always run, with what `tests.needs` lists. In `tasks.md`, write the actual commands and paths, not the keys.
 
+## Language (artefact-sdd)
+
+Write the artifacts in the project language: `language` in `.specify/memory/language.yml`, a BCP 47 code (`fr`); English when the file does not exist. What stays as the template or the tools write it, in every language: the headings of the templates (`## Requirements`, `### User Story 1 - …`, `## Complexity Tracking`: commands and reviewers find sections by them), the markers that the trace command reads (`**Status**:` and its values `Draft`, `Implemented`, `Shipped`, `Retired`; `**Product Requirements**:`; `**Acceptance Scenarios**`; `**Retired**`), the `[NEEDS CLARIFICATION]` markers that commands look for, the task lines (`- [ ] T001 [P] [US1] …`), the ids (`003-US1-AS2`, `PAY-03`, `E03-J1`, `P1`) and the YAML keys of `specs/product.yml`. Commit messages, code, identifiers and test titles stay in English. A file still written in another language: write what you add or rewrite in the project language, and leave the rest as it is.
+
 ## Test-First Task Generation (artefact-sdd)
 
 These rules come from the constitution (Test-First principle) and take precedence over any instruction above that contradicts them, including "Tests are OPTIONAL".
@@ -19,7 +23,7 @@ These rules come from the constitution (Test-First principle) and take precedenc
 - **Existing tests the plan makes wrong.** Search the tests of what the plan changes (a route made public, a rule relaxed, a response reshaped) and add a task to change them, in the story that changes the behavior.
 - **Dependencies.** A new dependency is added in the task of its first import, not ahead of it: a dependency that nothing imports yet fails the unused-dependency checks of many projects.
 - **Project conventions.** Apply the rules of the convention files listed under `docs` (where a new environment variable is documented, how a module is generated, what a new page must carry) in the task that triggers them, not in Polish.
-- **Prototype.** When `ui` is set and `specs/NNN-<name>/prototypes/captures/` exists, a task that builds a screen cites its captures. A component the plan adds to the component library (`ui.components`) gets its own tasks (test, then component and, when `ui.storybook` is true, its Storybook story) before the first screen that uses it.
+- **Prototype.** When `ui` is set and `specs/prototype/journeys/NNN-<name>.md` exists, a task that builds a screen cites its captures (`specs/prototype/captures/<screen>-mobile.png`), when there are some. A component the plan adds to the component library (`ui.components`) gets its own tasks (test, then component and, when `ui.storybook` is true, its Storybook story) before the first screen that uses it.
 - **Behavior without a scenario.** Production code the plan adds without an acceptance scenario (a role, a limit, a script option) still gets a test task, without a scenario id.
 
 ## Phases and Pull Requests (artefact-sdd)
