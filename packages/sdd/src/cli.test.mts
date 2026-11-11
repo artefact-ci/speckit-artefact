@@ -98,6 +98,7 @@ const base: Report = {
   agents: [],
   agentsSkipped: [],
   noAgentGenerator: [],
+  registeredFor: [],
   constitution: 'kept',
   legacy: { files: [], mentions: [] },
   dirty: false,
@@ -162,7 +163,14 @@ describe('formatReport', () => {
       agentsSkipped: [{ integration: 'agy', names: ['designer'] }],
     });
     assert.match(text, /codex : pas de générateur de fichiers d'agent, la relecture se fait en contexte neuf/);
-    assert.match(text, /agy, designer : pas de fichier d'agent pour cet outil : la commande fera la relecture en nouvelle session/);
+    assert.match(text, /agy : pas de fichier d'agent designer pour cet outil : la commande fera ce travail en nouvelle session/);
+    assert.doesNotMatch(text, /agy, designer/);
+  });
+
+  it('lists the secondary tools whose commands were registered', () => {
+    const text = formatReport({ ...base, mode: 'update', registeredFor: ['agy'] });
+    assert.match(text, /Commandes de la méthode enregistrées aussi pour : agy \(outil par défaut inchangé\)/);
+    assert.doesNotMatch(formatReport(base), /enregistrées aussi/);
   });
 
   it('warns when the working tree was dirty', () => {
