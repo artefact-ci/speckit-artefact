@@ -41,18 +41,18 @@ Ne commite rien, quel que soit le mode : la commande qui t'a lancé s'en charge 
 
 Tu écris le brouillon directement dans les fichiers, pour que le relecteur et l'aperçu (`ui.preview`) voient le vrai rendu ; la commande les restaure si l'utilisateur refuse.
 
-- Un brouillon de `specs/design.md`, en anglais, depuis le gabarit (`.specify/scripts/bash/resolve-template.sh design-template`), qui découle du PRD : utilisateurs et contextes d'usage, principes, ton, accessibilité, direction visuelle.
+- Un brouillon de `specs/design.md`, dans la langue du projet (`.specify/memory/language.yml`, anglais sans le fichier ; titres du gabarit inchangés), depuis le gabarit (`.specify/scripts/bash/resolve-template.sh design-template`), qui découle du PRD : utilisateurs et contextes d'usage, principes, ton, accessibilité, direction visuelle.
 - Les nouvelles valeurs des tokens de `:root` et `.dark` du fichier `ui.theme`, en OKLCH, par paires (`--primary` et `--primary-foreground`) dont le contraste atteint 4,5:1 y compris dans les états dérivés qu'utilisent les composants (survol, alpha composé en sRGB sur le fond ; par exemple, avec Tailwind : `bg-primary/90`), avec `--ring` et `--input` à 3:1 au moins sur `--background`, et le contraste calculé de chacun ; `--radius` ; une police s'il en faut une, disponible en paquet `@fontsource/*` ou `@fontsource-variable/*`, installée comme le disent l'étape « Finalize » de `/speckit-design` et les fichiers `docs` de `.specify/stack.yml`.
 - Rien d'autre dans le code : ce qui demanderait plus (mode sombre activé, densité au-delà de `--spacing`) va dans la section `Deferred` de `design.md`.
 
 ### Mode `parcours`
 
-`specs/NNN-<nom>/prototypes/journeys.md`, en anglais, depuis le gabarit (`.specify/scripts/bash/resolve-template.sh journeys-template`) : un parcours par user story qui a des écrans, chaque étape `écran → action → résultat`, les écrans nommés comme leurs pages (`cart` → `cart.html`), les erreurs et états vides. Chaque scénario d'acceptation qui se voit à l'écran est couvert par une étape.
+`specs/NNN-<nom>/prototypes/journeys.md`, dans la langue du projet (titres du gabarit inchangés), depuis le gabarit (`.specify/scripts/bash/resolve-template.sh journeys-template`) : un parcours par user story qui a des écrans, chaque étape `écran → action → résultat`, les écrans nommés comme leurs pages (`cart` → `cart.html`), les erreurs et états vides. Chaque scénario d'acceptation qui se voit à l'écran est couvert par une étape.
 
 ### Mode `maquette`
 
 - Des pages HTML à plat dans `specs/NNN-<nom>/prototypes/`, une par écran et par état, `index.html` comme point d'entrée (la liste des parcours, leurs écrans et leurs états). Un écran se nomme comme dans `journeys.md` (`members.html`), un état `<écran>-<état>.html` (`members-empty.html`, `members-invite-invalid.html`) ; un dialogue ouvert ou un toast est un état de l'écran qu'il recouvre. Chaque page a `<meta charset="utf-8">`, `<meta name="viewport" content="width=device-width, initial-scale=1">`, `<link rel="stylesheet" href="styles.css">` et la classe `bg-background text-foreground` sur `body`. Pas de JavaScript, sauf quelques lignes pour un état qu'on ne peut pas montrer autrement (ouvrir une modale).
-- Les textes dans la langue source de l'app (celle que disent les fichiers `docs` de `.specify/stack.yml`, à défaut celle de l'interface existante), même si `journeys.md` est en anglais.
+- Les textes dans la langue source de l'app (celle que disent les fichiers `docs` de `.specify/stack.yml`, à défaut celle de l'interface existante), quelle que soit la langue de `journeys.md`.
 - Un cadre d'app simplifié (en-tête, navigation) reproduit sur chaque page, pour voir l'écran dans son contexte. Le copier d'une page à l'autre est normal ; gardez-le identique partout (un script jetable, hors du dépôt, peut générer les pages).
 - Une page dont l'état tient dans la fenêtre (dialogue ouvert, toast) porte `data-capture="viewport"` sur `<html>` : elle se capture sans défiler, et un voile `fixed` couvre toute la capture.
 - Des données factices réalistes : de vrais noms, des montants plausibles, assez de lignes pour juger la densité ; les états vides et d'erreur sur leurs propres pages (`cart-empty.html`).

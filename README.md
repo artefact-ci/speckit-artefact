@@ -65,7 +65,7 @@ e2e: null
 
 ## Travailler avec la méthode
 
-Les specs, plans et tâches sont écrits en anglais ; vous pouvez décrire la fonctionnalité en français.
+Les documents produit, les specs, les plans et les tâches sont écrits dans la langue du projet, fixée par `.specify/memory/language.yml` (`language: fr`, un code BCP 47). `/speckit-prd` la demande quand le fichier manque ; sans lui, tout est en anglais. Quelle que soit la langue, les titres des templates, les marqueurs que lit la trace (`**Status**:`…), les identifiants, les messages de commit, le code et les titres de tests ne changent pas.
 
 **Cadrer le produit**, une fois au départ puis à chaque révision du cahier des charges, sur une branche `docs/product-*` :
 

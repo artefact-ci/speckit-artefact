@@ -55,6 +55,8 @@ When the user drops the prototype, at any step, remove the files of this run (`g
 
 ## Rules
 
+- Write the artifacts in the project language: `language` in `.specify/memory/language.yml`, a BCP 47 code (`fr`); English when the file does not exist. What stays as the template or the tools write it, in every language: the headings of the templates (`## Requirements`, `### User Story 1 - …`, `## Complexity Tracking`: commands and reviewers find sections by them), the markers that the trace command reads (`**Status**:` and its values `Draft`, `Implemented`, `Shipped`, `Retired`; `**Product Requirements**:`; `**Acceptance Scenarios**`; `**Retired**`), the `[NEEDS CLARIFICATION]` markers that commands look for, the task lines (`- [ ] T001 [P] [US1] …`), the ids (`003-US1-AS2`, `PAY-03`, `E03-J1`, `P1`) and the YAML keys of `specs/product.yml`. Commit messages, code, identifiers and test titles stay in English. A file still written in another language: write what you add or rewrite in the project language, and leave the rest as it is. The texts of the mockup pages are in the source language of the app (the one the convention files name, or else the one of the existing interface).
+
 - The prototype changes no file outside `specs/NNN-<name>/`: not the theme, not the component library, not the app. A theme change goes through `/speckit-design`.
 - Its code is throwaway: it is never copied into the code of the app. The screens are built in the normal cycle, test first, from the plan.
 - The spec stays the source of truth: a behavior shown only by the mockup does not exist until `spec.md` says it.

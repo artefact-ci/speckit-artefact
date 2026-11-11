@@ -5,7 +5,7 @@
 set -euo pipefail
 cd "$1"
 
-for command in specify plan tasks analyze implement converge; do
+for command in specify clarify plan tasks analyze implement converge checklist; do
   grep -q '(artefact-sdd)' ".claude/skills/speckit-$command/SKILL.md" \
     || { echo "::error::speckit-$command has no (artefact-sdd) section"; exit 1; }
 done

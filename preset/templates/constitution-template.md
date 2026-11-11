@@ -39,7 +39,7 @@ Once merged, `spec.md` describes the current behavior and stays current: a pull 
 ## Development Workflow
 
 - Every change of observable behavior starts from a spec. Without a spec: refactoring, chores, documentation, dependencies, performance, and a fix that restores an already specified behavior; a bug that reveals an unspecified behavior adds its scenario to the spec, with its test.
-- A feature lives in `specs/NNN-<name>/` (`spec.md`, `plan.md`, `tasks.md` and their companions), written in English.
+- A feature lives in `specs/NNN-<name>/` (`spec.md`, `plan.md`, `tasks.md` and their companions), written in the project language (`.specify/memory/language.yml`, English without it).
 - A feature is developed on its own branch, `NNN-<name>`, which `/speckit-specify` creates (`before_specify` hook of the git extension) from `branches.base` of `.specify/stack.yml`, and whose name is also the spec directory's.
 - `/speckit-implement` and `/speckit-converge` run until converge reports **Converged**, which requires a test for every acceptance scenario and an independent review without open blocking finding.
 
