@@ -206,6 +206,8 @@ if (capture) {
       await page.screenshot({
         path: join(fresh, basename(target.file)),
         fullPage: !capturesViewportOnly(html[target.page]),
+        // Une animation (spinner) figée : une page inchangée donne la même capture d'une fois à l'autre.
+        animations: 'disabled',
       });
       await page.close();
     }
