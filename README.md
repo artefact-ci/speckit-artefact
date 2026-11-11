@@ -73,7 +73,7 @@ Les specs, plans et tâches sont écrits en anglais ; vous pouvez décrire la fo
 | --- | --- |
 | `/speckit-prd <description ou chemin du cahier des charges>` | `specs/prd.md` et les exigences de `specs/product.yml` (`PAY-03`) |
 | `/speckit-design` | `specs/design.md` (utilisateurs, ergonomie, ton, accessibilité, direction visuelle), appliqué au thème quand le projet a un front |
-| `/speckit-epics` | les epics de `specs/product.yml`, ordonnés par leurs dépendances, avec leurs parcours de bout en bout |
+| `/speckit-epics` | les epics de `specs/product.yml`, ordonnés par leurs dépendances et leur priorité (`P1`, `P2`…), avec leurs parcours de bout en bout ; `commands.trace` nomme ensuite le prochain epic à livrer |
 
 L'agent propose, un relecteur produit ou design relit à froid, et vous tranchez avant tout commit.
 

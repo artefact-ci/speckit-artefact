@@ -9,7 +9,8 @@ import { fileURLToPath } from 'node:url';
 /**
  * La CLI de bout en bout, sur un dépôt git jetable fait de test/fixture/. Les sorties de
  * test/golden/ ont été produites par l'outil d'origine (tools/dev/spec-trace.mts du boilerplate,
- * b30bb7b) sur ce même dépôt : elles verrouillent le « même résultat ».
+ * b30bb7b ; all.txt par celui d'Afri Café, 874c6a4, qui ajoute la priorité des epics) sur ce même
+ * dépôt : elles verrouillent le « même résultat ».
  */
 const here = dirname(fileURLToPath(import.meta.url));
 const CLI = join(here, 'cli.mts');

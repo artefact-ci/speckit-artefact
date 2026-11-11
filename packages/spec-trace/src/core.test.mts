@@ -305,6 +305,7 @@ describe('parseProductIndex', () => {
       goal: 'A customer pays and gets refunded without support.',
       requirements: ['PAY-03', 'PAY-04', 'PAY-01'],
       dependsOn: ['E01'],
+      priority: undefined,
       journeys: [
         {
           id: 'E03-J1',
@@ -453,6 +454,53 @@ describe('parseProductIndex', () => {
         ),
       /E01-J1.*deux fois/,
     );
+  });
+
+  describe('priority', () => {
+    const two = (first: string, second: string, dependsOn = '') =>
+      minimal(
+        `  - id: E01\n    title: A\n    goal: g\n    requirements: [PAY-03]\n${first}` +
+          `  - id: E02\n    title: B\n    goal: g\n    requirements: [PAY-04]\n${dependsOn}${second}`,
+      );
+
+    it('reads the priority level of each epic, P1 first', () => {
+      const index = parseProductIndex(two('    priority: P1\n', '    priority: P2\n'));
+
+      assert.deepEqual(
+        index.epics.map((epic) => [epic.id, epic.priority]),
+        [
+          ['E01', 1],
+          ['E02', 2],
+        ],
+      );
+    });
+
+    it('rejects a priority that is not P<number>', () => {
+      assert.throws(
+        () => parseProductIndex(two('    priority: high\n', '    priority: P2\n')),
+        /E01.*priority.*P1/,
+      );
+      assert.throws(
+        () => parseProductIndex(two('    priority: P0\n', '    priority: P2\n')),
+        /E01.*P0/,
+      );
+    });
+
+    it('rejects an index where only some epics have a priority', () => {
+      assert.throws(() => parseProductIndex(two('    priority: P1\n', '')), /E02.*priority/);
+    });
+
+    it('rejects an epic that depends on a less urgent epic', () => {
+      const yaml = two('    priority: P2\n', '    priority: P1\n', '    depends_on: [E01]\n');
+
+      assert.throws(() => parseProductIndex(yaml), /E02 \(P1\).*E01 \(P2\)/);
+    });
+
+    it('accepts an epic that depends on an epic of the same level', () => {
+      const yaml = two('    priority: P1\n', '    priority: P1\n', '    depends_on: [E01]\n');
+
+      assert.equal(parseProductIndex(yaml).epics.length, 2);
+    });
   });
 });
 
@@ -720,6 +768,130 @@ describe('traceEpics', () => {
     ]);
 
     assert.deepEqual(report.blocked, []);
+  });
+
+  describe('next epics', () => {
+    // E01 et E02 ne dépendent de rien, E03 dépend de E01.
+    const prioritized = (levels: [string, string, string]) =>
+      parseProductIndex(`requirements:
+  - id: ACC-01
+    title: Account
+  - id: MEN-01
+    title: Menu
+  - id: PAY-03
+    title: Pay
+epics:
+  - id: E01
+    title: Access
+    goal: g
+    requirements: [ACC-01]
+    priority: ${levels[0]}
+  - id: E02
+    title: Menu
+    goal: g
+    requirements: [MEN-01]
+    priority: ${levels[1]}
+  - id: E03
+    title: Payment
+    goal: g
+    requirements: [PAY-03]
+    depends_on: [E01]
+    priority: ${levels[2]}
+`);
+    const traceIndex = (
+      productIndex: ReturnType<typeof parseProductIndex>,
+      list: [string, 'Draft' | 'Implemented' | 'Shipped' | 'Retired', string[]][],
+    ) => {
+      const refs = specs(list);
+      return traceEpics(productIndex, traceRequirements(productIndex, refs).rows, refs, []);
+    };
+
+    it('sorts the epics by priority, keeping the order of the file within a level', () => {
+      const report = traceIndex(prioritized(['P2', 'P1', 'P2']), []);
+
+      assert.deepEqual(
+        report.rows.map((row) => [row.id, row.priority]),
+        [
+          ['E02', 1],
+          ['E01', 2],
+          ['E03', 2],
+        ],
+      );
+    });
+
+    it('names the epics of the most urgent level whose dependencies are done', () => {
+      // Tous en P1 ; E03 attend E01.
+      assert.deepEqual(traceIndex(prioritized(['P1', 'P1', 'P1']), []).next, ['E01', 'E02']);
+    });
+
+    it('moves on to the next level once an urgent epic is done, or waits', () => {
+      const report = traceIndex(prioritized(['P1', 'P1', 'P2']), [
+        ['specs/001-account', 'Implemented', ['ACC-01']],
+      ]);
+
+      // E01 est terminé ; E02 (P1) passe avant E03 (P2), pourtant prêt.
+      assert.deepEqual(report.next, ['E02']);
+    });
+
+    it('keeps a started epic among the next ones until it is done', () => {
+      const report = traceIndex(prioritized(['P1', 'P1', 'P2']), [
+        ['specs/001-account', 'Implemented', ['ACC-01']],
+        ['specs/002-menu', 'Draft', ['MEN-01']],
+      ]);
+
+      assert.deepEqual(report.next, ['E02']);
+    });
+
+    it('without priorities, names every epic whose dependencies are done', () => {
+      const report = trace([]);
+
+      // E01 ne dépend de rien ; E03 attend E01.
+      assert.deepEqual(report.next, ['E01']);
+      assert.deepEqual(
+        report.rows.map((row) => [row.id, row.priority]),
+        [
+          ['E01', undefined],
+          ['E03', undefined],
+        ],
+      );
+    });
+
+    it('does not let a retired epic hold back the epics that depend on it', () => {
+      const withRetired = parseProductIndex(`requirements:
+  - id: ACC-01
+    title: Account
+    retired: dropped
+  - id: PAY-03
+    title: Pay
+epics:
+  - id: E01
+    title: Access
+    goal: g
+    requirements: [ACC-01]
+    priority: P2
+  - id: E02
+    title: Payment
+    goal: g
+    requirements: [PAY-03]
+    depends_on: [E01]
+    priority: P1
+`);
+      const report = traceIndex(withRetired, [['specs/002-pay', 'Draft', ['PAY-03']]]);
+
+      // E01, retiré, n'a plus rien à livrer : sa priorité ne compte pas, E02 est prêt.
+      assert.deepEqual(report.next, ['E02']);
+      assert.deepEqual(report.blocked, []);
+    });
+
+    it('names no epic once all are done', () => {
+      const report = traceIndex(prioritized(['P1', 'P1', 'P2']), [
+        ['specs/001-account', 'Implemented', ['ACC-01']],
+        ['specs/002-menu', 'Shipped', ['MEN-01']],
+        ['specs/003-pay', 'Implemented', ['PAY-03']],
+      ]);
+
+      assert.deepEqual(report.next, []);
+    });
   });
 
   it('without epics, still fails on a test that cites a journey', () => {

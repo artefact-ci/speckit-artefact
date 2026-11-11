@@ -12,7 +12,7 @@ npx @artefact-ci/spec-trace --tests 'src/**/*.test.ts'  # autres fichiers de tes
 À lancer à la racine du dépôt (Node 24.11 ou plus récent, et git).
 
 - Chaque scénario d'acceptation actif `NNN-US<story>-AS<n>` doit être cité par au moins un test ; une spec en `Draft` y échappe, sauf si on la vise. Aucun test ne doit citer un scénario absent ou retiré.
-- Si `specs/product.yml` existe, chaque spec nomme ses exigences (`**Product Requirements**:`), et la commande affiche l'état des exigences, des epics et la couverture des parcours (`E03-J1`).
+- Si `specs/product.yml` existe, chaque spec nomme ses exigences (`**Product Requirements**:`), et la commande affiche l'état des exigences, des epics et la couverture des parcours (`E03-J1`). Un epic peut porter une priorité (`priority: P1`, `P2`…, sur tous les epics ou sur aucun) : la commande refuse un niveau mal formé et un epic plus urgent qu'un epic dont il dépend, trie le tableau des epics par priorité et nomme le prochain epic à livrer (`Prochain epic`). Un epic retiré ne retient plus ceux qui en dépendent.
 - Code de sortie 1 quand quelque chose manque.
 
 ## Fichiers de tests

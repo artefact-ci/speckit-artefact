@@ -12,8 +12,8 @@
  * Aucun test ne doit citer un scénario absent ou retiré. Code de sortie 1 sinon.
  * Si specs/product.yml existe, chaque spec nomme les exigences qu'elle implémente
  * (`**Product Requirements**:`), toutes présentes dans l'index ; sans argument, la commande
- * affiche aussi l'état de chaque epic, de chaque exigence et la couverture des parcours. Un epic
- * terminé exige un test par parcours (`E03-J1: …`).
+ * affiche aussi l'état de chaque epic (par priorité, puis le prochain à livrer), de chaque
+ * exigence et la couverture des parcours. Un epic terminé exige un test par parcours (`E03-J1: …`).
  */
 import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -130,14 +130,30 @@ function printRequirements(
 function printEpics(report: EpicReport, { showRows }: { showRows: boolean }): void {
   if (showRows && report.rows.length > 0) {
     console.log(`\n## Epics (${REQUIREMENT_INDEX}) : ${report.ok ? 'OK' : 'INCOMPLET'}\n`);
-    console.log('| Epic | État | Avancement | Exigences | Dépend de |');
-    console.log('| ---- | ---- | ---------- | --------- | --------- |');
+    const prioritized = report.rows.some((row) => row.priority !== undefined);
+    console.log(
+      `| Epic |${prioritized ? ' Priorité |' : ''} État | Avancement | Exigences | Dépend de |`,
+    );
+    console.log(
+      `| ---- |${prioritized ? ' -------- |' : ''} ---- | ---------- | --------- | --------- |`,
+    );
     for (const row of report.rows) {
       const { state, progress } = epicCells(row);
+      const priority = prioritized ? ` P${row.priority} |` : '';
       console.log(
-        `| ${row.id} ${row.title} | ${state} | ${progress} | ${row.requirements.join(', ')} | ${row.dependsOn.join(', ')} |`,
+        `| ${row.id} ${row.title} |${priority} ${state} | ${progress} | ${row.requirements.join(', ')} | ${row.dependsOn.join(', ')} |`,
       );
     }
+    const level = report.rows.find((row) => row.id === report.next[0])?.priority;
+    const allDone = report.rows.every(
+      (row) => row.state === 'Retired' || row.state === 'Implemented' || row.state === 'Shipped',
+    );
+    console.log(
+      report.next.length === 0
+        ? `\nProchain epic : aucun, ${allDone ? 'tous sont terminés' : 'aucun prêt (dépendances)'}.`
+        : `\nProchain epic${report.next.length > 1 ? ' (au choix)' : ''} : ` +
+            `${report.next.join(', ')}${level === undefined ? '' : ` (P${level})`}.`,
+    );
   }
   if (showRows && report.journeys.length > 0) {
     console.log('\n| Parcours | Tests |');

@@ -21,11 +21,12 @@ These rules take precedence over any instruction above that contradicts them. Ev
 
 ## Product Requirements (artefact-sdd)
 
-`specs/product.yml` is the product index (the requirements document), owned by the user: `requirements` (`PAY-03`), and optionally `epics` (`E03`) that group them, with `depends_on` (epics to finish first) and `journeys` (end-to-end paths across features, `E03-J1`). When it exists:
+`specs/product.yml` is the product index (the requirements document), owned by the user: `requirements` (`PAY-03`), and optionally `epics` (`E03`) that group them, with `depends_on` (epics to finish first), `priority` (`P1` first) and `journeys` (end-to-end paths across features, `E03-J1`). When it exists:
 
 - Read it before writing the spec, with `specs/prd.md` when it exists: the PRD gives what the titles of the index do not (the rule of each requirement, the users, the constraints, the non-goals). Fill `**Product Requirements**` with the ids of the requirements this feature implements (`PAY-03, PAY-04`), or `None`. If the description names no requirement and several could match, ask the user which ones, as a clarification question.
 - If the description names an epic (`E03`), propose its requirements that no spec covers yet (the trace command, `commands.trace`, shows them as unspecified; without it, read `**Product Requirements**` of every `specs/*/spec.md`), and keep the feature within that epic. Ask the user before creating the branch: all of them, or a part, the rest going to a next feature of the same epic (an epic is done only once all its requirements are). Never cite a retired requirement.
 - If the epic of this feature depends on an epic that is not done yet (`Implemented` or `Shipped` in the table of the trace command; without it, the `**Status**` of the specs of its requirements), tell the user before writing the spec: they may go on, but the order of the epics is theirs to change.
+- If the epics have a priority and the epic of this feature is not among the next ones that the trace command names (`Prochain epic`; without it, the most urgent epics whose dependencies are done), tell the user which epics come first: they may go on, the priorities are theirs to change through `/speckit-epics`.
 - When the feature makes a step of a journey possible, say so in the spec's assumptions (`Step "pay" of E03-J1`): the journey test itself is written once its epic is complete, not in this feature.
 - Never add, rename or remove a requirement, an epic or a journey in the index, and never record a state there: states are derived from the status of the specs. If the feature implements a requirement absent from the index, tell the user and keep `None` until they add it.
 

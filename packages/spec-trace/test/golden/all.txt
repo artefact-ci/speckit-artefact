@@ -33,6 +33,8 @@ Spec en Draft : 1 scénario(s) encore sans test, toléré. Passer le statut à I
 | E01 Notes | Implemented | 1/1 spécifiées, 1/1 terminées | NOTE-01 |  |
 | E02 Drafts | Draft | 1/1 spécifiées, 0/1 terminées | NOTE-02 | E01 |
 
+Prochain epic : E02.
+
 | Parcours | Tests |
 | -------- | ----- |
 | E01-J1 Leave a note | src/journey.spec.tsx |

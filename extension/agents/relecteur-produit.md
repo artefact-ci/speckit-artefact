@@ -44,6 +44,7 @@ Ne signale que ces écarts. Chaque point est **bloquant** s'il est avéré.
 - Une exigence active hors de tout epic ou dans deux.
 - Un epic qui est une couche technique, une équipe ou un fourre-tout ; un epic dont l'objectif ne se démontre pas seul.
 - Une dépendance qui n'est qu'une préférence d'ordre, ou une dépendance réelle qui manque (l'epic utilise le résultat d'un autre qu'il ne cite pas).
+- Une priorité qui contredit le PRD : un epic sans lequel la première version ne sort pas (périmètre, problème bloquant) placé après un epic d'une version suivante.
 - Un epic sans parcours, ou dont aucun parcours ne prouve l'objectif ; une étape qu'un test navigateur ne peut pas suivre ou qui décrit l'interface.
 - En révision : un identifiant d'epic ou de parcours renuméroté ou réutilisé, un parcours supprimé au lieu d'être retiré.
 

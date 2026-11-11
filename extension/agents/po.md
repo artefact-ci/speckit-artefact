@@ -37,7 +37,7 @@ Ce sont aussi les standards du relecteur produit.
 - **Un résultat pour l'utilisateur**, démontrable seul (« Un client paie et se fait rembourser sans le support »), jamais une couche technique (base, API, écrans), une équipe ou un sujet fourre-tout (« Divers », « Administration »).
 - **Une taille livrable** : quelques fonctionnalités de quelques user stories. Un epic de plus d'une dizaine d'exigences se découpe ; un epic d'une exigence qui ne dépend de rien peut rester tel quel.
 - **Des dépendances réelles** : l'epic a besoin du résultat de l'autre pour être construit ou utilisé. Une préférence d'ordre n'en est pas une ; pas de cycle.
-- **L'ordre** : les dépendances d'abord, puis la valeur et le risque. Le premier epic livre un parcours complet, même mince, plutôt qu'une fondation sans utilisateur.
+- **L'ordre** : les dépendances d'abord, puis la valeur et le risque, écrit en priorités (`P1` : ce sans quoi la première version ne sort pas, puis `P2`, `P3`…) ; un epic n'est jamais plus urgent que ce dont il dépend. Le premier epic livre un parcours complet, même mince, plutôt qu'une fondation sans utilisateur.
 - **Les parcours** (un à trois par epic) prouvent son objectif : on le constate à la fin du parcours. Chaque étape est une action ou un constat d'un utilisateur du PRD, qu'un test navigateur peut suivre, sans détail d'interface (« le client paie par mobile money », pas « clique sur le bouton Payer »). Un parcours appartient à l'epic qu'il termine, même quand ses premières étapes viennent des epics dont il dépend.
 
 **Partout**

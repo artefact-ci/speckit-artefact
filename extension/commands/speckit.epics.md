@@ -19,7 +19,7 @@ Read `.specify/stack.yml` first: it names this project's branches, commands and 
 
 ## Goal
 
-Turn the requirements of `specs/product.yml` into a delivery plan: epics (`E01`), each with a goal, the requirements it groups, the epics it waits for (`depends_on`) and its end-to-end journeys (`E01-J1`). The trace command (`commands.trace`) then derives the state of each epic from the specs, requires a test per journey once an epic is done, and warns when a feature advances on an epic whose dependencies are not done.
+Turn the requirements of `specs/product.yml` into a delivery plan: epics (`E01`), each with a goal, the requirements it groups, the epics it waits for (`depends_on`), its priority (`P1`, `P2`…) and its end-to-end journeys (`E01-J1`). The trace command (`commands.trace`) then derives the state of each epic from the specs, sorts the epics by priority and names the next one to deliver, requires a test per journey once an epic is done, and warns when a feature advances on an epic whose dependencies are not done.
 
 The index belongs to the product, that is to the user. You propose, as the product owner of `.specify/extensions/artefact-product/agents/po.md`; the `relecteur-produit` agent reviews the proposal cold; you show both to the user, and the user decides the grouping and the order. Nothing is committed before the user has approved it.
 
@@ -33,11 +33,11 @@ This command works with the agents of the method (`.specify/extensions/artefact-
 
 3. **Group.** An epic is a user outcome the product can deliver and demonstrate on its own (`A customer pays and gets refunded without support`), not a technical layer (`database`, `API`, `screens`) nor a team. Each active requirement goes into exactly one epic; a retired one stays where it is, or out of every epic. Aim for epics that a few features, each one a few user stories, can deliver. When a single requirement makes an epic of its own and depends on nothing, say so: it may stay as it is.
 
-4. **Order.** `depends_on` lists the epics whose outcome this one needs before it can be built or used (no payment before an account exists). Only real dependencies: a preference of order is not one. No cycle. Then propose a delivery order: dependencies first, then the epics that bring the most value or remove the most risk, and say why.
+4. **Order.** `depends_on` lists the epics whose outcome this one needs before it can be built or used (no payment before an account exists). Only real dependencies: a preference of order is not one. No cycle. Then give each epic a priority level, `P1` the most urgent (what the first release cannot go without), then `P2`, `P3`…: dependencies first, then the epics that bring the most value or remove the most risk, and say why. Every epic has one, or none does; an epic is never more urgent than an epic it depends on (the trace command refuses it). Among the epics whose dependencies are done, the trace command names those of the most urgent level as the next ones, in the order of the file: write the epics of a level in the order you propose.
 
 5. **Journeys.** For each epic, the paths a user takes across several features to reach its outcome, written as steps an end-to-end test can follow (`sign up`, `order`, `pay by mobile money`, `ask for a refund`). One to three per epic, the ones that prove the outcome. A journey belongs to the epic it completes, even when its first steps come from the epics it depends on. Their tests are written when the epic is done, as end-to-end tests (under `e2e.dir` when the project has browser journeys, otherwise at the level its convention files give), titled `'<journey id>: …'`.
 
-6. **Write the draft** in place, so that the reviewer reads the real file (step 8 restores it if the user declines). First check the proposal against `specs/product.yml`: every active requirement is in exactly one epic, every dependency names an epic of the proposal, and no dependency loops; fix it before writing, the trace command must not be the first to find a forgotten requirement. Then write the `epics` list of `specs/product.yml`. Keep the `requirements` list and the comments as they are. Titles, goals and steps are in English, like the specs. An epic has `id`, `title`, `goal`, `requirements`, `depends_on` (may be empty) and `journeys`; a journey has `id`, `title`, `steps` (at least one) and, once dropped, `retired`:
+6. **Write the draft** in place, so that the reviewer reads the real file (step 8 restores it if the user declines). First check the proposal against `specs/product.yml`: every active requirement is in exactly one epic, every dependency names an epic of the proposal, and no dependency loops; fix it before writing, the trace command must not be the first to find a forgotten requirement. Then write the `epics` list of `specs/product.yml`. Keep the `requirements` list and the comments as they are. Titles, goals and steps are in English, like the specs. An epic has `id`, `title`, `goal`, `requirements`, `depends_on` (may be empty), `priority` and `journeys`; a journey has `id`, `title`, `steps` (at least one) and, once dropped, `retired`:
 
    ```yaml
    epics:
@@ -46,6 +46,7 @@ This command works with the agents of the method (`.specify/extensions/artefact-
        goal: A shop owner opens a storefront, and customers see it once it is approved.
        requirements: [SHP-01, SHP-02, CAT-01]
        depends_on: []
+       priority: P1
        journeys:
          - id: E01-J1
            title: A new shop is approved and shown to customers

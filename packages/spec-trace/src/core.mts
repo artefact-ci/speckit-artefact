@@ -202,7 +202,8 @@ export function driftedFeatures(
  * en bout (`E03-J1`). Chaque spec nomme les exigences qu'elle implémente
  * (`**Product Requirements**:`) ; l'état d'une exigence se déduit du statut de ses specs, celui d'un
  * epic de ses exigences : rien ne s'écrit à la main. Un identifiant ne se renumérote jamais, il se
- * retire (`retired: <raison>`).
+ * retire (`retired: <raison>`). Une priorité (`priority: P1`, P1 d'abord), sur tous les epics ou sur
+ * aucun, dit lequel livrer quand plusieurs sont prêts.
  */
 interface ProductRequirement {
   id: string;
@@ -223,6 +224,8 @@ interface Epic {
   goal: string;
   requirements: string[];
   dependsOn: string[];
+  /** Niveau de priorité : 1 pour P1, le plus urgent. Absent quand l'index n'en déclare pas. */
+  priority: number | undefined;
   journeys: Journey[];
 }
 
@@ -259,6 +262,7 @@ export interface RequirementReport {
 const REQUIREMENT_ID = /^[A-Z][A-Z0-9]*-\d+$/;
 const EPIC_ID = /^E\d+$/;
 const JOURNEY_ID = /^E\d+-J\d+$/;
+const PRIORITY = /^P([1-9]\d*)$/;
 
 type Fields = Record<string, unknown>;
 
@@ -289,6 +293,16 @@ function textList(fields: Fields, key: string, owner: string): string[] {
   return value as string[];
 }
 
+function priorityOf(fields: Fields, owner: string): number | undefined {
+  const value = fields['priority'];
+  if (value === undefined) return undefined;
+  const level = typeof value === 'string' ? PRIORITY.exec(value)?.[1] : undefined;
+  if (!level) {
+    throw new Error(`${owner} : priority "${String(value)}" invalide (attendu : P1, P2…).`);
+  }
+  return Number(level);
+}
+
 function assertUnique(ids: string[], what: string): void {
   const seen = new Set<string>();
   for (const id of ids) {
@@ -317,6 +331,30 @@ function findCycle(epics: Epic[]): string[] | undefined {
     if (cycle) return cycle;
   }
   return undefined;
+}
+
+// Une priorité sur tous les epics ou sur aucun ; un epic ne passe pas avant ce dont il dépend. Un
+// epic retiré (toutes ses exigences le sont) n'a plus rien à livrer : sa priorité ne compte plus.
+function assertPriorities(epics: Epic[], retired: Set<string>): void {
+  if (epics.every((epic) => epic.priority === undefined)) return;
+  const missing = epics.find((epic) => epic.priority === undefined);
+  if (missing) {
+    throw new Error(
+      `L'epic ${missing.id} : priority absente, alors que d'autres epics en ont une (tous ou aucun).`,
+    );
+  }
+  const priorityOf = new Map(epics.map((epic) => [epic.id, epic.priority ?? 0]));
+  for (const epic of epics.filter((candidate) => !retired.has(candidate.id))) {
+    for (const dependency of epic.dependsOn.filter((id) => !retired.has(id))) {
+      const level = priorityOf.get(dependency) ?? 0;
+      if (level > (epic.priority ?? 0)) {
+        throw new Error(
+          `L'epic ${epic.id} (P${epic.priority}) dépend de ${dependency} (P${level}), moins ` +
+            'prioritaire : il ne peut pas être livré avant lui.',
+        );
+      }
+    }
+  }
 }
 
 /** Lit et valide l'index : identifiants, références entre epics et exigences, cycles. */
@@ -389,6 +427,7 @@ export function parseProductIndex(yamlText: string): ProductIndex {
       goal: text(fields, 'goal', owner),
       requirements: epicRequirements,
       dependsOn: textList(fields, 'depends_on', owner),
+      priority: priorityOf(fields, owner),
       journeys,
     };
   });
@@ -429,6 +468,17 @@ export function parseProductIndex(yamlText: string): ProductIndex {
   }
   const cycle = findCycle(epics);
   if (cycle) throw new Error(`Dépendances circulaires entre epics : ${cycle.join(' → ')}.`);
+  const retiredRequirements = new Set(
+    requirements.filter((requirement) => requirement.retired).map(({ id }) => id),
+  );
+  assertPriorities(
+    epics,
+    new Set(
+      epics
+        .filter((epic) => epic.requirements.every((id) => retiredRequirements.has(id)))
+        .map((epic) => epic.id),
+    ),
+  );
 
   return { requirements, epics };
 }
@@ -504,7 +554,13 @@ export interface EpicReport {
     progress: { total: number; specified: number; done: number };
     requirements: string[];
     dependsOn: string[];
+    priority: number | undefined;
   }[];
+  /**
+   * Prochains epics à livrer : pas terminés, dépendances terminées, et du niveau de priorité le
+   * plus urgent parmi eux (tous les prêts quand l'index n'a pas de priorités).
+   */
+  next: string[];
   journeys: { id: string; epicId: string; title: string; retired: boolean; tests: string[] }[];
   /** Parcours actifs sans test d'un epic terminé (Implemented ou Shipped). */
   uncovered: string[];
@@ -552,7 +608,11 @@ export function traceEpics(
   const retiredInIndex = new Set(
     index.requirements.filter((requirement) => requirement.retired).map(({ id }) => id),
   );
-  const rows = index.epics.map(({ id, title, requirements, dependsOn }) => {
+  // Tri stable : à niveau égal, l'ordre du fichier.
+  const ordered = [...index.epics].sort(
+    (a, b) => (a.priority ?? Infinity) - (b.priority ?? Infinity),
+  );
+  const rows = ordered.map(({ id, title, requirements, dependsOn, priority }) => {
     // Seul l'index retire une exigence d'un epic : si toutes ses specs sont retirées alors qu'elle
     // reste active, elle est à refaire.
     const states = requirements
@@ -568,9 +628,18 @@ export function traceEpics(
       specified: states.filter((candidate) => candidate !== 'Unspecified').length,
       done: states.filter(isDone).length,
     };
-    return { id, title, state, progress, requirements, dependsOn };
+    return { id, title, state, progress, requirements, dependsOn, priority };
   });
   const epicState = new Map(rows.map((row) => [row.id, row.state]));
+  // Une dépendance ne retient plus rien une fois terminée, ou retirée : il n'y a plus rien à attendre.
+  const settled = (dependency: string) => {
+    const state = epicState.get(dependency) ?? 'Unspecified';
+    return isDone(state) || state === 'Retired';
+  };
+  const ready = rows.filter(
+    (row) => row.state !== 'Retired' && !isDone(row.state) && row.dependsOn.every(settled),
+  );
+  const next = ready.filter((row) => row.priority === ready[0]?.priority).map((row) => row.id);
 
   const journeyList = index.epics.flatMap((epic) =>
     epic.journeys.map((journey) => ({ ...journey, epicId: epic.id })),
@@ -618,9 +687,7 @@ export function traceEpics(
   for (const spec of specs.filter((candidate) => candidate.status === 'Draft')) {
     const epics = new Set((spec.refs ?? []).flatMap((id) => epicOf.get(id) ?? []));
     for (const epic of epics) {
-      const waitingOn = epic.dependsOn.filter(
-        (dependency) => !isDone(epicState.get(dependency) ?? 'Unspecified'),
-      );
+      const waitingOn = epic.dependsOn.filter((dependency) => !settled(dependency));
       if (waitingOn.length > 0)
         blocked.push({ featureDir: spec.featureDir, epicId: epic.id, waitingOn });
     }
@@ -628,6 +695,7 @@ export function traceEpics(
 
   return {
     rows,
+    next,
     journeys,
     uncovered,
     orphans,
