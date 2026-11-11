@@ -1,4 +1,5 @@
 import type { Report } from './install.mts';
+import { SPECIFY_VERSION } from './specify.mts';
 
 const LEGACY_STATE = {
   unchanged: 'identique au boilerplate, tu peux le supprimer',
@@ -21,6 +22,9 @@ export function formatReport(r: Report): string {
     out.push(`  ${r.mode === 'update' ? 'Réinstallé / mis à jour' : 'Installé'} : ${list(r.installed)}`);
   }
   if (r.skipped.length > 0) out.push(`  Déjà installé : ${list(r.skipped)}`);
+  if (r.registeredFor.length > 0) {
+    out.push(`  Commandes de la méthode enregistrées aussi pour : ${list(r.registeredFor)} (outil par défaut inchangé)`);
+  }
   const { installed, previous, downgrade } = r.version;
   if (installed === null) {
     out.push('  Version installée inconnue : lance update pour aligner tous les composants');
@@ -58,7 +62,7 @@ export function formatReport(r: Report): string {
     }
     for (const { integration, names } of r.agentsSkipped) {
       out.push(
-        `  ${integration}, ${list(names)} : pas de fichier d'agent pour cet outil : la commande fera la relecture en nouvelle session`,
+        `  ${integration} : pas de fichier d'agent ${list(names)} pour cet outil : la commande fera ce travail en nouvelle session`,
       );
     }
   }
@@ -86,6 +90,19 @@ export function formatReport(r: Report): string {
     if (r.legacy.mentions.length > 0) {
       out.push(`  Citent encore docs/agents/ : ${list(r.legacy.mentions)}`);
     }
+  }
+
+  if (r.integrationIgnored) {
+    const { requested, installed } = r.integrationIgnored;
+    const current = installed.length > 0 ? list(installed) : 'aucune intégration';
+    const specify = `uvx --from specify-cli==${SPECIFY_VERSION} specify integration`;
+    out.push(
+      '',
+      `Attention : --integration ${requested} ignoré : Spec Kit était déjà installé ici avec ${current}.`,
+      `  pour garder ${current} et ajouter ${requested} : ${specify} install ${requested} --script sh --force`,
+      `  pour remplacer ${current} par ${requested} : ${specify} switch ${requested}`,
+      "  puis : npx @artefact-ci/sdd update (voir « Changer ou ajouter un outil » dans le README de speckit-artefact)",
+    );
   }
 
   if (r.dirty) {

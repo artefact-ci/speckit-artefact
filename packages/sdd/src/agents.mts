@@ -36,6 +36,14 @@ export function readIntegrations(root: string): string[] {
   return json.integration ? [json.integration] : [];
 }
 
+/** Intégration par défaut de `.specify/integration.json` (`default_integration`, sinon `integration`) ; null si aucune. */
+export function readDefaultIntegration(root: string): string | null {
+  const file = join(root, '.specify', 'integration.json');
+  if (!existsSync(file)) return null;
+  const json = JSON.parse(readFileSync(file, 'utf8')) as { default_integration?: string; integration?: string };
+  return json.default_integration ?? json.integration ?? null;
+}
+
 function body(spec: AgentSpec): string {
   const lines = [
     `Lis \`${INSTRUCTIONS_DIR}/${spec.name}.md\` et applique-le à la lettre : méthode, grille et format du rapport.`,

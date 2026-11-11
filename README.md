@@ -19,18 +19,18 @@ Les commandes ne citent aucun outil ni aucun chemin propre à une stack : elles 
 Il faut [uv](https://docs.astral.sh/uv/) (Spec Kit est lancé par `uvx`), Node 24.11 ou plus récent, et git. Dans le dépôt du projet, sur un arbre propre :
 
 ```sh
-npx @artefact-ci/sdd@0.2.0 init
+npx @artefact-ci/sdd@0.2.1 init
 ```
 
 L'installeur ne pose aucune question. Il :
 
-1. initialise Spec Kit 1.3.2 si `.specify/` est absent, puis installe l'extension git, l'extension `artefact-product` et le preset `artefact-sdd` (zips de la release `v0.2.0` de ce dépôt) ;
+1. initialise Spec Kit 1.3.2 si `.specify/` est absent, puis installe l'extension git, l'extension `artefact-product` et le preset `artefact-sdd` (zips de la release `v0.2.1` de ce dépôt) ;
 2. branche les hooks git : `/speckit-specify` crée la branche de la fonctionnalité, et chaque commande qui écrit des fichiers commite son résultat ;
 3. génère les fichiers d'agent de l'outil du projet (voir [Outils](#outils)) ;
 4. déduit `.specify/stack.yml` du dépôt, et écrit la constitution de base si le projet n'en a pas ;
 5. écrit la version installée dans `.specify/artefact.json`, puis affiche un rapport : ce qui est installé, ce qui a été deviné, ce qu'il reste à compléter.
 
-Pour un projet Antigravity : `npx @artefact-ci/sdd@0.2.0 init --integration agy`.
+Pour un projet Antigravity : `npx @artefact-ci/sdd@0.2.1 init --integration agy`. `--integration` ne sert qu'à la première installation : quand `.specify/` existe déjà, il est ignoré et l'outil du projet est gardé. Pour en changer ou en ajouter un, voir [Changer ou ajouter un outil](#changer-ou-ajouter-un-outil).
 
 Lancé deux fois, `init` ne change rien la deuxième fois.
 
@@ -51,7 +51,7 @@ commands:
   test: bun test {file}
   affected: bun run lint && bun run typecheck && bun test
   check: bun run check
-  trace: bunx @artefact-ci/spec-trace@0.2.0
+  trace: bunx @artefact-ci/spec-trace@0.2.1
 tests:
   globs: ['src/**/*.test.ts']
 flags: false
@@ -106,6 +106,21 @@ Quelques règles qui ne se discutent pas :
 | Autre outil Spec Kit | rien | la commande vous demande de lancer la relecture dans une nouvelle session et d'en coller le rapport : elle ne se saute pas |
 
 Les fichiers d'agent sont fins : ils lisent les consignes, communes à tous les outils, de `.specify/extensions/artefact-product/agents/`.
+
+### Changer ou ajouter un outil
+
+Sur un projet déjà installé, relancer `init --integration <outil>` ne change rien : l'outil se gère avec Spec Kit, puis `update` installe la méthode pour chaque outil listé dans `.specify/integration.json` : ses fichiers d'agent, les commandes de l'extension (`/speckit-prd`…, `git`) et la version du preset des commandes du cœur. Spec Kit n'enregistre ces commandes que pour l'outil par défaut ; `update` sélectionne donc tour à tour chaque autre outil (`specify integration use`), puis revient à l'outil par défaut, qui ne change pas.
+
+```sh
+# garder l'outil actuel et en ajouter un (--force : Spec Kit refuse sinon d'installer deux outils côte à côte)
+uvx --from specify-cli==1.3.2 specify integration install agy --script sh --force
+# ou remplacer l'outil actuel
+uvx --from specify-cli==1.3.2 specify integration switch agy
+
+npx @artefact-ci/sdd@X.Y.Z update
+```
+
+Après un `switch`, les fichiers d'agent de l'ancien outil (`.claude/agents/` par exemple) restent en place : supprimez-les à la main si vous n'en voulez plus. Relisez `git status` avant de commiter.
 
 ## Mettre à jour
 

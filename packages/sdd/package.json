@@ -1,6 +1,6 @@
 {
   "name": "@artefact-ci/sdd",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Installeur de la méthode Artefact CI pour Spec Kit (preset artefact-sdd, extension artefact-product)",
   "license": "MIT",
   "repository": {
