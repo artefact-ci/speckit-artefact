@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Corrigé
+
+- `init --integration <outil>` sur un projet où Spec Kit est déjà installé avec un autre outil n'installait rien et ne le disait pas. Le rapport le signale maintenant et donne les commandes Spec Kit pour ajouter ou remplacer l'outil, puis `update`. Le README décrit la marche à suivre (« Changer ou ajouter un outil »).
+
 ## [0.2.0] - 2026-11-10
 
 ### Ajouté

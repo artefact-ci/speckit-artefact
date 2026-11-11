@@ -185,6 +185,15 @@ describe('formatReport', () => {
     assert.doesNotMatch(formatReport(base), /boilerplate/);
   });
 
+  it('warns when init ignored --integration and gives the Spec Kit commands', () => {
+    const text = formatReport({ ...base, integrationIgnored: { requested: 'agy', installed: ['claude'] } });
+    assert.match(text, /Attention : --integration agy ignoré : Spec Kit était déjà installé ici avec claude/);
+    assert.match(text, /pour garder claude et ajouter agy : uvx --from specify-cli==1\.3\.2 specify integration install agy --script sh --force/);
+    assert.match(text, /pour remplacer claude par agy : uvx --from specify-cli==1\.3\.2 specify integration switch agy/);
+    assert.match(text, /puis : npx @artefact-ci\/sdd update/);
+    assert.doesNotMatch(formatReport(base), /ignoré/);
+  });
+
   it('says when no integration was found', () => {
     const text = formatReport({ ...base, noIntegration: true });
     assert.match(text, /aucune intégration trouvée dans \.specify\/integration\.json : aucun fichier d'agent généré/);

@@ -32,6 +32,8 @@ export type Report = {
   constitution: 'written' | 'kept';
   legacy: ReturnType<typeof legacyAgents>;
   dirty: boolean;
+  /** `init --integration` sur un `.specify/` existant qui n'a pas cette intégration : l'option n'a rien installé. */
+  integrationIgnored?: { requested: string; installed: string[] };
   /** `installed` est null quand `init` n'a pas écrit `.specify/artefact.json` (version inconnue). */
   version: { installed: Installed | null; previous: Installed | null; downgrade: boolean };
 };
@@ -187,7 +189,8 @@ export async function init(o: Options): Promise<Report> {
   const noneInstalled = !registered(root, 'presets', 'artefact-sdd') && !registered(root, 'extensions', 'artefact-product');
   const dirty = await isDirty(o);
 
-  if (!existsSync(join(root, '.specify'))) {
+  const hadSpecify = existsSync(join(root, '.specify'));
+  if (!hadSpecify) {
     const args = ['init', '--here', '--script', 'sh', '--non-interactive', '--ignore-agent-tools'];
     args.push('--integration', o.integration ?? 'claude');
     // Spec Kit 1.3.2 compte `.git` comme contenu : sans --force, il refuse un dossier non vide.
@@ -218,7 +221,21 @@ export async function init(o: Options): Promise<Report> {
     constitution = 'written';
   }
 
-  return { mode: 'init', ...done, stack, constitution, dirty, version: { installed: record ? current : null, previous, downgrade: false } };
+  // Spec Kit n'installe une intégration qu'à son init : sur un projet déjà initialisé, --integration ne fait rien.
+  let integrationIgnored: Report['integrationIgnored'];
+  if (hadSpecify && o.integration !== undefined) {
+    const installed = readIntegrations(root);
+    if (!installed.includes(o.integration)) integrationIgnored = { requested: o.integration, installed };
+  }
+
+  return {
+    mode: 'init',
+    ...done,
+    stack,
+    constitution,
+    dirty,
+    ...(integrationIgnored ? { integrationIgnored } : {}),
+    version: { installed: record ? current : null, previous, downgrade: false } };
 }
 
 export async function update(o: Options): Promise<Report> {

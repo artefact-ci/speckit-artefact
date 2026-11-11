@@ -30,7 +30,7 @@ L'installeur ne pose aucune question. Il :
 4. déduit `.specify/stack.yml` du dépôt, et écrit la constitution de base si le projet n'en a pas ;
 5. écrit la version installée dans `.specify/artefact.json`, puis affiche un rapport : ce qui est installé, ce qui a été deviné, ce qu'il reste à compléter.
 
-Pour un projet Antigravity : `npx @artefact-ci/sdd@0.2.0 init --integration agy`.
+Pour un projet Antigravity : `npx @artefact-ci/sdd@0.2.0 init --integration agy`. `--integration` ne sert qu'à la première installation : quand `.specify/` existe déjà, il est ignoré et l'outil du projet est gardé. Pour en changer ou en ajouter un, voir [Changer ou ajouter un outil](#changer-ou-ajouter-un-outil).
 
 Lancé deux fois, `init` ne change rien la deuxième fois.
 
@@ -106,6 +106,21 @@ Quelques règles qui ne se discutent pas :
 | Autre outil Spec Kit | rien | la commande vous demande de lancer la relecture dans une nouvelle session et d'en coller le rapport : elle ne se saute pas |
 
 Les fichiers d'agent sont fins : ils lisent les consignes, communes à tous les outils, de `.specify/extensions/artefact-product/agents/`.
+
+### Changer ou ajouter un outil
+
+Sur un projet déjà installé, relancer `init --integration <outil>` ne change rien : l'outil se gère avec Spec Kit, puis `update` génère les fichiers d'agent de chaque outil listé dans `.specify/integration.json`.
+
+```sh
+# garder l'outil actuel et en ajouter un (--force : Spec Kit refuse sinon d'installer deux outils côte à côte)
+uvx --from specify-cli==1.3.2 specify integration install agy --script sh --force
+# ou remplacer l'outil actuel
+uvx --from specify-cli==1.3.2 specify integration switch agy
+
+npx @artefact-ci/sdd@X.Y.Z update
+```
+
+Après un `switch`, les fichiers d'agent de l'ancien outil (`.claude/agents/` par exemple) restent en place : supprimez-les à la main si vous n'en voulez plus. Relisez `git status` avant de commiter.
 
 ## Mettre à jour
 

@@ -556,6 +556,30 @@ describe('install', () => {
     assert.deepEqual(report.noAgentGenerator, []);
   });
 
+  it('init on an existing .specify reports a --integration it did not install', async () => {
+    const root = tempRepo();
+    existingSpecify(root);
+    const { runner, calls } = fakeRunner();
+    const report = await init(options(root, runner, { integration: 'agy' }));
+    assert.ok(!calls.some((c) => c[0] === 'init'));
+    assert.deepEqual(report.integrationIgnored, { requested: 'agy', installed: ['claude'] });
+  });
+
+  it('init on an existing .specify says nothing when --integration is already installed', async () => {
+    const root = tempRepo();
+    existingSpecify(root);
+    const { runner } = fakeRunner();
+    const report = await init(options(root, runner, { integration: 'claude' }));
+    assert.equal(report.integrationIgnored, undefined);
+  });
+
+  it('init on a new project uses --integration and reports nothing ignored', async () => {
+    const root = tempRepo();
+    const { runner } = fakeRunner();
+    const report = await init(options(root, runner, { integration: 'agy' }));
+    assert.equal(report.integrationIgnored, undefined);
+  });
+
   it('agy integration reports the agents it skips', async () => {
     const root = tempRepo();
     existingSpecify(root);

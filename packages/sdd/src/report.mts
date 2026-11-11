@@ -1,4 +1,5 @@
 import type { Report } from './install.mts';
+import { SPECIFY_VERSION } from './specify.mts';
 
 const LEGACY_STATE = {
   unchanged: 'identique au boilerplate, tu peux le supprimer',
@@ -86,6 +87,19 @@ export function formatReport(r: Report): string {
     if (r.legacy.mentions.length > 0) {
       out.push(`  Citent encore docs/agents/ : ${list(r.legacy.mentions)}`);
     }
+  }
+
+  if (r.integrationIgnored) {
+    const { requested, installed } = r.integrationIgnored;
+    const current = installed.length > 0 ? list(installed) : 'aucune intégration';
+    const specify = `uvx --from specify-cli==${SPECIFY_VERSION} specify integration`;
+    out.push(
+      '',
+      `Attention : --integration ${requested} ignoré : Spec Kit était déjà installé ici avec ${current}.`,
+      `  pour garder ${current} et ajouter ${requested} : ${specify} install ${requested} --script sh --force`,
+      `  pour remplacer ${current} par ${requested} : ${specify} switch ${requested}`,
+      "  puis : npx @artefact-ci/sdd update (voir « Changer ou ajouter un outil » dans le README de speckit-artefact)",
+    );
   }
 
   if (r.dirty) {
