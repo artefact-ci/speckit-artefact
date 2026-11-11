@@ -7,7 +7,7 @@ schema_version: '1.0'
 extension:
   id: 'artefact-product'
   name: 'Artefact product'
-  version: '0.2.0'
+  version: '0.2.1'
   description: 'Product commands of the Artefact CI method: requirements, design direction, epics, prototypes'
   author: 'Artefact CI'
   repository: 'https://github.com/artefact-ci/speckit-artefact'
