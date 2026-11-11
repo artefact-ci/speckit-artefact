@@ -22,6 +22,9 @@ export function formatReport(r: Report): string {
     out.push(`  ${r.mode === 'update' ? 'Réinstallé / mis à jour' : 'Installé'} : ${list(r.installed)}`);
   }
   if (r.skipped.length > 0) out.push(`  Déjà installé : ${list(r.skipped)}`);
+  if (r.registeredFor.length > 0) {
+    out.push(`  Commandes de la méthode enregistrées aussi pour : ${list(r.registeredFor)} (outil par défaut inchangé)`);
+  }
   const { installed, previous, downgrade } = r.version;
   if (installed === null) {
     out.push('  Version installée inconnue : lance update pour aligner tous les composants');
@@ -59,7 +62,7 @@ export function formatReport(r: Report): string {
     }
     for (const { integration, names } of r.agentsSkipped) {
       out.push(
-        `  ${integration}, ${list(names)} : pas de fichier d'agent pour cet outil : la commande fera la relecture en nouvelle session`,
+        `  ${integration} : pas de fichier d'agent ${list(names)} pour cet outil : la commande fera ce travail en nouvelle session`,
       );
     }
   }

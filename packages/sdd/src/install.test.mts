@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import {
+  chmodSync,
   cpSync,
   existsSync,
   mkdirSync,
@@ -76,7 +77,7 @@ const from = (a: string[], id: string, dir: string): string =>
   a.includes('--from') ? `${releaseUrl}/${id}-0.2.0.zip` : join(source, dir);
 
 /** Faux Spec Kit : simule `specify`, délègue `git` au vrai git, enregistre chaque appel `specify`. */
-function fakeRunner(opts: { uv?: boolean; failFrom?: boolean } = {}): { runner: Run; calls: string[][]; inputs: (string | undefined)[] } {
+function fakeRunner(opts: { uv?: boolean; failFrom?: boolean; failUse?: string } = {}): { runner: Run; calls: string[][]; inputs: (string | undefined)[] } {
   const calls: string[][] = [];
   const inputs: (string | undefined)[] = [];
   const runner: Run = async (cmd, args, o) => {
@@ -127,6 +128,11 @@ function fakeRunner(opts: { uv?: boolean; failFrom?: boolean } = {}): { runner: 
       register(root, 'presets', 'artefact-sdd', true);
     } else if (a[0] === 'preset' && a[1] === 'remove') {
       register(root, 'presets', a[2] ?? '', false);
+    } else if (a[0] === 'integration' && a[1] === 'use') {
+      if (opts.failUse === a[2]) return { code: 1, stdout: `Error: cannot use ${a[2]}`, stderr: '' };
+      // Comme Spec Kit 1.3.2 : `use` réécrit les scripts partagés sans leur droit d'exécution.
+      const scripts = join(root, '.specify/scripts/bash');
+      if (existsSync(scripts)) for (const f of readdirSync(scripts)) chmodSync(join(scripts, f), 0o644);
     } else {
       return fail(`unknown: ${a.join(' ')}`);
     }
@@ -592,6 +598,60 @@ describe('install', () => {
     assert.deepEqual(report.agentsSkipped, [{ integration: 'agy', names: ['designer'] }]);
     assert.ok(report.agents.includes('.agents/agents/relecteur/agent.md'));
     assert.equal(report.agents.length, 7);
+  });
+
+  /** Projet installé avec claude par défaut, plus `others`, et un script partagé exécutable. */
+  async function multiTool(others: string[], failUse?: string) {
+    const root = tempRepo();
+    const fake = fakeRunner(failUse ? { failUse } : {});
+    await init(options(root, fake.runner));
+    writeFileSync(
+      join(root, '.specify/integration.json'),
+      JSON.stringify({ integration: 'claude', default_integration: 'claude', installed_integrations: ['claude', ...others] }),
+    );
+    mkdirSync(join(root, '.specify/scripts/bash'), { recursive: true });
+    writeFileSync(join(root, '.specify/scripts/bash/common.sh'), '#!/bin/sh\n');
+    chmodSync(join(root, '.specify/scripts/bash/common.sh'), 0o755);
+    fake.calls.length = 0;
+    return { root, ...fake };
+  }
+
+  const uses = (calls: string[][]): string[] =>
+    calls.filter((c) => c[0] === 'integration' && c[1] === 'use').map((c) => c[2] ?? '');
+
+  it('update registers the commands for each secondary tool, then selects the default again', async () => {
+    const { root, runner, calls } = await multiTool(['agy', 'codex']);
+    const report = await update(options(root, runner));
+    assert.deepEqual(uses(calls), ['agy', 'codex', 'claude']);
+    // Après les composants : `use` enregistre ce qu'ils viennent d'installer.
+    const firstUse = calls.findIndex((c) => c[0] === 'integration');
+    assert.ok(calls.slice(firstUse).every((c) => c[0] === 'integration'));
+    assert.deepEqual(report.registeredFor, ['agy', 'codex']);
+  });
+
+  it('update keeps the executable bit of the shared scripts that use rewrites', async () => {
+    const { root, runner } = await multiTool(['agy']);
+    await update(options(root, runner));
+    assert.equal(statSync(join(root, '.specify/scripts/bash/common.sh')).mode & 0o777, 0o755);
+  });
+
+  it('a failing use still selects the default tool again and names the tool', async () => {
+    const { root, runner, calls } = await multiTool(['agy'], 'agy');
+    await assert.rejects(
+      update(options(root, runner)),
+      (e: unknown) => e instanceof SetupError && e.message.includes('agy') && e.message.includes('update'),
+    );
+    assert.deepEqual(uses(calls), ['agy', 'claude']);
+    assert.equal(statSync(join(root, '.specify/scripts/bash/common.sh')).mode & 0o777, 0o755);
+  });
+
+  it('a project with one tool runs no integration use', async () => {
+    const root = tempRepo();
+    const { runner, calls } = fakeRunner();
+    await init(options(root, runner));
+    const report = await update(options(root, runner));
+    assert.deepEqual(uses(calls), []);
+    assert.deepEqual(report.registeredFor, []);
   });
 
   it('a registered preset without its template asks for update', async () => {

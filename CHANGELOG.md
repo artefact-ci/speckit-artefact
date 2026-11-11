@@ -5,6 +5,8 @@
 ### Corrigé
 
 - `init --integration <outil>` sur un projet où Spec Kit est déjà installé avec un autre outil n'installait rien et ne le disait pas. Le rapport le signale maintenant et donne les commandes Spec Kit pour ajouter ou remplacer l'outil, puis `update`. Le README décrit la marche à suivre (« Changer ou ajouter un outil »).
+- Un outil ajouté à un projet déjà installé (`specify integration install agy --force`) n'avait ni les commandes de l'extension (`/speckit-prd`, `/speckit-design`, `/speckit-epics`, `/speckit-prototype`, `git.*`) ni la version du preset des commandes du cœur : Spec Kit 1.3.2 ne les enregistre que pour l'outil par défaut, et ce second outil gardait les commandes d'origine de Spec Kit, sans les règles de la méthode. `update` les enregistre maintenant pour chaque outil de `.specify/integration.json`, puis revient à l'outil par défaut, et garde le droit d'exécution des scripts de `.specify/scripts/`. Un projet qui a deux outils relance `npx @artefact-ci/sdd update`.
+- Le rapport disait « agy, designer : pas de fichier d'agent pour cet outil », comme si `designer` était un outil. Il dit maintenant « agy : pas de fichier d'agent designer pour cet outil ».
 
 ## [0.2.0] - 2026-11-10
 

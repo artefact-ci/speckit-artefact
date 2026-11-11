@@ -109,7 +109,7 @@ Les fichiers d'agent sont fins : ils lisent les consignes, communes à tous les 
 
 ### Changer ou ajouter un outil
 
-Sur un projet déjà installé, relancer `init --integration <outil>` ne change rien : l'outil se gère avec Spec Kit, puis `update` génère les fichiers d'agent de chaque outil listé dans `.specify/integration.json`.
+Sur un projet déjà installé, relancer `init --integration <outil>` ne change rien : l'outil se gère avec Spec Kit, puis `update` installe la méthode pour chaque outil listé dans `.specify/integration.json` : ses fichiers d'agent, les commandes de l'extension (`/speckit-prd`…, `git`) et la version du preset des commandes du cœur. Spec Kit n'enregistre ces commandes que pour l'outil par défaut ; `update` sélectionne donc tour à tour chaque autre outil (`specify integration use`), puis revient à l'outil par défaut, qui ne change pas.
 
 ```sh
 # garder l'outil actuel et en ajouter un (--force : Spec Kit refuse sinon d'installer deux outils côte à côte)
