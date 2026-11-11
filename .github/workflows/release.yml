@@ -178,20 +178,29 @@ jobs:
           git config --global user.name 'CI'
           git config --global user.email 'ci@example.com'
 
+      # npm view reads the full metadata; an install (npx) reads the abbreviated one, which can show
+      # a new version minutes later: wait with an install resolution (npm pack --dry-run), for the
+      # three packages (the installer pins the other two), without the local cache.
       - name: Wait for the version on npm
+        env:
+          npm_config_prefer_online: 'true'
         run: |
           v="${GITHUB_REF_NAME#v}"
-          for try in $(seq 10); do
-            if [ -n "$(npm view "@artefact-ci/sdd@$v" version 2> /dev/null || true)" ]; then
-              exit 0
-            fi
-            echo "Essai $try : @artefact-ci/sdd@$v pas encore visible"
+          for try in $(seq 20); do
+            missing=''
+            for pkg in sdd spec-trace prototype; do
+              npm pack "@artefact-ci/$pkg@$v" --dry-run > /dev/null 2>&1 || missing="$missing @artefact-ci/$pkg@$v"
+            done
+            [ -z "$missing" ] && exit 0
+            echo "Essai $try : pas encore installable :$missing"
             sleep 30
           done
-          echo "::error::@artefact-ci/sdd@$v n'est pas visible sur npm"
+          echo "::error::pas installable depuis npm au bout de 10 minutes :$missing"
           exit 1
 
       - name: npx @artefact-ci/sdd init on a blank repo
+        env:
+          npm_config_prefer_online: 'true'
         run: |
           v="${GITHUB_REF_NAME#v}"
           cd "$(mktemp -d)"
