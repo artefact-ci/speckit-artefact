@@ -49,7 +49,7 @@ L'installeur enregistre la version de la méthode installée et sa source dans `
 
 ```json
 {
-  "version": "0.2.0",
+  "version": "0.2.1",
   "source": "release"
 }
 ```
