@@ -1,6 +1,6 @@
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { chmodSync, existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, join } from 'node:path';
-import { agentFiles, readAgentSpecs, readIntegrations, skippedAgents } from './agents.mts';
+import { agentFiles, readAgentSpecs, readDefaultIntegration, readIntegrations, skippedAgents } from './agents.mts';
 import { compareVersions, readInstalled, writeInstalled, type Installed } from './artefact.mts';
 import { baseConstitution, isBlankConstitution } from './constitution.mts';
 import { applyGitHooks } from './hooks.mts';
@@ -28,10 +28,14 @@ export type Report = {
   agentsSkipped: { integration: string; names: string[] }[];
   /** Intégrations sans générateur de fichiers d'agent. */
   noAgentGenerator: string[];
+  /** Intégrations secondaires pour lesquelles les commandes de l'extension et du preset ont été enregistrées. */
+  registeredFor: string[];
   stack?: Deduction;
   constitution: 'written' | 'kept';
   legacy: ReturnType<typeof legacyAgents>;
   dirty: boolean;
+  /** `init --integration` sur un `.specify/` existant qui n'a pas cette intégration : l'option n'a rien installé. */
+  integrationIgnored?: { requested: string; installed: string[] };
   /** `installed` est null quand `init` n'a pas écrit `.specify/artefact.json` (version inconnue). */
   version: { installed: Installed | null; previous: Installed | null; downgrade: boolean };
 };
@@ -99,6 +103,59 @@ async function branches(o: Options): Promise<Branches> {
   return { names: [...new Set(refs)], ...(defaultBranch ? { defaultBranch } : {}) };
 }
 
+const SCRIPTS = '.specify/scripts';
+
+/** Droits de chaque fichier sous `.specify/scripts/` (chemin absolu → mode). */
+function scriptModes(root: string): Map<string, number> {
+  const modes = new Map<string, number>();
+  const walk = (dir: string) => {
+    if (!existsSync(dir)) return;
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const p = join(dir, e.name);
+      if (e.isDirectory()) walk(p);
+      else if (e.isFile()) modes.set(p, statSync(p).mode & 0o777);
+    }
+  };
+  walk(join(root, SCRIPTS));
+  return modes;
+}
+
+/**
+ * Spec Kit 1.3.2 n'enregistre les commandes d'une extension ou d'un preset que pour l'intégration
+ * par défaut ; une autre ne les reçoit qu'à `specify integration use`. On sélectionne donc chaque
+ * intégration secondaire, puis on revient toujours à celle par défaut, même après un échec.
+ * `use` réécrit les scripts partagés sans leur droit d'exécution : on remet les droits d'avant.
+ */
+async function registerSecondary(o: Options, integrations: string[]): Promise<string[]> {
+  const fallback = readDefaultIntegration(o.root);
+  if (fallback === null || !integrations.includes(fallback)) return [];
+  const others = integrations.filter((i) => i !== fallback);
+  if (others.length === 0) return [];
+  const modes = scriptModes(o.root);
+  let failed: { integration: string; error: Error } | undefined;
+  for (const integration of others) {
+    try {
+      await specify(o.runner, o.root, ['integration', 'use', integration]);
+    } catch (e) {
+      failed = { integration, error: e as Error };
+      break;
+    }
+  }
+  try {
+    await specify(o.runner, o.root, ['integration', 'use', fallback]);
+  } finally {
+    for (const [file, mode] of modes) {
+      if (existsSync(file) && (statSync(file).mode & 0o777) !== mode) chmodSync(file, mode);
+    }
+  }
+  if (failed) {
+    throw new SetupError(
+      `impossible d'enregistrer les commandes de la méthode pour ${failed.integration} : ${failed.error.message} ; ${fallback} reste l'outil par défaut, relance update`,
+    );
+  }
+  return others;
+}
+
 async function isDirty(o: Options): Promise<boolean> {
   return ((await git(o, ['status', '--porcelain'])) ?? '').trim() !== '';
 }
@@ -143,6 +200,9 @@ async function common(o: Options, mode: 'init' | 'update'): Promise<Common> {
   } catch (e) {
     throw new SetupError(`.specify/integration.json illisible : ${(e as Error).message}`);
   }
+  // Seulement quand un composant vient d'être (ré)installé : un second init ne lance rien.
+  const registeredFor = installed.length > 0 ? await registerSecondary(o, integrations) : [];
+
   const specs = readAgentSpecs(root);
   const agents: string[] = [];
   const agentsSkipped: Report['agentsSkipped'] = [];
@@ -169,6 +229,7 @@ async function common(o: Options, mode: 'init' | 'update'): Promise<Common> {
     agents,
     agentsSkipped,
     noAgentGenerator,
+    registeredFor,
     legacy: legacyAgents(root),
   };
 }
@@ -187,7 +248,8 @@ export async function init(o: Options): Promise<Report> {
   const noneInstalled = !registered(root, 'presets', 'artefact-sdd') && !registered(root, 'extensions', 'artefact-product');
   const dirty = await isDirty(o);
 
-  if (!existsSync(join(root, '.specify'))) {
+  const hadSpecify = existsSync(join(root, '.specify'));
+  if (!hadSpecify) {
     const args = ['init', '--here', '--script', 'sh', '--non-interactive', '--ignore-agent-tools'];
     args.push('--integration', o.integration ?? 'claude');
     // Spec Kit 1.3.2 compte `.git` comme contenu : sans --force, il refuse un dossier non vide.
@@ -218,7 +280,21 @@ export async function init(o: Options): Promise<Report> {
     constitution = 'written';
   }
 
-  return { mode: 'init', ...done, stack, constitution, dirty, version: { installed: record ? current : null, previous, downgrade: false } };
+  // Spec Kit n'installe une intégration qu'à son init : sur un projet déjà initialisé, --integration ne fait rien.
+  let integrationIgnored: Report['integrationIgnored'];
+  if (hadSpecify && o.integration !== undefined) {
+    const installed = readIntegrations(root);
+    if (!installed.includes(o.integration)) integrationIgnored = { requested: o.integration, installed };
+  }
+
+  return {
+    mode: 'init',
+    ...done,
+    stack,
+    constitution,
+    dirty,
+    ...(integrationIgnored ? { integrationIgnored } : {}),
+    version: { installed: record ? current : null, previous, downgrade: false } };
 }
 
 export async function update(o: Options): Promise<Report> {

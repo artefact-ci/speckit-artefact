@@ -110,6 +110,31 @@ describe('artefact-sdd end to end, real Spec Kit', { skip: process.env['SDD_E2E'
     assert.deepEqual([readFileSync(stack), readFileSync(constitution)], before);
   });
 
+  it('update gives a second tool the commands of the extension and of the preset, and keeps the default', () => {
+    const repo = workDir('two-tools');
+    cpSync(join(FIXTURE, 'repos', 'bun-hono'), repo, { recursive: true });
+    git(repo, 'init', '-q');
+    commit(repo, 'project');
+    sdd(repo, 'init', '--source', SOURCE);
+    specify(repo, 'integration', 'install', 'agy', '--script', 'sh', '--force');
+    commit(repo, 'claude and agy');
+
+    const updated = sdd(repo, 'update', '--source', SOURCE);
+    assert.match(updated, /Commandes de la méthode enregistrées aussi pour : agy/);
+
+    const skills = join(repo, '.agents', 'skills');
+    for (const name of ['speckit-prd', 'speckit-design', 'speckit-epics', 'speckit-prototype', 'speckit-git-commit']) {
+      assert.ok(existsSync(join(skills, name, 'SKILL.md')), `${name} manque pour agy`);
+    }
+    // Le cœur d'agy est celui du preset, pas celui de Spec Kit.
+    assert.match(readFileSync(join(skills, 'speckit-converge', 'SKILL.md'), 'utf8'), /relecteur/);
+    assert.ok(existsSync(join(repo, '.claude', 'skills', 'speckit-prd', 'SKILL.md')));
+    const options = JSON.parse(readFileSync(join(repo, '.specify', 'init-options.json'), 'utf8')) as { ai: string };
+    assert.equal(options.ai, 'claude');
+    const modes = git(repo, 'diff', '--summary', '--', '.specify/scripts');
+    assert.doesNotMatch(modes, /mode change 100755 => 100644/);
+  });
+
   it('migrates a boilerplate project: removes its preset, keeps docs/agents/', () => {
     const repo = workDir('migrate');
     specify(repo, 'init', '--here', '--integration', 'claude', '--script', 'sh', '--non-interactive', '--ignore-agent-tools');
