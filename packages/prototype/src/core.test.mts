@@ -8,24 +8,23 @@ import {
   localUrls,
   packageImports,
   pageFiles,
-  prototypesDir,
+  prototypeArgs,
 } from './core.mts';
 
-describe('prototypesDir', () => {
-  it('finds the prototypes folder of a feature, given its folder or the prototypes folder', () => {
-    for (const path of [
-      'specs/004-checkout',
-      'specs/004-checkout/',
-      'specs/004-checkout/prototypes',
-    ]) {
-      assert.equal(prototypesDir(path), 'specs/004-checkout/prototypes');
+describe('prototypeArgs', () => {
+  it('reads the capture flag; the prototype is global, in specs/prototype', () => {
+    assert.deepEqual(prototypeArgs([]), { capture: false });
+    assert.deepEqual(prototypeArgs(['--capture']), { capture: true });
+  });
+
+  it('refuses a folder, from the time each feature had its own prototype', () => {
+    for (const args of [['specs/004-checkout'], ['specs/004-checkout/prototypes', '--capture']]) {
+      assert.throws(() => prototypeArgs(args), /specs\/prototype/);
     }
   });
 
-  it('refuses a path that is not a feature folder', () => {
-    for (const path of ['specs/prd.md', 'libs/web', 'specs/checkout']) {
-      assert.throws(() => prototypesDir(path), /specs\/NNN-<name>/);
-    }
+  it('refuses an unknown option', () => {
+    assert.throws(() => prototypeArgs(['--watch']), /--watch/);
   });
 });
 

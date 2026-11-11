@@ -26,7 +26,7 @@ Exemples complets dans [`examples/stack/`](../examples/stack/) : `nx.yml` (nx-re
 | `ui.storybook` | booléen | un composant ajouté vient avec sa story | plan, tasks | `false` |
 | `ui.theme` | chemin | fichier de thème appliqué par `/speckit-design` | design, prototype | **obligatoire** quand `ui` est défini |
 | `ui.preview` | commande | serveur qui montre les composants existants dans le thème (Storybook…), lancé en arrière-plan pour juger un brouillon ; il affiche son URL | design | pas d'aperçu : les valeurs des tokens seules |
-| `ui.prototype` | commande | construit la maquette d'un dossier de spec à partir du thème (`--capture` : captures desktop et mobile), puis vérifie ses liens (`@artefact-ci/prototype`) | prototype | parcours seuls, sans maquette |
+| `ui.prototype` | commande | construit le prototype global du produit, `specs/prototype/`, à partir du thème, sans argument (`--capture` : captures desktop et mobile), puis vérifie ses liens (`@artefact-ci/prototype`) | prototype | parcours seuls, sans maquette |
 | `e2e` | objet ou `null` | parcours navigateur ; `null` : pas de parcours | implement, tasks | `null` |
 | `e2e.dir` | chemin | où vivent les parcours | implement, tasks | — |
 | `e2e.command` | commande | lancer les parcours (un seul, ou ceux que le changement touche) ; au checkpoint, après `commands.affected` | implement, tasks, converge | — |

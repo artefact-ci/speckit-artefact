@@ -1,8 +1,9 @@
 /**
- * Prototype d'une fonctionnalité (/speckit-prototype) : pages HTML statiques à plat dans
- * specs/NNN-<nom>/prototypes/, index.html en entrée, styles.css compilé depuis le vrai thème du
- * projet (`ui.theme` de .specify/stack.yml), captures par page et par format dans captures/.
- * Logique pure ; les fichiers, la compilation et les captures sont dans cli.mts.
+ * Prototype du produit (/speckit-prototype) : un seul, global, que chaque fonctionnalité complète.
+ * Pages HTML statiques à plat dans specs/prototype/, index.html en entrée (par epic et parcours),
+ * parcours de chaque fonctionnalité dans journeys/NNN-<nom>.md, styles.css compilé depuis le vrai
+ * thème du projet (`ui.theme` de .specify/stack.yml), captures par page et par format dans
+ * captures/. Logique pure ; les fichiers, la compilation et les captures sont dans cli.mts.
  */
 
 /** Formats des captures : un écran de bureau courant et un téléphone courant. */
@@ -13,15 +14,21 @@ export const VIEWPORTS = {
 
 export type Viewport = keyof typeof VIEWPORTS;
 
-/** Dossier des prototypes d'une fonctionnalité, à partir de son dossier ou de celui des prototypes. */
-export function prototypesDir(featurePath: string): string {
-  const match = /^(specs\/\d{3}-[a-z0-9-]+?)(?:\/prototypes)?\/?$/.exec(featurePath);
-  if (!match) {
+/** Arguments de `pnpm prototype` : `--capture` seulement, le prototype n'a qu'un dossier. */
+/** Dossier du prototype global. */
+export const PROTOTYPE_DIR = 'specs/prototype';
+
+/** Arguments hors `--theme` : `--capture` seulement, le prototype n'a qu'un dossier. */
+export function prototypeArgs(args: string[]): { capture: boolean } {
+  for (const arg of args) {
+    if (arg === '--capture') continue;
     throw new Error(
-      `« ${featurePath} » n'est pas le dossier d'une fonctionnalité : specs/NNN-<name> attendu.`,
+      arg.startsWith('--')
+        ? `Option inconnue : ${arg}.`
+        : `« ${arg} » : le prototype est global, dans ${PROTOTYPE_DIR}/ ; la commande ne prend plus de dossier.`,
     );
   }
-  return `${match[1]}/prototypes`;
+  return { capture: args.includes('--capture') };
 }
 
 /** Feuille d'entrée de Tailwind : le thème de l'app, et les classes des pages du prototype. */

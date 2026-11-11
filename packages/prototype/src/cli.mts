@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
- * Prototype d'une fonctionnalité (/speckit-prototype), pages HTML dans specs/NNN-<nom>/prototypes/,
- * à lancer à la racine du dépôt :
- *   artefact-prototype specs/004-checkout             → compile styles.css depuis le thème (ui.theme)
- *   artefact-prototype specs/004-checkout --capture   → puis remplace captures/ (desktop et mobile)
+ * Prototype global du produit (/speckit-prototype), pages HTML dans specs/prototype/, que chaque
+ * fonctionnalité complète, à lancer à la racine du dépôt :
+ *   artefact-prototype             → vérifie les liens, compile styles.css depuis le thème (ui.theme)
+ *   artefact-prototype --capture   → puis remplace captures/ (desktop et mobile, toutes les pages)
  * Affiche l'URL de index.html, à ouvrir dans le navigateur : aucun serveur.
  * Tailwind (`@tailwindcss/cli`) et Playwright sont pris dans le projet s'il les a, sinon dans ce
  * paquet : la maquette compile avec la même version que l'app, et les captures trouvent le Chromium
@@ -32,12 +32,13 @@ import {
   localUrls,
   packageImports,
   pageFiles,
-  prototypesDir,
+  PROTOTYPE_DIR,
+  prototypeArgs,
 } from './core.mts';
 import { binOf, chromiumInstallHint, themeOf } from './stack.mts';
 
 const STACK_FILE = join('.specify', 'stack.yml');
-const USAGE = 'Usage : artefact-prototype <specs/NNN-nom> [--capture] [--theme <fichier css>]';
+const USAGE = 'Usage : artefact-prototype [--capture] [--theme <fichier css>]';
 
 const args = process.argv.slice(2);
 if (args.includes('--help') || args.includes('-h')) {
@@ -50,24 +51,16 @@ if (themeAt >= 0 && (!themeArg || themeArg.startsWith('--'))) {
   console.error(`--theme attend le fichier de thème du projet.\n${USAGE}`);
   process.exit(1);
 }
-const capture = args.includes('--capture');
-const unknownOption = args.find((arg) => arg.startsWith('--') && arg !== '--capture');
-if (unknownOption) {
-  console.error(`Option inconnue : ${unknownOption}\n${USAGE}`);
-  process.exit(1);
-}
-const featurePath = args.find((arg) => !arg.startsWith('--')) ?? '';
-
-// Le dossier de la feature d'abord : sans argument, l'usage s'affiche avant tout le reste.
-let dir: string;
+const dir = PROTOTYPE_DIR;
+let capture: boolean;
 let pages: string[];
 try {
-  dir = prototypesDir(featurePath);
+  ({ capture } = prototypeArgs(args));
   pages = pageFiles(readdirSync(dir));
 } catch (error) {
   const message =
     (error as NodeJS.ErrnoException).code === 'ENOENT'
-      ? `${featurePath} n'a pas de dossier prototypes/.`
+      ? `${dir}/ n'existe pas : /speckit-prototype le crée.`
       : (error as Error).message;
   console.error(`${USAGE}\n${message}`);
   process.exit(1);

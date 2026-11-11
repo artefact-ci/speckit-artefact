@@ -10,7 +10,7 @@ Chaque fonctionnalité part d'une spec écrite et relue. Elle est implémentée 
 | extension `artefact-product` | `/speckit-prd`, `/speckit-design`, `/speckit-epics`, `/speckit-prototype`, et les consignes des agents (relecteur, relecteur produit, designer, relecteur design, PO) |
 | [`@artefact-ci/sdd`](packages/sdd/README.md) | l'installeur : `npx @artefact-ci/sdd init` et `update` |
 | [`@artefact-ci/spec-trace`](packages/spec-trace/README.md) | la matrice scénarios → tests, qui échoue quand un scénario n'a pas de test |
-| [`@artefact-ci/prototype`](packages/prototype/README.md) | les maquettes HTML cliquables de `/speckit-prototype`, dans le thème du projet |
+| [`@artefact-ci/prototype`](packages/prototype/README.md) | le prototype HTML cliquable du produit (`specs/prototype/`), que `/speckit-prototype` complète à chaque fonctionnalité, dans le thème du projet |
 
 Les commandes ne citent aucun outil ni aucun chemin propre à une stack : elles lisent `.specify/stack.yml`, le fichier qui décrit le projet (ses commandes de test, ses branches, ses fichiers de conventions, son front).
 
@@ -83,7 +83,7 @@ L'agent propose, un relecteur produit ou design relit à froid, et vous tranchez
 | --- | --- | --- |
 | 1. Spécifier | `/speckit-specify <description>` (ou `/speckit-specify E03`) | chaque scénario se vérifie par un test, sans jugement |
 | 2. Clarifier | `/speckit-clarify` | les réponses sont reportées dans les exigences |
-| (option) Maquetter | `/speckit-prototype` | les parcours et la maquette, avant le plan |
+| (option) Maquetter | `/speckit-prototype` | les parcours et les écrans de la fonctionnalité dans le prototype global, avant le plan |
 | 3. Planifier | `/speckit-plan` | chaque principe de la constitution ; un test prévu par scénario ; les décisions qu'il vous laisse |
 | 4. Découper | `/speckit-tasks`, puis `/speckit-analyze` | les incohérences signalées, corrigées |
 | 5. Implémenter | `/speckit-implement` | chaque test vu en échec avant le code |

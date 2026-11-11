@@ -54,13 +54,13 @@ This command works with the agents of the method (`designer`, `relecteur-design`
    - (ui) A font: added as a dependency of the project, imported and set as the main font where the theme file does it, with a generic fallback after it (`ui-sans-serif, system-ui, sans-serif`), following the convention files (a check of unused dependencies may need to be told about a package imported from CSS only).
    - Installing a font and reinstalling dependencies use the project's package manager, as the convention files or the lockfile show it: that is reading the project, not inventing a command. When neither shows it, ask the user.
 
-8. **Stale prototypes** (ui). List the `specs/NNN-*/prototypes/` of the specs whose status is neither `Implemented` nor `Shipped`: their captures no longer show the theme. Name them in the report; `/speckit-plan` warns about them too.
+8. **Stale prototype** (ui). When `specs/prototype/` exists, its captures no longer show the theme: list the journeys (`specs/prototype/journeys/NNN-*.md`) of the specs whose status is neither `Implemented` nor `Shipped`, and name them in the report with the command that refreshes the captures, `<ui.prototype> --capture` (without `ui.prototype`, there are no captures to refresh); `/speckit-plan` warns about them too.
 
 9. **Check.** Run `commands.check` of `.specify/stack.yml` when it exists, otherwise `commands.affected`; fix what fails in the files of this command.
 
 10. **Commit.** Stage only `specs/design.md` and (ui) the theme file and, for a font, the files the installation changed (never `git add .`), and commit with a Conventional Commits message in English, such as `docs(product): set the design direction and theme`.
 
-11. **Report.** What changed in the direction and the theme, the disputed issues left to the user, the stale prototypes, and the next step: `/speckit-epics` (or `/speckit-specify` when the epics already exist).
+11. **Report.** What changed in the direction and the theme, the disputed issues left to the user, the stale prototype, and the next step: `/speckit-epics` (or `/speckit-specify` when the epics already exist).
 
 ## Rules
 

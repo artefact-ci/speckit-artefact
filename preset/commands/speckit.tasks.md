@@ -23,7 +23,7 @@ These rules come from the constitution (Test-First principle) and take precedenc
 - **Existing tests the plan makes wrong.** Search the tests of what the plan changes (a route made public, a rule relaxed, a response reshaped) and add a task to change them, in the story that changes the behavior.
 - **Dependencies.** A new dependency is added in the task of its first import, not ahead of it: a dependency that nothing imports yet fails the unused-dependency checks of many projects.
 - **Project conventions.** Apply the rules of the convention files listed under `docs` (where a new environment variable is documented, how a module is generated, what a new page must carry) in the task that triggers them, not in Polish.
-- **Prototype.** When `ui` is set and `specs/NNN-<name>/prototypes/captures/` exists, a task that builds a screen cites its captures. A component the plan adds to the component library (`ui.components`) gets its own tasks (test, then component and, when `ui.storybook` is true, its Storybook story) before the first screen that uses it.
+- **Prototype.** When `ui` is set and `specs/prototype/journeys/NNN-<name>.md` exists, a task that builds a screen cites its captures (`specs/prototype/captures/<screen>-mobile.png`), when there are some. A component the plan adds to the component library (`ui.components`) gets its own tasks (test, then component and, when `ui.storybook` is true, its Storybook story) before the first screen that uses it.
 - **Behavior without a scenario.** Production code the plan adds without an acceptance scenario (a role, a limit, a script option) still gets a test task, without a scenario id.
 
 ## Phases and Pull Requests (artefact-sdd)

@@ -5,8 +5,9 @@
 
 <!--
   The screen-by-screen paths of the user stories that have screens, written by /speckit-prototype
-  before the mockup and approved by the user. Each screen is named like its page in this folder
-  (`cart` → `cart.html`). An end-to-end journey of the epic (`E03-J1` in specs/product.yml) is cited,
+  before the mockup and approved by the user. Each screen is named like its page in
+  specs/prototype/ (`cart` → `cart.html`), the global prototype of the product: a screen that already
+  exists there keeps its page, which this feature edits. An end-to-end journey of the epic (`E03-J1` in specs/product.yml) is cited,
   never copied: this file details the steps this feature brings to it.
 -->
 
