@@ -1,0 +1,35 @@
+{
+  "name": "@artefact-ci/sdd",
+  "version": "0.2.0",
+  "description": "Installeur de la méthode Artefact CI pour Spec Kit (preset artefact-sdd, extension artefact-product)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/artefact-ci/speckit-artefact.git",
+    "directory": "packages/sdd"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "type": "module",
+  "bin": {
+    "artefact-sdd": "dist/cli.mjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=24.11"
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && mkdir -p dist/examples && cp ../../examples/stack/*.yml dist/examples/",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node --test 'src/*.test.mts'",
+    "test:e2e": "pnpm build && node --test test/e2e.test.mts",
+    "prepack": "pnpm build"
+  },
+  "dependencies": {
+    "yaml": "^2.9.1"
+  }
+}

@@ -5,6 +5,7 @@ on:
     branches: [dev, main]
   pull_request:
     branches: [dev, main]
+  workflow_call: # release.yml runs the same checks before it publishes
 
 permissions:
   contents: read
@@ -14,12 +15,32 @@ env:
 
 jobs:
   preset:
-    name: Install the preset on a blank project
+    name: Install the preset and the extension on a blank project
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: astral-sh/setup-uv@v6
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Check that the preset and the extension name no stack
+        run: |
+          if grep -rnE '\bnx\b|libs/|apps/|pnpm' preset/ extension/ --exclude=README.md; then
+            echo "::error::a stack is cited: move it to .specify/stack.yml or to the project docs"
+            exit 1
+          fi
+
+      - name: Check that the commands and the agents name no tool
+        run: |
+          if grep -rniE 'claude|antigravity' preset/ extension/ --exclude=README.md --exclude=preset.yml --exclude=extension.yml; then
+            echo "::error::a tool is cited: the method must work with any agent"
+            exit 1
+          fi
 
       - name: Create a blank Spec Kit 1.3.2 project
         run: |
@@ -34,10 +55,134 @@ jobs:
         working-directory: ${{ runner.temp }}/blank
         run: $SPECIFY preset add --dev "$GITHUB_WORKSPACE/preset"
 
-      - name: Check the preset sections in the skills
+      - name: Add the extension in dev mode
+        working-directory: ${{ runner.temp }}/blank
+        run: $SPECIFY extension add --dev "$GITHUB_WORKSPACE/extension"
+
+      - name: Check the skills and the agent instructions
+        run: .github/scripts/check-skills.sh "$RUNNER_TEMP/blank"
+
+      - name: Layer the Nx preset example above artefact-sdd
         working-directory: ${{ runner.temp }}/blank
         run: |
-          for command in specify plan tasks analyze implement converge; do
-            grep -q '(boilerplate)' ".claude/skills/speckit-$command/SKILL.md" \
-              || { echo "::error::speckit-$command has no (boilerplate) section"; exit 1; }
+          $SPECIFY preset add --dev "$GITHUB_WORKSPACE/examples/nx-preset" --priority 5
+          .specify/scripts/bash/resolve-template.sh plan-template | grep -q 'libs/api' \
+            || { echo "::error::the Nx plan template does not take precedence"; exit 1; }
+
+      # The zips of the release, built by the same script, installed with --from on a second blank project.
+      # A zip Spec Kit cannot read fails here, before a tag publishes it.
+      - name: Build the zips and serve them on localhost
+        run: |
+          pnpm zips "$RUNNER_TEMP/zips"
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory "$RUNNER_TEMP/zips" > "$RUNNER_TEMP/http.log" 2>&1 &
+          for _ in $(seq 20); do
+            curl -fsS -o /dev/null http://127.0.0.1:8765/ && exit 0
+            sleep 0.5
           done
+          echo "::error::the local server does not answer"
+          exit 1
+
+      - name: Create a second blank Spec Kit 1.3.2 project
+        run: |
+          mkdir "$RUNNER_TEMP/blank-from"
+          cd "$RUNNER_TEMP/blank-from"
+          $SPECIFY init --here --integration claude --script sh --non-interactive --ignore-agent-tools
+          git init
+
+      - name: Add the preset from its zip
+        working-directory: ${{ runner.temp }}/blank-from
+        run: |
+          zip=$(cd "$RUNNER_TEMP/zips" && ls artefact-sdd-*.zip)
+          $SPECIFY preset add --from "http://127.0.0.1:8765/$zip"
+
+      # extension add --from asks for a confirmation (the source is not a catalog). The default shell has no
+      # pipefail: the status is the one of specify, not the SIGPIPE of yes.
+      - name: Add the extension from its zip
+        working-directory: ${{ runner.temp }}/blank-from
+        run: |
+          zip=$(cd "$RUNNER_TEMP/zips" && ls artefact-product-*.zip)
+          yes | $SPECIFY extension add --from "http://127.0.0.1:8765/$zip"
+
+      - name: Check the skills and the agent instructions (zips)
+        run: .github/scripts/check-skills.sh "$RUNNER_TEMP/blank-from"
+
+  packages:
+    name: Test and pack the npm tools (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['24.11', '24'] # the minimum of engines, and the latest 24
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm typecheck
+
+      # The capture test of prototype needs the Chromium of the Playwright the package depends on.
+      - name: Install Chromium for the prototype captures
+        run: pnpm --filter @artefact-ci/prototype exec playwright install --with-deps chromium
+
+      # Unit tests, then both CLIs end to end: spec-trace against outputs of the boilerplate tool,
+      # prototype with a real Tailwind build and real captures.
+      - run: pnpm test
+
+      - name: Zips are reproducible
+        run: |
+          pnpm zips "$RUNNER_TEMP/zips-a"
+          pnpm zips "$RUNNER_TEMP/zips-b"
+          set -- "$RUNNER_TEMP"/zips-a/*.zip
+          test $# -eq 2 \
+            || { echo "::error::pnpm zips must write two zips"; exit 1; }
+          for zip in "$@"; do
+            cmp "$zip" "$RUNNER_TEMP/zips-b/$(basename "$zip")" \
+              || { echo "::error::$(basename "$zip") differs between two builds"; exit 1; }
+          done
+
+      - name: Pack the packages and run them from their tarball
+        run: |
+          pnpm -r exec pnpm pack --pack-destination "$RUNNER_TEMP/packs"
+          npx -y --package="$(ls "$RUNNER_TEMP"/packs/artefact-ci-spec-trace-*.tgz)" spec-trace \
+            | grep -q 'Aucune spec dans specs/' \
+            || { echo "::error::spec-trace does not run from its tarball"; exit 1; }
+          npx -y --package="$(ls "$RUNNER_TEMP"/packs/artefact-ci-prototype-*.tgz)" artefact-prototype --help \
+            | grep -q 'Usage : artefact-prototype' \
+            || { echo "::error::prototype does not run from its tarball"; exit 1; }
+          npx -y --package="$(ls "$RUNNER_TEMP"/packs/artefact-ci-sdd-*.tgz)" artefact-sdd --help \
+            | grep -q 'Usage : artefact-sdd' \
+            || { echo "::error::sdd does not run from its tarball"; exit 1; }
+
+  installer:
+    name: Install the method with artefact-sdd, real Spec Kit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm --filter @artefact-ci/sdd build
+
+      # Throwaway git repos: init twice leaves no diff, update keeps stack.yml and the constitution,
+      # a boilerplate project loses its preset and keeps docs/agents/. The test commits with
+      # -c user.name/-c user.email; the identity below covers any commit Spec Kit makes itself.
+      - name: Run the installer end to end
+        run: |
+          git config --global user.name 'CI'
+          git config --global user.email 'ci@example.com'
+          SDD_E2E=1 pnpm --filter @artefact-ci/sdd test:e2e

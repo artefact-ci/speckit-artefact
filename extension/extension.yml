@@ -1,0 +1,57 @@
+# artefact-product: the product commands of the Artefact CI method (PRD, design, epics,
+# prototype). This directory is the source of truth: edit it here, then reinstall with
+# `uvx --from specify-cli==1.3.2 specify extension add --dev <speckit-artefact>/extension --force`.
+# Never edit the installed copy in .specify/extensions/artefact-product/ or .claude/skills/.
+schema_version: '1.0'
+
+extension:
+  id: 'artefact-product'
+  name: 'Artefact product'
+  version: '0.2.0'
+  description: 'Product commands of the Artefact CI method: requirements, design direction, epics, prototypes'
+  author: 'Artefact CI'
+  repository: 'https://github.com/artefact-ci/speckit-artefact'
+  license: 'MIT'
+
+requires:
+  speckit_version: '>=1.3.2'
+
+provides:
+  commands:
+    - name: 'speckit.artefact-product.prd'
+      file: 'commands/speckit.prd.md'
+      description: 'Write or revise the product requirements document and the requirements of the product index, with the product reviewer'
+      aliases: ['speckit.prd']
+
+    - name: 'speckit.artefact-product.design'
+      file: 'commands/speckit.design.md'
+      description: 'Set the design direction of the product and apply it to the theme, with the designer and the design reviewer'
+      aliases: ['speckit.design']
+
+    - name: 'speckit.artefact-product.epics'
+      file: 'commands/speckit.epics.md'
+      description: 'Group the requirements into ordered epics with their end-to-end journeys, with the product reviewer'
+      aliases: ['speckit.epics']
+
+    - name: 'speckit.artefact-product.prototype'
+      file: 'commands/speckit.prototype.md'
+      description: 'Optional: user journeys then a clickable HTML mockup of a feature, with the designer and the design reviewer'
+      aliases: ['speckit.prototype']
+
+  templates:
+    - name: 'prd-template'
+      file: 'templates/prd-template.md'
+      description: 'Product requirements document: vision, users, scope, constraints, requirements (ids of specs/product.yml)'
+
+    - name: 'design-template'
+      file: 'templates/design-template.md'
+      description: 'Product design: users and contexts, UX principles, voice, accessibility, visual direction, theme'
+
+    - name: 'journeys-template'
+      file: 'templates/journeys-template.md'
+      description: 'User journeys of a feature, screen by screen, before its mockup'
+
+tags:
+  - 'product'
+  - 'design'
+  - 'prototype'

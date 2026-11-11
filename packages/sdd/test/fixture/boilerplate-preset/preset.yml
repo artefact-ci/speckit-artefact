@@ -1,0 +1,22 @@
+# The old boilerplate preset, reduced to one template: the installer must remove it.
+schema_version: '1.0'
+
+preset:
+  id: 'boilerplate'
+  name: 'Boilerplate'
+  version: '1.0.0'
+  description: 'Test fixture: the preset of the old boilerplate, replaced by artefact-sdd'
+  author: 'Artefact CI'
+  repository: 'https://github.com/artefact-ci/speckit-artefact'
+  license: 'MIT'
+
+requires:
+  speckit_version: '>=1.3.2'
+
+provides:
+  templates:
+    - type: 'template'
+      name: 'spec-template'
+      file: 'templates/spec-template.md'
+      description: 'Spec template of the old boilerplate'
+      replaces: 'spec-template'

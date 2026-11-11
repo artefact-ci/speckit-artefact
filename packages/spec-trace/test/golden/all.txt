@@ -1,0 +1,40 @@
+
+## specs/001-note (Implemented) : INCOMPLET
+
+| Scénario | Tests |
+| -------- | ----- |
+| 001-US1-AS1 | src/note.spec.ts |
+| 001-US1-AS2 (retiré) | src/note.spec.ts |
+| 001-US1-AS3 | **aucun** |
+
+Test orphelin : src/note.spec.ts cite 001-US1-AS9, absent de la spec.
+
+Test périmé : src/note.spec.ts cite 001-US1-AS2, scénario retiré.
+
+## specs/002-draft (Draft) : OK
+
+| Scénario | Tests |
+| -------- | ----- |
+| 002-US1-AS1 | **aucun** |
+
+Spec en Draft : 1 scénario(s) encore sans test, toléré. Passer le statut à Implemented quand tous sont couverts.
+
+## Exigences (specs/product.yml) : OK
+
+| Exigence | État | Specs |
+| -------- | ---- | ----- |
+| NOTE-01 Add a note | Implemented | specs/001-note (Implemented) |
+| NOTE-02 Draft work | Draft | specs/002-draft (Draft) |
+
+## Epics (specs/product.yml) : OK
+
+| Epic | État | Avancement | Exigences | Dépend de |
+| ---- | ---- | ---------- | --------- | --------- |
+| E01 Notes | Implemented | 1/1 spécifiées, 1/1 terminées | NOTE-01 |  |
+| E02 Drafts | Draft | 1/1 spécifiées, 0/1 terminées | NOTE-02 | E01 |
+
+Prochain epic : E02.
+
+| Parcours | Tests |
+| -------- | ----- |
+| E01-J1 Leave a note | src/journey.spec.tsx |

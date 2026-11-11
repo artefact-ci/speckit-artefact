@@ -1,0 +1,25 @@
+# .specify/stack.yml : application Next.js (exemple : avia-client, à valider en phase 6b)
+version: 1
+branches:
+  base: dev
+  production: main
+docs:
+  - AGENTS.md
+commands:
+  test: pnpm vitest run {file}
+  affected: pnpm lint && pnpm typecheck && pnpm vitest run
+  check: pnpm check
+  trace: pnpm dlx @artefact-ci/spec-trace
+tests:
+  globs: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'e2e/**/*.spec.ts']
+  needs: []
+flags: false
+ui:
+  components: src/components/ui
+  storybook: false
+  theme: src/app/globals.css
+  prototype: pnpm dlx @artefact-ci/prototype # paquet de la phase 3
+e2e:
+  dir: e2e
+  command: pnpm exec playwright test
+  setup: pnpm exec playwright install chromium

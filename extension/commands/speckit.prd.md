@@ -1,0 +1,90 @@
+---
+description: 'Write or revise the product requirements document (specs/prd.md) and the requirements of the product index (specs/product.yml), with the user.'
+argument-hint: 'Product description, path to a requirements document, or the change to make'
+---
+
+<!-- artefact-product extension (source: extension/ of speckit-artefact). A command of its own, not part of core Spec Kit. -->
+
+## User Input
+
+```text
+$ARGUMENTS
+```
+
+You **MUST** consider the user input before proceeding (if not empty).
+
+## Project Stack
+
+Read `.specify/stack.yml` first: it names this project's branches, commands and front end. A key that is absent or `null` skips the step that uses it: say so in the report, never invent a command. When the file itself is missing, stop and ask the user to write it.
+
+## Goal
+
+Produce the level above the features: `specs/prd.md` (the why and the what of the whole product, for people) and the `requirements` list of `specs/product.yml` (the ids that specs cite and the trace command, `commands.trace`, checks). The epics are not part of this command: `/speckit-epics` comes next.
+
+The PRD and the index belong to the product, that is to the user. You draft, as the product owner of `.specify/extensions/artefact-product/agents/po.md`; the `relecteur-produit` agent reviews the draft cold; you show both to the user, and the user decides. Nothing is committed before the user has approved it.
+
+This command works with the agents of the method (`.specify/extensions/artefact-product/agents/po.md`, `relecteur-produit`): their instructions are in `.specify/extensions/artefact-product/agents/`, installed with the `artefact-product` extension. When one of these files is missing, stop and tell the user: the review cannot be skipped.
+
+## Steps
+
+1. **Branch.** Stop if the working tree has uncommitted changes. On `branches.base` of `.specify/stack.yml` (on `branches.production`, switch to `branches.base` and pull it first; without `branches.base`, the default branch of the repository), create and switch to `docs/product-<short-name>` (`git switch -c`); on another branch, ask the user before going on.
+
+2. **Read what exists.** `.specify/extensions/artefact-product/agents/po.md` (the standards you draft by, and the reviewer judges by), `specs/prd.md` and `specs/product.yml` if they exist, and the output of the trace command (states of the requirements and epics; without it, the `**Status**` and `**Product Requirements**` of the specs). When the user input is a path, read that document: it is the source, the PRD restates it, it does not invent beyond it.
+
+3. **Language.** When `.specify/memory/language.yml` does not exist, ask the user first in which language the product documents and the specs are written (recommended: the language of the source), and write it with a header comment:
+
+   ```yaml
+   # Language of the product documents and the specs (BCP 47). Read by every Spec Kit command.
+   language: fr
+   ```
+
+   Then **find the gaps.** Check the source and the existing PRD against each section of the template (`.specify/scripts/bash/resolve-template.sh prd-template` prints its content, not its path): vision, users, problems, scope and non-goals, constraints, success metrics, requirements. Ask at most 5 questions, one at a time, each with a recommended answer and the options, as `/speckit-clarify` does. Ask only what changes the requirements or the scope; anything else goes to **Open Questions**.
+
+4. **Draft the requirements.** One requirement = one capability a user can be given or refused, testable through specs later. For each one:
+   - an id `<PREFIX>-<number>` (uppercase prefix, dash, digits: `PAY-03`), the only form the trace command accepts: the source's own id when it has that form, otherwise a short prefix per area (`ACC`, `PAY`, `ORD`) and the next free number of that prefix. When the source numbers its requirements another way (`REQ-1.2`, `F12`), keep the mapping in the PRD, after the title: `**PAY-03** Pay by mobile money (source: REQ-1.2): …`;
+   - a short title, the same in the PRD and in the index;
+   - no technology, no screen, no data model: those belong to `/speckit-plan`;
+   - the other standards of `.specify/extensions/artefact-product/agents/po.md` (testable, one capability, one actor, the rule that matters).
+
+   Then check the coverage: every problem of the PRD is answered by at least one requirement. A problem left without one is either a missing requirement or a constraint (`order in the evening, delivered the next day`): say which in the draft, do not drop it silently.
+
+   Revising an existing index, ids are never renumbered nor reused. A dropped requirement gets `retired: <reason>` in `specs/product.yml` and is struck through in the PRD with the same reason; a changed requirement keeps its id if its intent stays the same, otherwise the old one is retired and a new one is created.
+
+5. **Write the draft** in place, so that the reviewer reads the real files (step 7 restores them if the user declines):
+   - `specs/prd.md` from the template, all placeholders replaced, comments of the template removed, in the project language (see Rules).
+   - In `specs/product.yml`, the `requirements` list only. Keep the existing `epics` and the comments as they are. An entry has `id`, `title` and, once dropped, `retired`; nothing else, the area is a YAML comment above its group. Create the file with this header when it does not exist:
+
+     ```yaml
+     # Product index: owned by the product (CODEOWNERS). Ids are never renumbered: retire them.
+     # Narrative in specs/prd.md. Checked by the trace command of .specify/stack.yml.
+     ```
+
+     Entries look like this:
+
+     ```yaml
+     requirements:
+       # Payments
+       - id: PAY-01
+         title: Pay by mobile money
+       - id: PAY-02
+         title: Cash on delivery
+         retired: replaced by PAY-05 (payment on pickup only)
+     ```
+
+6. **Review.** Launch the `relecteur-produit` subagent in mode `prd`, with the paths only: `specs/prd.md`, `specs/product.yml`, and the source (the path of the requirements document, or the user's own words from the user input, verbatim, never your summary). Never pass your notes nor the user's answers. When it reports a blocking issue, fix the draft once, or keep your version with a proof (the source line, the user's answer); then go on: no second round. If your agent cannot launch it, ask the user to run `.specify/extensions/artefact-product/agents/relecteur-produit.md` in a new session, with the same inputs only, and paste its report: the review is never skipped.
+
+7. **Show the draft, then wait.** Show the user the requirement table (id, title, area, source id, and for a revision: added, changed, retired), a summary of the PRD sections, and in a list of its own what the PRD leaves out of the source and why (a technology choice, a vendor not signed, a vague wish turned into a constraint or an open question). Nothing from the source disappears without the user seeing it. Then the reviewer's verdict: the issues you fixed, and those left or disputed, with their proof. Commit nothing until the user approves; apply their changes to the files and show again if needed. When the user declines, restore the draft: `git checkout -- specs/prd.md specs/product.yml` for the files already tracked, and delete those this run created.
+
+8. **Check.** Run the trace command (`commands.trace`). Without it, check yourself: every id has the form `<PREFIX>-<number>`, is unique and was not renumbered; each title is the same in the PRD and the index; the YAML has only `id`, `title` and `retired`; and, when the index has epics, each new requirement is in none yet. When the index already has epics, a new requirement belongs to no epic and the trace command fails: tell the user that `/speckit-epics` must place it, and go on to the commit anyway (the branch is not merged until it passes). Any other error is yours: fix it.
+
+9. **Commit.** Stage only `specs/prd.md`, `specs/product.yml` and, when this run created it, `.specify/memory/language.yml` (never `git add .`), and commit with a Conventional Commits message in English, such as `docs(product): add the product requirements document` or `docs(product): retire PAY-01`.
+
+10. **Report.** The number of requirements (added, changed, retired), the open questions left, and the next step: `/speckit-epics`.
+
+## Rules
+
+- Write the artifacts in the project language: `language` in `.specify/memory/language.yml`, a BCP 47 code (`fr`); English when the file does not exist. What stays as the template or the tools write it, in every language: the headings of the templates (`## Requirements`, `### User Story 1 - …`, `## Complexity Tracking`: commands and reviewers find sections by them), the markers that the trace command reads (`**Status**:` and its values `Draft`, `Implemented`, `Shipped`, `Retired`; `**Product Requirements**:`; `**Acceptance Scenarios**`; `**Retired**`), the `[NEEDS CLARIFICATION]` markers that commands look for, the task lines (`- [ ] T001 [P] [US1] …`), the ids (`003-US1-AS2`, `PAY-03`, `E03-J1`, `P1`) and the YAML keys of `specs/product.yml`. Commit messages, code, identifiers and test titles stay in English. A file still written in another language: write what you add or rewrite in the project language, and leave the rest as it is.
+
+- Never write a state (specified, done, shipped) in the PRD or the index: states are derived from the specs.
+- Never edit a spec (`specs/NNN-*/`) from this command. When a retired or changed requirement is cited by a spec, list those specs in the report: changing them is a feature change, with its own spec update.
+- The PRD says what and why. Anything about how (domains, endpoints, tables, flags) is out of place here.

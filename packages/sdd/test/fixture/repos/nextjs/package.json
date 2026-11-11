@@ -1,0 +1,1 @@
+{"name":"nextjs-fixture","private":true,"scripts":{"lint":"next lint","typecheck":"tsc --noEmit","test":"vitest run"}}

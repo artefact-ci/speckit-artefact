@@ -1,0 +1,23 @@
+{
+  "name": "speckit-artefact",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.34.9",
+  "engines": {
+    "node": ">=24.11"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck && tsc -p tsconfig.json",
+    "test": "pnpm -r test && pnpm test:scripts",
+    "version:check": "node scripts/version.mts check",
+    "version:set": "node scripts/version.mts set",
+    "notes": "node scripts/version.mts notes",
+    "zips": "node scripts/zip.mts",
+    "test:scripts": "node --test 'scripts/*.test.mts'"
+  },
+  "devDependencies": {
+    "@types/node": "~24.19.2",
+    "typescript": "~6.0.3"
+  }
+}
