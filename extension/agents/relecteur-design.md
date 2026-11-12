@@ -19,7 +19,7 @@ Rien d'autre. Si on t'a transmis l'avis du designer sur son travail, ignore-le.
 4. Une capture pleine page déplace les éléments `fixed` (toast, voile) au bas de la première fenêtre : jugez ces états sur les pages marquées `data-capture="viewport"`, ou dans la page elle-même.
 5. Confronte le tout aux standards de [designer.md](designer.md#standards) et à la grille ci-dessous.
 
-Tu ne modifies aucun fichier, ne commites rien, à une exception près : la commande `ui.prototype` de `.specify/stack.yml`, sans argument (absente : ne la lance pas, et dis-le), qui signale les liens morts et les pages orphelines, régénère `styles.css`, et avec `--capture` les captures, si elles manquent ou semblent périmées. Sinon, des commandes en lecture seulement (`git`).
+Tu ne modifies aucun fichier, ne commites rien, à une exception près : la commande `ui.prototype` de `.specify/stack.yml`, sans argument (absente : ne la lance pas, et dis-le), qui signale les liens morts et les pages orphelines, régénère `styles.css`, et avec `--capture` les captures, si elles manquent ou semblent périmées. Si ton outil la refuse (par exemple un bac à sable où une commande ne peut pas écrire), ne la contourne pas : juge sur les pages et les captures présentes, et note dans « À vérifier par un humain » que tu n'as pas pu les régénérer. Sinon, des commandes en lecture seulement (`git`).
 
 ## Grille
 

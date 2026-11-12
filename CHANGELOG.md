@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.0] - 2026-11-12
+
+### Ajouté
+
+- Antigravity : l'installeur génère le `designer` (`.agents/agents/designer/agent.md`), avec les outils `read_file`, `write_file`, `edit_file` et `run_command`, vérifiés dans l'app. `/speckit-design` et `/speckit-prototype` le lancent comme sur Claude Code. Le rapport ne dit plus « agy : pas de fichier d'agent designer ».
+- Le designer liste dans une section « Commandes à lancer » de son rapport les commandes que son outil lui refuse (sur Antigravity, le bac à sable interdit à une commande d'écrire : `ui.prototype`, l'installation d'une police) ; `/speckit-design` et `/speckit-prototype` les lancent avant la relecture. Sur Claude Code, rien ne change : le designer les lance lui-même.
+
+### Modifié
+
+- Antigravity : les relecteurs déclarent `read_file` et `run_command`, les noms qu'Antigravity résout, au lieu de `view_file`, `grep_search` et `run_command` (`grep_search` était ignoré sans message). Un projet installé relance `npx @artefact-ci/sdd@0.3.0 update`.
+- `relecteur-design` : si son outil refuse `ui.prototype`, il juge sur les captures présentes et le signale, sans contourner le bac à sable.
+- README : sur Antigravity, chaque commande d'un sous-agent attend un accord (ctrl+k, 60 secondes au plus).
+
 ## [0.2.1] - 2026-11-11
 
 ### Corrigé
