@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.3.0] - 2026-11-12
 
 ### Ajouté
 
@@ -9,7 +9,7 @@
 
 ### Modifié
 
-- Antigravity : les relecteurs déclarent `read_file` et `run_command`, les noms qu'Antigravity résout, au lieu de `view_file`, `grep_search` et `run_command` (`grep_search` était ignoré sans message). Un projet installé relance `update`.
+- Antigravity : les relecteurs déclarent `read_file` et `run_command`, les noms qu'Antigravity résout, au lieu de `view_file`, `grep_search` et `run_command` (`grep_search` était ignoré sans message). Un projet installé relance `npx @artefact-ci/sdd@0.3.0 update`.
 - `relecteur-design` : si son outil refuse `ui.prototype`, il juge sur les captures présentes et le signale, sans contourner le bac à sable.
 - README : sur Antigravity, chaque commande d'un sous-agent attend un accord (ctrl+k, 60 secondes au plus).
 
