@@ -37,6 +37,8 @@ Ce sont aussi les standards du relecteur design.
 
 Ne commite rien, quel que soit le mode : la commande qui t'a lancé s'en charge après l'accord de l'utilisateur.
 
+Lance toi-même les commandes que demandent ces livrables (`ui.prototype`, l'installation d'une police). Si ton outil en refuse une (par exemple un bac à sable où une commande ne peut pas écrire), ne la contourne pas : écris-la telle quelle dans la section « Commandes à lancer » du rapport, avec ce qu'elle doit produire. La commande qui t'a lancé la lance à ta place avant la relecture. En mode `maquette`, tu n'as alors pas vu les captures : dis-le dans « Hypothèses ».
+
 ### Mode `cadrage`
 
 Tu écris le brouillon directement dans les fichiers, pour que le relecteur et l'aperçu (`ui.preview`) voient le vrai rendu ; la commande les restaure si l'utilisateur refuse.
@@ -77,6 +79,9 @@ Mode : <cadrage | parcours | maquette>
 
 ## Composants à ajouter à la bibliothèque
 - <composant> — <écrans qui l'utilisent> (ou « aucun »)
+
+## Commandes à lancer
+- `<commande>` — <ce qu'elle doit produire> (ou « aucune » : tu as pu tout lancer)
 
 ## Pages d'autres fonctionnalités modifiées
 - <page> — <fonctionnalité qui l'a dessinée> — <ce qui change> (ou « aucune »)

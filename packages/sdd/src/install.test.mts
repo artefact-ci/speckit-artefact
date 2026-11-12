@@ -586,7 +586,7 @@ describe('install', () => {
     assert.equal(report.integrationIgnored, undefined);
   });
 
-  it('agy integration reports the agents it skips', async () => {
+  it('agy integration gets all four agents, designer included', async () => {
     const root = tempRepo();
     existingSpecify(root);
     writeFileSync(
@@ -595,9 +595,10 @@ describe('install', () => {
     );
     const { runner } = fakeRunner();
     const report = await init(options(root, runner));
-    assert.deepEqual(report.agentsSkipped, [{ integration: 'agy', names: ['designer'] }]);
+    assert.deepEqual(report.agentsSkipped, []);
     assert.ok(report.agents.includes('.agents/agents/relecteur/agent.md'));
-    assert.equal(report.agents.length, 7);
+    assert.ok(report.agents.includes('.agents/agents/designer/agent.md'));
+    assert.equal(report.agents.length, 8);
   });
 
   /** Projet installé avec claude par défaut, plus `others`, et un script partagé exécutable. */

@@ -65,12 +65,17 @@ const CLAUDE_TOOLS = {
   writes: 'Read, Grep, Glob, Bash, Write, Edit',
 } as const;
 
-// Antigravity : noms d'outils pris verbatim sur https://antigravity.google/docs/subagents
-// (consulté le 2026-11-10) : view_file, grep_search, run_command (exemple de frontmatter).
-// La doc ne nomme aucun outil pour créer un fichier ni pour lister un dossier (le listing
-// passe par run_command) : les agents `writes` sont donc ignorés sur agy jusqu'à une
-// vérification manuelle. Un nom faux ferait se bloquer le sous-agent.
-const AGY_TOOLS = ['view_file', 'grep_search', 'run_command'];
+// Antigravity : noms d'outils vérifiés dans l'app le 2026-11-12 (voir docs/plan.md, phase 6a).
+// Antigravity traduit les noms de la doc (view_file → read_file, replace_file_content →
+// edit_file, write_to_file → write_file) et refuse un agent qui déclare deux alias du même
+// outil ; il ignore sans message grep_search, list_dir et find_by_name. On déclare donc
+// les noms réels. write_file crée un fichier (dossiers compris), edit_file ne fait que
+// modifier. Dans le bac à sable, une commande lit mais n'écrit pas : seuls ces deux
+// outils écrivent.
+const AGY_TOOLS = {
+  'read-only': ['read_file', 'run_command'],
+  writes: ['read_file', 'write_file', 'edit_file', 'run_command'],
+} as const;
 
 type Generator = {
   supports: (spec: AgentSpec) => boolean;
@@ -89,14 +94,14 @@ const GENERATORS: Record<string, Generator> = {
     }),
   },
   agy: {
-    supports: (spec) => spec.access === 'read-only',
+    supports: () => true,
     file: (spec) => ({
       path: `.agents/agents/${spec.name}/agent.md`,
       content: document(
         {
           name: spec.name,
           description: spec.description,
-          tools: AGY_TOOLS,
+          tools: [...AGY_TOOLS[spec.access]],
           commandExecutionPolicy: 'sandbox',
         },
         spec,

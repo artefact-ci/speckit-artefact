@@ -34,7 +34,7 @@ Il faut [uv](https://docs.astral.sh/uv/) et Node 24.11 ou plus. Depuis ce dépô
 | Migration | si le preset `boilerplate` est installé, il est retiré (`specify preset remove boilerplate`) |
 | Composants | extension git, `artefact-product`, `artefact-sdd` ; déjà installés, ils ne sont pas réinstallés (c'est le rôle d'`update`) |
 | Hooks | clé `hooks:` de `.specify/extensions.yml` : les 10 hooks git du boilerplate ; le reste du fichier est gardé |
-| Agents | `.claude/agents/<nom>.md` (Claude Code) et `.agents/agents/<nom>/agent.md` (Antigravity, relecteurs seulement) ; ces fichiers lisent les consignes de `.specify/extensions/artefact-product/agents/` |
+| Agents | `.claude/agents/<nom>.md` (Claude Code) et `.agents/agents/<nom>/agent.md` (Antigravity) ; ces fichiers lisent les consignes de `.specify/extensions/artefact-product/agents/` |
 | `stack.yml` | écrit seulement s'il est absent ; déduit de `nx.json`, `next.config.*`, `bun.lock` et du gestionnaire de paquets ; une clé non déduite reste vide avec `# à compléter` |
 | Constitution | `.specify/memory/constitution.md` écrite seulement si elle est absente ou encore le gabarit vierge |
 | Version | `.specify/artefact.json` (voir plus bas) |

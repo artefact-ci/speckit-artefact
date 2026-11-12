@@ -45,20 +45,26 @@ describe('agents', () => {
     assert.ok(rel.content.endsWith('\n'));
   });
 
-  it('agy files use the folder form', () => {
+  it('agy files use the folder form and the tool names Antigravity resolves', () => {
     const files = agentFiles('agy', specs)!;
     const rel = files.find((f) => f.path === '.agents/agents/relecteur/agent.md')!;
     assert.ok(rel);
     assert.match(rel.content, /commandExecutionPolicy: sandbox/);
-    assert.match(rel.content, /- view_file\n {2}- grep_search\n {2}- run_command|- view_file\n- grep_search\n- run_command/);
+    assert.match(rel.content, /tools:\n {2}- read_file\n {2}- run_command\n/);
+    // Ignorés sans message par Antigravity (vérifié le 2026-11-12) : on ne les déclare pas.
+    assert.doesNotMatch(rel.content, /grep_search|view_file/);
     assert.ok(rel.content.includes(`${INSTRUCTIONS_DIR}/relecteur.md`));
   });
 
-  it('agy skips writes agents', () => {
+  it('agy has a designer that can create and edit files', () => {
     const files = agentFiles('agy', specs)!;
-    assert.equal(files.length, 3);
-    assert.ok(!files.some((f) => f.path.includes('designer')));
-    assert.deepEqual(skippedAgents('agy', specs), ['designer']);
+    assert.equal(files.length, 4);
+    const des = files.find((f) => f.path === '.agents/agents/designer/agent.md')!;
+    assert.ok(des);
+    assert.match(des.content, /tools:\n {2}- read_file\n {2}- write_file\n {2}- edit_file\n {2}- run_command\n/);
+    assert.match(des.content, /commandExecutionPolicy: sandbox/);
+    assert.match(des.content, /Ne commite rien/);
+    assert.deepEqual(skippedAgents('agy', specs), []);
     assert.deepEqual(skippedAgents('claude', specs), []);
   });
 
