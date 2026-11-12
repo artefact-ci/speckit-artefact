@@ -102,10 +102,12 @@ Quelques règles qui ne se discutent pas :
 | Outil | Ce que génère l'installeur | Relecture et design |
 | --- | --- | --- |
 | Claude Code (par défaut) | `.claude/agents/` : `relecteur`, `relecteur-produit`, `relecteur-design`, `designer` | les commandes lancent les sous-agents |
-| Antigravity (`--integration agy`) | `.agents/agents/` : les trois relecteurs | les relecteurs sont des sous-agents ; le design est fait par l'agent principal, puis relu |
+| Antigravity (`--integration agy`) | `.agents/agents/` : `relecteur`, `relecteur-produit`, `relecteur-design`, `designer` | les commandes lancent les sous-agents ; ce que le bac à sable leur refuse (construire le prototype, installer une police), l'agent principal le lance |
 | Autre outil Spec Kit | rien | la commande vous demande de lancer la relecture dans une nouvelle session et d'en coller le rapport : elle ne se saute pas |
 
 Les fichiers d'agent sont fins : ils lisent les consignes, communes à tous les outils, de `.specify/extensions/artefact-product/agents/`.
+
+Sur Antigravity, les sous-agents tournent dans le bac à sable : une commande y lit le projet mais n'y écrit pas, et chaque commande attend votre accord (ctrl+k), au plus 60 secondes. Sans réponse, elle est abandonnée et l'agent continue sans elle : restez devant l'écran pendant une relecture. Ouvrez le projet depuis son dossier réel, pas depuis `/tmp` : hors du projet ouvert, chaque écriture demande aussi un accord.
 
 ### Changer ou ajouter un outil
 
