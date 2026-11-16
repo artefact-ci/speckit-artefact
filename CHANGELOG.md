@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased]
+
+### Ajouté
+
+- OpenCode (`--integration opencode`) : l'installeur génère les quatre agents de la méthode en sous-agents OpenCode (`.opencode/agents/<nom>.md`, `mode: subagent`). Les relecteurs n'ont ni écriture ni accès web (`edit`, `webfetch` : `deny`) ; aucun agent ne lance d'autre sous-agent (`task: deny`). Les commandes les lancent comme sur Claude Code, au lieu de demander une nouvelle session.
+- OpenCode : l'installeur ajoute à `.ignore` les règles `!.specify/` et `!.specify/**`. OpenCode cherche les fichiers avec ripgrep, qui saute les dossiers cachés : sans elles, il ne trouve ni le preset ni les consignes des agents (spec-kit#5028). Les règles déjà présentes dans `.ignore` sont gardées.
+
+### Corrigé
+
+- Les renvois d'une commande à une autre (« `/speckit-epics` vient ensuite », le hook `/speckit-git-feature`…) étaient écrits avec le séparateur de Claude Code. Sur un outil à commandes Markdown comme OpenCode, ils citaient des commandes qui n'existent pas (`/speckit-plan` au lieu de `/speckit.plan`). Le preset et l'extension écrivent maintenant les jetons de Spec Kit (`__SPECKIT_COMMAND_PLAN__`), que Spec Kit résout pour chaque outil. Rien ne change sur Claude Code et Antigravity. Un projet installé relance `update`.
+
 ## [0.3.0] - 2026-11-12
 
 ### Ajouté
