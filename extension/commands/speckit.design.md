@@ -22,7 +22,7 @@ Read `.specify/stack.yml` first: it names this project's branches, commands and 
 
 ## Goal
 
-Produce the design level of the product, between `/speckit-prd` and `/speckit-epics`: `specs/design.md` (users and their contexts, UX principles, voice and tone, accessibility, visual direction) and the theme of the app that applies it (`ui.theme`). Every prototype (`/speckit-prototype`) and every screen inherits it.
+Produce the design level of the product, between `__SPECKIT_COMMAND_PRD__` and `__SPECKIT_COMMAND_EPICS__`: `specs/design.md` (users and their contexts, UX principles, voice and tone, accessibility, visual direction) and the theme of the app that applies it (`ui.theme`). Every prototype (`__SPECKIT_COMMAND_PROTOTYPE__`) and every screen inherits it.
 
 The design direction belongs to the product, that is to the user. The `designer` agent drafts, the `relecteur-design` agent reviews it cold, you show both to the user, and the user decides. Nothing is committed before the user has approved it.
 
@@ -30,11 +30,11 @@ This command works with the agents of the method (`designer`, `relecteur-design`
 
 ## Steps
 
-1. **Branch.** Stop if the working tree has uncommitted changes. On a `docs/product-*` branch left by `/speckit-prd`, stay on it. On `branches.base` of `.specify/stack.yml` (on `branches.production`, switch to `branches.base` and pull it first; without `branches.base`, the default branch of the repository), create and switch to `docs/product-design` (`docs/product-design-<short-name>` for a revision, as `/speckit-epics` does; `git switch -c`). On another branch, ask the user before going on.
+1. **Branch.** Stop if the working tree has uncommitted changes. On a `docs/product-*` branch left by `__SPECKIT_COMMAND_PRD__`, stay on it. On `branches.base` of `.specify/stack.yml` (on `branches.production`, switch to `branches.base` and pull it first; without `branches.base`, the default branch of the repository), create and switch to `docs/product-design` (`docs/product-design-<short-name>` for a revision, as `__SPECKIT_COMMAND_EPICS__` does; `git switch -c`). On another branch, ask the user before going on.
 
-2. **Read.** `specs/prd.md` (stop and point to `/speckit-prd` if it does not exist), `specs/design.md` if it exists, the convention files listed under `docs` in `.specify/stack.yml`, and (ui) the theme file `ui.theme`.
+2. **Read.** `specs/prd.md` (stop and point to `__SPECKIT_COMMAND_PRD__` if it does not exist), `specs/design.md` if it exists, the convention files listed under `docs` in `.specify/stack.yml`, and (ui) the theme file `ui.theme`.
 
-3. **Ask.** At most 5 questions, one at a time, each with a recommended answer and the options, as `/speckit-clarify` does, and only on what changes the direction: the devices, channels and conditions of use, the image the product must give (references the user likes or dislikes), an existing brand (colors, font, tone), the accessibility level. Skip what the PRD or the user input already answers.
+3. **Ask.** At most 5 questions, one at a time, each with a recommended answer and the options, as `__SPECKIT_COMMAND_CLARIFY__` does, and only on what changes the direction: the devices, channels and conditions of use, the image the product must give (references the user likes or dislikes), an existing brand (colors, font, tone), the accessibility level. Skip what the PRD or the user input already answers.
 
 4. **Draft.** Launch the `designer` subagent in mode `cadrage`, with the paths to read, the user's answers and, when `ui` is `null`, that the project has no front end. It drafts in place: `specs/design.md` and (ui) the tokens of the theme file, with a chosen font installed (see step 7), so that the review and the preview see the real files. If your agent cannot launch it, ask the user to run `.specify/extensions/artefact-product/agents/designer.md` in a new session, with the same inputs only, and paste its report: the review is never skipped. When the designer's report lists commands under « Commandes à lancer » (its tool refused them, a sandbox for instance), run them yourself, in the order given, before the review; do the same after its fix round in step 5.
 
@@ -54,18 +54,18 @@ This command works with the agents of the method (`designer`, `relecteur-design`
    - (ui) A font: added as a dependency of the project, imported and set as the main font where the theme file does it, with a generic fallback after it (`ui-sans-serif, system-ui, sans-serif`), following the convention files (a check of unused dependencies may need to be told about a package imported from CSS only).
    - Installing a font and reinstalling dependencies use the project's package manager, as the convention files or the lockfile show it: that is reading the project, not inventing a command. When neither shows it, ask the user.
 
-8. **Stale prototype** (ui). When `specs/prototype/` exists, its captures no longer show the theme: list the journeys (`specs/prototype/journeys/NNN-*.md`) of the specs whose status is neither `Implemented` nor `Shipped`, and name them in the report with the command that refreshes the captures, `<ui.prototype> --capture` (without `ui.prototype`, there are no captures to refresh); `/speckit-plan` warns about them too.
+8. **Stale prototype** (ui). When `specs/prototype/` exists, its captures no longer show the theme: list the journeys (`specs/prototype/journeys/NNN-*.md`) of the specs whose status is neither `Implemented` nor `Shipped`, and name them in the report with the command that refreshes the captures, `<ui.prototype> --capture` (without `ui.prototype`, there are no captures to refresh); `__SPECKIT_COMMAND_PLAN__` warns about them too.
 
 9. **Check.** Run `commands.check` of `.specify/stack.yml` when it exists, otherwise `commands.affected`; fix what fails in the files of this command.
 
 10. **Commit.** Stage only `specs/design.md` and (ui) the theme file and, for a font, the files the installation changed (never `git add .`), and commit with a Conventional Commits message in English, such as `docs(product): set the design direction and theme`.
 
-11. **Report.** What changed in the direction and the theme, the disputed issues left to the user, the stale prototype, and the next step: `/speckit-epics` (or `/speckit-specify` when the epics already exist).
+11. **Report.** What changed in the direction and the theme, the disputed issues left to the user, the stale prototype, and the next step: `__SPECKIT_COMMAND_EPICS__` (or `__SPECKIT_COMMAND_SPECIFY__` when the epics already exist).
 
 ## Rules
 
 - Write the artifacts in the project language: `language` in `.specify/memory/language.yml`, a BCP 47 code (`fr`); English when the file does not exist. What stays as the template or the tools write it, in every language: the headings of the templates (`## Requirements`, `### User Story 1 - …`, `## Complexity Tracking`: commands and reviewers find sections by them), the markers that the trace command reads (`**Status**:` and its values `Draft`, `Implemented`, `Shipped`, `Retired`; `**Product Requirements**:`; `**Acceptance Scenarios**`; `**Retired**`), the `[NEEDS CLARIFICATION]` markers that commands look for, the task lines (`- [ ] T001 [P] [US1] …`), the ids (`003-US1-AS2`, `PAY-03`, `E03-J1`, `P1`) and the YAML keys of `specs/product.yml`. Commit messages, code, identifiers and test titles stay in English. A file still written in another language: write what you add or rewrite in the project language, and leave the rest as it is.
 
 - The only code this command changes is the theme file and the font dependency (with what its installation needs). What the direction needs beyond them (turning dark mode on or following the system setting, a density the spacing scale cannot give, a new component) goes to the `Deferred` section of `design.md`, to be built by a feature.
-- Never edit `specs/prd.md`, `specs/product.yml` or a spec (`specs/NNN-*/`). A requirement the direction calls into question goes back to `/speckit-prd`: say which one in the report.
+- Never edit `specs/prd.md`, `specs/product.yml` or a spec (`specs/NNN-*/`). A requirement the direction calls into question goes back to `__SPECKIT_COMMAND_PRD__`: say which one in the report.
 - Never write a color, radius or font in a component: the direction lives in the theme tokens.

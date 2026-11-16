@@ -19,7 +19,7 @@ Read `.specify/stack.yml` first: it names this project's branches, commands and 
 
 ## Goal
 
-Produce the level above the features: `specs/prd.md` (the why and the what of the whole product, for people) and the `requirements` list of `specs/product.yml` (the ids that specs cite and the trace command, `commands.trace`, checks). The epics are not part of this command: `/speckit-epics` comes next.
+Produce the level above the features: `specs/prd.md` (the why and the what of the whole product, for people) and the `requirements` list of `specs/product.yml` (the ids that specs cite and the trace command, `commands.trace`, checks). The epics are not part of this command: `__SPECKIT_COMMAND_EPICS__` comes next.
 
 The PRD and the index belong to the product, that is to the user. You draft, as the product owner of `.specify/extensions/artefact-product/agents/po.md`; the `relecteur-produit` agent reviews the draft cold; you show both to the user, and the user decides. Nothing is committed before the user has approved it.
 
@@ -38,12 +38,12 @@ This command works with the agents of the method (`.specify/extensions/artefact-
    language: fr
    ```
 
-   Then **find the gaps.** Check the source and the existing PRD against each section of the template (`.specify/scripts/bash/resolve-template.sh prd-template` prints its content, not its path): vision, users, problems, scope and non-goals, constraints, success metrics, requirements. Ask at most 5 questions, one at a time, each with a recommended answer and the options, as `/speckit-clarify` does. Ask only what changes the requirements or the scope; anything else goes to **Open Questions**.
+   Then **find the gaps.** Check the source and the existing PRD against each section of the template (`.specify/scripts/bash/resolve-template.sh prd-template` prints its content, not its path): vision, users, problems, scope and non-goals, constraints, success metrics, requirements. Ask at most 5 questions, one at a time, each with a recommended answer and the options, as `__SPECKIT_COMMAND_CLARIFY__` does. Ask only what changes the requirements or the scope; anything else goes to **Open Questions**.
 
 4. **Draft the requirements.** One requirement = one capability a user can be given or refused, testable through specs later. For each one:
    - an id `<PREFIX>-<number>` (uppercase prefix, dash, digits: `PAY-03`), the only form the trace command accepts: the source's own id when it has that form, otherwise a short prefix per area (`ACC`, `PAY`, `ORD`) and the next free number of that prefix. When the source numbers its requirements another way (`REQ-1.2`, `F12`), keep the mapping in the PRD, after the title: `**PAY-03** Pay by mobile money (source: REQ-1.2): …`;
    - a short title, the same in the PRD and in the index;
-   - no technology, no screen, no data model: those belong to `/speckit-plan`;
+   - no technology, no screen, no data model: those belong to `__SPECKIT_COMMAND_PLAN__`;
    - the other standards of `.specify/extensions/artefact-product/agents/po.md` (testable, one capability, one actor, the rule that matters).
 
    Then check the coverage: every problem of the PRD is answered by at least one requirement. A problem left without one is either a missing requirement or a constraint (`order in the evening, delivered the next day`): say which in the draft, do not drop it silently.
@@ -75,11 +75,11 @@ This command works with the agents of the method (`.specify/extensions/artefact-
 
 7. **Show the draft, then wait.** Show the user the requirement table (id, title, area, source id, and for a revision: added, changed, retired), a summary of the PRD sections, and in a list of its own what the PRD leaves out of the source and why (a technology choice, a vendor not signed, a vague wish turned into a constraint or an open question). Nothing from the source disappears without the user seeing it. Then the reviewer's verdict: the issues you fixed, and those left or disputed, with their proof. Commit nothing until the user approves; apply their changes to the files and show again if needed. When the user declines, restore the draft: `git checkout -- specs/prd.md specs/product.yml` for the files already tracked, and delete those this run created.
 
-8. **Check.** Run the trace command (`commands.trace`). Without it, check yourself: every id has the form `<PREFIX>-<number>`, is unique and was not renumbered; each title is the same in the PRD and the index; the YAML has only `id`, `title` and `retired`; and, when the index has epics, each new requirement is in none yet. When the index already has epics, a new requirement belongs to no epic and the trace command fails: tell the user that `/speckit-epics` must place it, and go on to the commit anyway (the branch is not merged until it passes). Any other error is yours: fix it.
+8. **Check.** Run the trace command (`commands.trace`). Without it, check yourself: every id has the form `<PREFIX>-<number>`, is unique and was not renumbered; each title is the same in the PRD and the index; the YAML has only `id`, `title` and `retired`; and, when the index has epics, each new requirement is in none yet. When the index already has epics, a new requirement belongs to no epic and the trace command fails: tell the user that `__SPECKIT_COMMAND_EPICS__` must place it, and go on to the commit anyway (the branch is not merged until it passes). Any other error is yours: fix it.
 
 9. **Commit.** Stage only `specs/prd.md`, `specs/product.yml` and, when this run created it, `.specify/memory/language.yml` (never `git add .`), and commit with a Conventional Commits message in English, such as `docs(product): add the product requirements document` or `docs(product): retire PAY-01`.
 
-10. **Report.** The number of requirements (added, changed, retired), the open questions left, and the next step: `/speckit-epics`.
+10. **Report.** The number of requirements (added, changed, retired), the open questions left, and the next step: `__SPECKIT_COMMAND_EPICS__`.
 
 ## Rules
 

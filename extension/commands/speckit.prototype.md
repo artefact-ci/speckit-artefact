@@ -23,11 +23,11 @@ Read `.specify/stack.yml` first: it names this project's branches, commands and 
 
 ## Goal
 
-Before the technical plan of a feature that has screens, let the user see and judge them: first the user journeys (`specs/prototype/journeys/NNN-<name>.md`), then the screens of those journeys in the clickable prototype of the product, static HTML pages in the real theme of the app (`ui.theme`), with desktop and mobile captures that become the visual contract of `/speckit-plan` and `/speckit-implement`.
+Before the technical plan of a feature that has screens, let the user see and judge them: first the user journeys (`specs/prototype/journeys/NNN-<name>.md`), then the screens of those journeys in the clickable prototype of the product, static HTML pages in the real theme of the app (`ui.theme`), with desktop and mobile captures that become the visual contract of `__SPECKIT_COMMAND_PLAN__` and `__SPECKIT_COMMAND_IMPLEMENT__`.
 
 The prototype is global: one folder, `specs/prototype/`, that every feature completes, so that its screens join those of the features before it. A screen has one page in the whole prototype (`home.html`): a feature that changes an existing screen edits its page, it does not copy it. `index.html` lists the journeys by epic, then by feature.
 
-This step is optional: the user runs it on the features they judge important, between `/speckit-clarify` and `/speckit-plan`. The `designer` agent produces, the `relecteur-design` agent reviews it cold, you show both to the user, and the user decides, once for the journeys and once for the mockup.
+This step is optional: the user runs it on the features they judge important, between `__SPECKIT_COMMAND_CLARIFY__` and `__SPECKIT_COMMAND_PLAN__`. The `designer` agent produces, the `relecteur-design` agent reviews it cold, you show both to the user, and the user decides, once for the journeys and once for the mockup.
 
 This command works with the agents of the method (`designer`, `relecteur-design`): their instructions are in `.specify/extensions/artefact-product/agents/`, installed with the `artefact-product` extension. When one of these files is missing, stop and tell the user: the review cannot be skipped. If your agent cannot launch a subagent, ask the user to run `.specify/extensions/artefact-product/agents/designer.md` and `.specify/extensions/artefact-product/agents/relecteur-design.md` in new sessions, with the same inputs only, and paste their reports, for each mode: the review is never skipped.
 
@@ -35,7 +35,7 @@ When the user drops the prototype, at any step, undo the changes of this run: `g
 
 ## Steps
 
-1. **Feature.** You are on the branch of the feature (`NNN-<name>`), with a clean working tree, and `specs/NNN-<name>/spec.md` exists without `[NEEDS CLARIFICATION]` markers; otherwise stop and point to `/speckit-specify` or `/speckit-clarify`. Read the spec. When `specs/design.md` does not exist, tell the user that the prototype will follow the current theme and that `/speckit-design` sets the direction of the product, then go on. When `specs/prototype/journeys/NNN-<name>.md` already exists, this run revises the prototype of this feature: say so, and keep what the user input does not change.
+1. **Feature.** You are on the branch of the feature (`NNN-<name>`), with a clean working tree, and `specs/NNN-<name>/spec.md` exists without `[NEEDS CLARIFICATION]` markers; otherwise stop and point to `__SPECKIT_COMMAND_SPECIFY__` or `__SPECKIT_COMMAND_CLARIFY__`. Read the spec. When `specs/design.md` does not exist, tell the user that the prototype will follow the current theme and that `__SPECKIT_COMMAND_DESIGN__` sets the direction of the product, then go on. When `specs/prototype/journeys/NNN-<name>.md` already exists, this run revises the prototype of this feature: say so, and keep what the user input does not change.
 
 2. **Journeys.**
    1. Launch the `designer` subagent in mode `parcours`, with the paths to read (`specs/prd.md`, `specs/design.md`, the spec, `specs/product.yml` for the epic journeys, `specs/prototype/` for the screens that already exist) and the user input.
@@ -53,13 +53,13 @@ When the user drops the prototype, at any step, undo the changes of this run: `g
 
 6. **Commit.** Stage only `specs/prototype/` and, when it changed, `specs/NNN-<name>/spec.md` (never `git add .`), and commit with a Conventional Commits message in English, such as `docs(<name>): add the prototype`.
 
-7. **Report.** The journeys and their screens, the pages of other features changed, the `file://` URL, the components to add to the component library, the changes to the spec, and the next step: `/speckit-plan`.
+7. **Report.** The journeys and their screens, the pages of other features changed, the `file://` URL, the components to add to the component library, the changes to the spec, and the next step: `__SPECKIT_COMMAND_PLAN__`.
 
 ## Rules
 
 - Write the artifacts in the project language: `language` in `.specify/memory/language.yml`, a BCP 47 code (`fr`); English when the file does not exist. What stays as the template or the tools write it, in every language: the headings of the templates (`## Requirements`, `### User Story 1 - …`, `## Complexity Tracking`: commands and reviewers find sections by them), the markers that the trace command reads (`**Status**:` and its values `Draft`, `Implemented`, `Shipped`, `Retired`; `**Product Requirements**:`; `**Acceptance Scenarios**`; `**Retired**`), the `[NEEDS CLARIFICATION]` markers that commands look for, the task lines (`- [ ] T001 [P] [US1] …`), the ids (`003-US1-AS2`, `PAY-03`, `E03-J1`, `P1`) and the YAML keys of `specs/product.yml`. Commit messages, code, identifiers and test titles stay in English. A file still written in another language: write what you add or rewrite in the project language, and leave the rest as it is. The texts of the mockup pages are in the source language of the app (the one the convention files name, or else the one of the existing interface).
 
-- The prototype changes no file outside `specs/prototype/` and `specs/NNN-<name>/spec.md`: not the theme, not the component library, not the app. A theme change goes through `/speckit-design`.
+- The prototype changes no file outside `specs/prototype/` and `specs/NNN-<name>/spec.md`: not the theme, not the component library, not the app. A theme change goes through `__SPECKIT_COMMAND_DESIGN__`.
 - Its code is throwaway: it is never copied into the code of the app. The screens are built in the normal cycle, test first, from the plan.
 - The spec stays the source of truth: a behavior shown only by the mockup does not exist until `spec.md` says it.
 - The prototype shows the product as it will be: a later feature may change a page that an earlier one cites. The plan of a feature cites the captures of the time; git history keeps them.
