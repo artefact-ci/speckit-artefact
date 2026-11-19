@@ -68,6 +68,28 @@ describe('agents', () => {
     assert.deepEqual(skippedAgents('claude', specs), []);
   });
 
+  it('opencode files are subagents that point to the installed instructions', () => {
+    const files = agentFiles('opencode', specs)!;
+    assert.deepEqual(
+      files.map((f) => f.path),
+      specs.map((s) => `.opencode/agents/${s.name}.md`),
+    );
+    for (const f of files) {
+      assert.match(f.content, /\nmode: subagent\n/);
+      // Pas de champ `name` : OpenCode prend le nom du fichier.
+      assert.doesNotMatch(f.content, /\nname:/);
+    }
+    const rel = files.find((f) => f.path === '.opencode/agents/relecteur.md')!;
+    assert.match(rel.content, /permission:\n {2}edit: deny\n {2}task: deny\n {2}webfetch: deny\n/);
+    assert.ok(rel.content.includes(`${INSTRUCTIONS_DIR}/relecteur.md`));
+    assert.match(rel.content, /Tu n'as pas écrit ce travail/);
+    const des = files.find((f) => f.path === '.opencode/agents/designer.md')!;
+    assert.match(des.content, /permission:\n {2}task: deny\n/);
+    assert.doesNotMatch(des.content, /edit: deny/);
+    assert.match(des.content, /Ne commite rien/);
+    assert.deepEqual(skippedAgents('opencode', specs), []);
+  });
+
   it('unknown integration has no generator', () => {
     assert.equal(agentFiles('copilot', specs), null);
   });

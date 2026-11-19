@@ -601,6 +601,36 @@ describe('install', () => {
     assert.equal(report.agents.length, 8);
   });
 
+  it('opencode integration gets its four agents and a .ignore that shows .specify/', async () => {
+    const root = tempRepo();
+    existingSpecify(root);
+    writeFileSync(
+      join(root, '.specify/integration.json'),
+      JSON.stringify({ integration: 'claude', installed_integrations: ['claude', 'opencode'] }),
+    );
+    writeFileSync(join(root, '.ignore'), 'dist/\n');
+    const { runner } = fakeRunner();
+    const report = await init(options(root, runner));
+    assert.deepEqual(report.noAgentGenerator, []);
+    assert.ok(report.agents.includes('.opencode/agents/relecteur.md'));
+    assert.equal(report.agents.length, 8);
+    assert.equal(report.ignoreFile, true);
+    const ignore = readFileSync(join(root, '.ignore'), 'utf8');
+    assert.ok(ignore.startsWith('dist/\n'));
+    assert.match(ignore, /^!\.specify\/\*\*$/m);
+    await init(options(root, runner));
+    assert.equal(readFileSync(join(root, '.ignore'), 'utf8'), ignore);
+  });
+
+  it('no .ignore without opencode', async () => {
+    const root = tempRepo();
+    existingSpecify(root);
+    const { runner } = fakeRunner();
+    const report = await init(options(root, runner));
+    assert.equal(report.ignoreFile, false);
+    assert.ok(!existsSync(join(root, '.ignore')));
+  });
+
   /** Projet installé avec claude par défaut, plus `others`, et un script partagé exécutable. */
   async function multiTool(others: string[], failUse?: string) {
     const root = tempRepo();

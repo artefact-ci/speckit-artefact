@@ -30,7 +30,7 @@ L'installeur ne pose aucune question. Il :
 4. déduit `.specify/stack.yml` du dépôt, et écrit la constitution de base si le projet n'en a pas ;
 5. écrit la version installée dans `.specify/artefact.json`, puis affiche un rapport : ce qui est installé, ce qui a été deviné, ce qu'il reste à compléter.
 
-Pour un projet Antigravity : `npx @artefact-ci/sdd@0.3.0 init --integration agy`. `--integration` ne sert qu'à la première installation : quand `.specify/` existe déjà, il est ignoré et l'outil du projet est gardé. Pour en changer ou en ajouter un, voir [Changer ou ajouter un outil](#changer-ou-ajouter-un-outil).
+Pour un projet Antigravity : `npx @artefact-ci/sdd@0.3.0 init --integration agy` ; pour OpenCode : `--integration opencode`. `--integration` ne sert qu'à la première installation : quand `.specify/` existe déjà, il est ignoré et l'outil du projet est gardé. Pour en changer ou en ajouter un, voir [Changer ou ajouter un outil](#changer-ou-ajouter-un-outil).
 
 Lancé deux fois, `init` ne change rien la deuxième fois.
 
@@ -103,11 +103,14 @@ Quelques règles qui ne se discutent pas :
 | --- | --- | --- |
 | Claude Code (par défaut) | `.claude/agents/` : `relecteur`, `relecteur-produit`, `relecteur-design`, `designer` | les commandes lancent les sous-agents |
 | Antigravity (`--integration agy`) | `.agents/agents/` : `relecteur`, `relecteur-produit`, `relecteur-design`, `designer` | les commandes lancent les sous-agents ; ce que le bac à sable leur refuse (construire le prototype, installer une police), l'agent principal le lance |
+| OpenCode (`--integration opencode`) | `.opencode/agents/` : `relecteur`, `relecteur-produit`, `relecteur-design`, `designer`, en sous-agents ; `.ignore`, pour que sa recherche de fichiers voie `.specify/` | les commandes lancent les sous-agents |
 | Autre outil Spec Kit | rien | la commande vous demande de lancer la relecture dans une nouvelle session et d'en coller le rapport : elle ne se saute pas |
 
 Les fichiers d'agent sont fins : ils lisent les consignes, communes à tous les outils, de `.specify/extensions/artefact-product/agents/`.
 
 Sur Antigravity, les sous-agents tournent dans le bac à sable : une commande y lit le projet mais n'y écrit pas, et chaque commande attend votre accord (ctrl+k), au plus 60 secondes. Sans réponse, elle est abandonnée et l'agent continue sans elle : restez devant l'écran pendant une relecture. Ouvrez le projet depuis son dossier réel, pas depuis `/tmp` : hors du projet ouvert, chaque écriture demande aussi un accord.
+
+Sur OpenCode, les commandes s'appellent avec un point : `/speckit.specify`, `/speckit.prd`… Les relecteurs ne peuvent ni écrire ni lancer d'autre agent ; leurs commandes shell et les écritures du designer suivent les permissions du projet (`opencode.json`).
 
 ### Changer ou ajouter un outil
 
