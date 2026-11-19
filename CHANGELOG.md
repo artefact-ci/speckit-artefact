@@ -4,6 +4,7 @@
 
 ### Ajouté
 
+- Un agent `implementeur`, généré pour Claude Code, Antigravity et OpenCode (`.claude/agents/implementeur.md`, `.agents/agents/implementeur/agent.md`, `.opencode/agents/implementeur.md`) : il fait une seule tâche de `tasks.md`, test d'abord, dans les fichiers qu'elle cite, sans cocher ni commiter, et rend la ligne d'échec ou de succès de son test. `/speckit-implement --subagents` le lance. Un projet installé relance `update`.
 - OpenCode (`--integration opencode`) : l'installeur génère les quatre agents de la méthode en sous-agents OpenCode (`.opencode/agents/<nom>.md`, `mode: subagent`). Les relecteurs n'ont ni écriture ni accès web (`edit`, `webfetch` : `deny`) ; aucun agent ne lance d'autre sous-agent (`task: deny`). Les commandes les lancent comme sur Claude Code, au lieu de demander une nouvelle session.
 - OpenCode : l'installeur ajoute à `.ignore` les règles `!.specify/` et `!.specify/**`. OpenCode cherche les fichiers avec ripgrep, qui saute les dossiers cachés : sans elles, il ne trouve ni le preset ni les consignes des agents (spec-kit#5028). Les règles déjà présentes dans `.ignore` sont gardées.
 

@@ -7,7 +7,7 @@ Chaque fonctionnalité part d'une spec écrite et relue. Elle est implémentée 
 | Pièce | Ce qu'elle apporte |
 | --- | --- |
 | preset `artefact-sdd` | templates spec, plan, tâches et constitution ; règles TDD ajoutées aux commandes du cœur (`/speckit-specify`, `plan`, `tasks`, `analyze`, `implement`, `converge`) |
-| extension `artefact-product` | `/speckit-prd`, `/speckit-design`, `/speckit-epics`, `/speckit-prototype`, et les consignes des agents (relecteur, relecteur produit, designer, relecteur design, PO) |
+| extension `artefact-product` | `/speckit-prd`, `/speckit-design`, `/speckit-epics`, `/speckit-prototype`, et les consignes des agents (relecteur, relecteur produit, designer, relecteur design, implémenteur, PO) |
 | [`@artefact-ci/sdd`](packages/sdd/README.md) | l'installeur : `npx @artefact-ci/sdd init` et `update` |
 | [`@artefact-ci/spec-trace`](packages/spec-trace/README.md) | la matrice scénarios → tests, qui échoue quand un scénario n'a pas de test |
 | [`@artefact-ci/prototype`](packages/prototype/README.md) | le prototype HTML cliquable du produit (`specs/prototype/`), que `/speckit-prototype` complète à chaque fonctionnalité, dans le thème du projet |
@@ -101,16 +101,16 @@ Quelques règles qui ne se discutent pas :
 
 | Outil | Ce que génère l'installeur | Relecture et design |
 | --- | --- | --- |
-| Claude Code (par défaut) | `.claude/agents/` : `relecteur`, `relecteur-produit`, `relecteur-design`, `designer` | les commandes lancent les sous-agents |
-| Antigravity (`--integration agy`) | `.agents/agents/` : `relecteur`, `relecteur-produit`, `relecteur-design`, `designer` | les commandes lancent les sous-agents ; ce que le bac à sable leur refuse (construire le prototype, installer une police), l'agent principal le lance |
-| OpenCode (`--integration opencode`) | `.opencode/agents/` : `relecteur`, `relecteur-produit`, `relecteur-design`, `designer`, en sous-agents ; `.ignore`, pour que sa recherche de fichiers voie `.specify/` | les commandes lancent les sous-agents |
+| Claude Code (par défaut) | `.claude/agents/` : `relecteur`, `relecteur-produit`, `relecteur-design`, `designer`, `implementeur` | les commandes lancent les sous-agents |
+| Antigravity (`--integration agy`) | `.agents/agents/` : `relecteur`, `relecteur-produit`, `relecteur-design`, `designer`, `implementeur` | les commandes lancent les sous-agents ; ce que le bac à sable leur refuse (construire le prototype, installer une police), l'agent principal le lance |
+| OpenCode (`--integration opencode`) | `.opencode/agents/` : `relecteur`, `relecteur-produit`, `relecteur-design`, `designer`, `implementeur`, en sous-agents ; `.ignore`, pour que sa recherche de fichiers voie `.specify/` | les commandes lancent les sous-agents |
 | Autre outil Spec Kit | rien | la commande vous demande de lancer la relecture dans une nouvelle session et d'en coller le rapport : elle ne se saute pas |
 
 Les fichiers d'agent sont fins : ils lisent les consignes, communes à tous les outils, de `.specify/extensions/artefact-product/agents/`.
 
 Sur Antigravity, les sous-agents tournent dans le bac à sable : une commande y lit le projet mais n'y écrit pas, et chaque commande attend votre accord (ctrl+k), au plus 60 secondes. Sans réponse, elle est abandonnée et l'agent continue sans elle : restez devant l'écran pendant une relecture. Ouvrez le projet depuis son dossier réel, pas depuis `/tmp` : hors du projet ouvert, chaque écriture demande aussi un accord.
 
-Sur OpenCode, les commandes s'appellent avec un point : `/speckit.specify`, `/speckit.prd`… Les relecteurs ne peuvent ni écrire ni lancer d'autre agent ; leurs commandes shell et les écritures du designer suivent les permissions du projet (`opencode.json`).
+Sur OpenCode, les commandes s'appellent avec un point : `/speckit.specify`, `/speckit.prd`… Les relecteurs ne peuvent ni écrire ni lancer d'autre agent ; leurs commandes shell et les écritures du designer et de l'implémenteur suivent les permissions du projet (`opencode.json`).
 
 ### Changer ou ajouter un outil
 

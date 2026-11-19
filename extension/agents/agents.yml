@@ -9,6 +9,10 @@ agents:
     access: writes
     description: >-
       Expert UX/UI (SaaS moderne et professionnel) qui produit le cadrage design du produit et le prototype global, que chaque fonctionnalité complète. Lancé par /speckit-design (mode cadrage) et /speckit-prototype (modes parcours, puis maquette), avec le mode et les chemins à lire (specs/prd.md, specs/design.md, specs/NNN-<nom>/, specs/prototype/), et en reprise le rapport du relecteur-design. Écrit les fichiers, ne parle pas à l'utilisateur, rend un rapport avec ses hypothèses.
+  - name: implementeur
+    access: writes
+    description: >-
+      Développeur qui fait une seule tâche de tasks.md, test d'abord. Lancé par /speckit-implement en mode sous-agents (--subagents), en même temps que les autres tâches [P] de la vague, avec seulement l'identifiant de la tâche, sa ligne exacte de tasks.md et le dossier specs/NNN-<nom>. Écrit le test ou le code de cette tâche, dans les fichiers qu'elle cite ; ne coche rien dans tasks.md, ne commite rien. Rend un rapport avec la commande de test lancée et sa ligne d'échec ou de succès.
   - name: relecteur
     access: read-only
     description: >-

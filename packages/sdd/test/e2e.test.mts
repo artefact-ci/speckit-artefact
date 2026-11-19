@@ -146,7 +146,7 @@ describe('artefact-sdd end to end, real Spec Kit', { skip: process.env['SDD_E2E'
     commit(repo, 'project');
 
     const out = sdd(repo, 'init', '--source', SOURCE, '--integration', 'opencode');
-    assert.match(out, /\.opencode\/agents : 4 fichier\(s\) à jour/);
+    assert.match(out, /\.opencode\/agents : 5 fichier\(s\) à jour/);
     const commands = join(repo, '.opencode', 'commands');
     for (const name of ['prd', 'design', 'epics', 'prototype', 'converge', 'git.commit']) {
       assert.ok(existsSync(join(commands, `speckit.${name}.md`)), `speckit.${name} manque pour opencode`);
