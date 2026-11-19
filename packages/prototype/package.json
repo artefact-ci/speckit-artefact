@@ -1,6 +1,6 @@
 {
   "name": "@artefact-ci/prototype",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Maquettes HTML cliquables d'une spec, compilées depuis le thème du projet (méthode artefact-sdd)",
   "license": "MIT",
   "repository": {
