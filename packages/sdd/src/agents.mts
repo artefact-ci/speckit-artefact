@@ -51,7 +51,7 @@ function body(spec: AgentSpec): string {
   lines.push(
     spec.access === 'read-only'
       ? "Tu n'as pas écrit ce travail. Ne modifie aucun fichier, ne commite rien. Rends uniquement le rapport."
-      : "Ne commite rien : la commande qui t'a lancé s'en charge après l'accord de l'utilisateur.",
+      : "Ne commite rien : la commande qui t'a lancé s'en charge.",
   );
   return lines.join('\n\n');
 }

@@ -96,6 +96,8 @@ describe('agents', () => {
     assert.match(claude.content, /Ne commite rien/);
     assert.ok(claude.content.includes(`${INSTRUCTIONS_DIR}/implementeur.md`));
     assert.doesNotMatch(claude.content, /Tu n'as pas écrit/);
+    // L'implémenteur ne commite pas, mais l'agent principal commite sans attendre l'utilisateur.
+    assert.doesNotMatch(claude.content, /accord de l'utilisateur/);
     const agy = agentFiles('agy', specs)!.find((f) => f.path === '.agents/agents/implementeur/agent.md')!;
     assert.match(agy.content, /tools:\n {2}- read_file\n {2}- write_file\n {2}- edit_file\n {2}- run_command\n/);
     assert.match(agy.content, /commandExecutionPolicy: sandbox/);
