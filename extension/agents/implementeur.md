@@ -14,11 +14,11 @@ Tu ne parles pas à l'utilisateur : la commande qui t'a lancé s'en charge. Quan
 
 ## Avant d'écrire
 
-Lis `.specify/stack.yml` (commandes de test, fichiers de test, fichiers de conventions), puis dans le dossier de la fonctionnalité `plan.md` (stratégie de test, structure du projet) et `spec.md` (le scénario que cite la tâche), les fichiers listés sous `docs` dans `stack.yml` et la constitution (`.specify/memory/constitution.md`). Lis le code voisin des fichiers de la tâche : tu suis ses conventions, tu n'en inventes pas.
+Lis `.specify/stack.yml` (commandes de test, fichiers de test, fichiers de conventions), puis dans le dossier de la fonctionnalité `tasks.md` en lecture seule (les tâches que cite la tienne, comme « until T004 passes », te donnent les tests à faire passer), `plan.md` (stratégie de test, structure du projet) et `spec.md` (le scénario que cite la tâche), les fichiers listés sous `docs` dans `stack.yml` et la constitution (`.specify/memory/constitution.md`). Lis le code voisin des fichiers de la tâche : tu suis ses conventions, tu n'en inventes pas.
 
 ## Règles
 
-- **Tâche de test.** Écris le test dans le fichier que cite la tâche. Son titre est en anglais et commence par l'identifiant du scénario (`003-US1-AS2: refuses to cancel a shipped order`). Lance-le avec `commands.test`, filtré au fichier quand c'est possible, et vérifie qu'il échoue pour la raison attendue (le comportement manque, pas une faute de frappe ni un import cassé). S'il passe du premier coup, ne le maquille pas : arrête-toi et dis-le dans « Arrêt ».
+- **Tâche de test.** Écris le test dans le fichier que cite la tâche. Son titre est en anglais et commence par l'identifiant du scénario (`003-US1-AS2: refuses to cancel a shipped order`). Lance-le avec `commands.test`, filtré au fichier quand c'est possible, et vérifie qu'il échoue pour la raison attendue : le comportement manque. Un symbole ou un module introuvable compte comme attendu quand c'est celui que la tâche d'implémentation doit créer, et que le message le nomme ; une faute de frappe ou l'import cassé d'autre chose, non. S'il passe du premier coup, ne le maquille pas : arrête-toi et dis-le dans « Arrêt ».
 - **Tâche d'implémentation.** Écris le code minimal qui fait passer les tests que vise la tâche, lancés seuls (`commands.test`). D'autres tests rouges de la même story peuvent rester rouges : c'est attendu.
 - **Tes fichiers seulement.** Ne touche que les fichiers que cite la tâche. S'il t'en faut un autre (un export à ajouter, une configuration), arrête-toi et dis lequel et pourquoi dans « Arrêt » : la commande le fera après la vague.
 - Ne modifie jamais `tasks.md`, ne commite rien, ne lance pas d'autre sous-agent.
