@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
-import { appendFileSync, copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { createServer, type Server } from 'node:http';
@@ -92,6 +92,10 @@ describe('artefact-sdd end to end, real Spec Kit', { skip: process.env['SDD_E2E'
     assert.match(first, /Stack détectée : bun-hono/);
     assert.match(first, /constitution\.md écrit/);
     assert.ok(existsSync(join(repo, '.claude', 'agents', 'relecteur.md')));
+    // Les renvois entre commandes prennent le séparateur de l'outil : `-` pour les skills de Claude.
+    const prd = readFileSync(join(repo, '.claude', 'skills', 'speckit-prd', 'SKILL.md'), 'utf8');
+    assert.match(prd, /`\/speckit-epics`/);
+    assert.doesNotMatch(prd, /__SPECKIT_COMMAND_|\/speckit\.epics/);
     commit(repo, 'artefact-sdd');
 
     const second = sdd(repo, 'init', '--source', SOURCE);
@@ -133,6 +137,31 @@ describe('artefact-sdd end to end, real Spec Kit', { skip: process.env['SDD_E2E'
     assert.equal(options.ai, 'claude');
     const modes = git(repo, 'diff', '--summary', '--', '.specify/scripts');
     assert.doesNotMatch(modes, /mode change 100755 => 100644/);
+  });
+
+  it('installs for OpenCode: commands with its separator, subagents and a .ignore', () => {
+    const repo = workDir('opencode');
+    cpSync(join(FIXTURE, 'repos', 'bun-hono'), repo, { recursive: true });
+    git(repo, 'init', '-q');
+    commit(repo, 'project');
+
+    const out = sdd(repo, 'init', '--source', SOURCE, '--integration', 'opencode');
+    assert.match(out, /\.opencode\/agents : 5 fichier\(s\) à jour/);
+    const commands = join(repo, '.opencode', 'commands');
+    for (const name of ['prd', 'design', 'epics', 'prototype', 'converge', 'git.commit']) {
+      assert.ok(existsSync(join(commands, `speckit.${name}.md`)), `speckit.${name} manque pour opencode`);
+    }
+    for (const file of readdirSync(commands)) {
+      const text = readFileSync(join(commands, file), 'utf8');
+      assert.doesNotMatch(text, /__SPECKIT_COMMAND_|\/speckit-(?!artefact)/, file);
+    }
+    assert.match(readFileSync(join(commands, 'speckit.prd.md'), 'utf8'), /`\/speckit\.epics`/);
+    assert.match(readFileSync(join(repo, '.opencode', 'agents', 'relecteur.md'), 'utf8'), /mode: subagent/);
+    assert.match(readFileSync(join(repo, '.ignore'), 'utf8'), /^!\.specify\/\*\*$/m);
+    commit(repo, 'artefact-sdd');
+
+    sdd(repo, 'init', '--source', SOURCE);
+    assert.equal(git(repo, 'status', '--porcelain'), '');
   });
 
   it('migrates a boilerplate project: removes its preset, keeps docs/agents/', () => {

@@ -24,10 +24,28 @@ These rules come from the constitution (Test-First principle) and take precedenc
 - Run integration and end-to-end tests with what they need (`tests.needs`, and the services the convention files name); never skip or weaken a test to get green, and never because a key of `.specify/stack.yml` is absent.
 - When `e2e` is set, the browser journeys live under `e2e.dir` and run with `e2e.command` (also to see a new journey fail); run `e2e.setup` once the first time. A failing journey blocks the checkpoint like any other test.
 
+## Subagent Mode (artefact-sdd)
+
+An on-demand mode to go faster: the `[P]` tasks of a phase are done at the same time by `implementeur` subagents, while you keep `tasks.md`, the checks and the commits. The Test-First Rules above still apply to every task.
+
+- **When.** Only when the user input asks for it: `--subagents`, or the same request in words. The rest of the input keeps its meaning. Without it, implement as above, one task at a time.
+- **Fallback.** If your agent cannot launch subagents, no `implementeur` subagent is available, or `.specify/extensions/artefact-product/agents/implementeur.md` is missing, implement one task at a time and say so in the report; do not stop, and do not ask the user to open new sessions.
+- **Waves.** A wave is a run of consecutive `[P]` tasks of the same phase, at most 4. A wave holds test tasks only, or implementation tasks only, never both (a task with no test, such as documentation, counts as an implementation task with no test to run): an implementation task joins a wave only once the test tasks it names (« until T004 passes ») and the tasks it depends on are checked, their failure seen. Never put two tasks that name the same file in one wave: the second one waits for the next wave. A task whose tests need a service of `tests.needs`, or a browser journey (`e2e`), joins a wave only when the convention files say such tests can run in parallel; otherwise do it yourself, one at a time. Tasks without `[P]`, refactor tasks and checkpoints are yours, one at a time, as above.
+- **Launch.** One `implementeur` subagent per task of the wave, all launched in the same turn so that they run at the same time. Give each one only its task id, its exact line of `tasks.md` and the feature directory.
+- **Before the wave**, note the state it starts from: `git rev-parse HEAD`, `git status --porcelain`, and a copy of `tasks.md` (checks of earlier waves may not be committed yet).
+- **After the wave**, before checking any task:
+  1. compare with the noted state: no new commit, `tasks.md` identical to its copy, and no change outside the files and folders named by the wave's tasks. A new commit: `git reset --soft` to the noted `HEAD`, never `--hard`. A changed `tasks.md`: restore the copy. Another file: look at it and fix it yourself before going on;
+  2. run the commands the reports list under « Commandes à lancer », in the order given, when they are commands you would run yourself for these tasks (`commands.*`, `e2e.*` of `.specify/stack.yml`). Any other command (installing a dependency, changing a configuration) is a decision of the plan: do not run it, and take the task back;
+  3. run the wave's tests yourself (`commands.test`, filtered to their files): each test task's test fails for the expected reason (quote the line), and the tests of each implementation task pass;
+  4. then check the tasks and go on with the Test-First Rules above (`commands.affected` after shared code, the commit after a green step).
+- **Stopped or failed tasks.** A task whose report says « arrêtée », or whose check at step 3 fails, is yours, one at a time, after the wave; never launch it again in a subagent with the same input. A test that passed on its first run follows the Test-First Rule above: its task stays unchecked.
+- **Report.** List the waves and the tasks each one held, and the tasks you took back.
+
 ## Stopping Before the End (artefact-sdd)
 
 When the command stops before the last task (a question for the user, a task blocked by infrastructure, the end of a session):
 
+- In subagent mode, let a running wave finish and do its after-wave checks before stopping.
 - Leave the tree green: the tests of the tasks done pass, and no test task is checked without its failure seen.
 - Under the blocked task in `tasks.md`, write why it is blocked and what would unblock it.
 - Run the `after_implement` commit hook, so the next session resumes from `tasks.md` and the git history, and say which task comes next.

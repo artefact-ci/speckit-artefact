@@ -67,6 +67,10 @@ export function formatReport(r: Report): string {
     }
   }
 
+  if (r.ignoreFile) {
+    out.push('', ".ignore : règles qui montrent .specify/ à la recherche de fichiers d'OpenCode (ripgrep saute les dossiers cachés)");
+  }
+
   if (r.stack) {
     out.push('', ".specify/stack.yml déduit du dépôt : relis-le et corrige-le avant de t'en servir.");
     out.push(`  Stack détectée : ${r.stack.kind === 'unknown' ? 'aucune reconnue' : r.stack.kind}`);

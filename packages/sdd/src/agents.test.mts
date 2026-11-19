@@ -23,8 +23,8 @@ function tempRoot(): string {
 describe('agents', () => {
   const specs = readAgentSpecs(tempRoot());
 
-  it('readAgentSpecs reads the 4 agents and fails clearly when missing', () => {
-    assert.equal(specs.length, 4);
+  it('readAgentSpecs reads the 5 agents and fails clearly when missing', () => {
+    assert.equal(specs.length, 5);
     assert.throws(() => readAgentSpecs(mkdtempSync(join(tmpdir(), 'sdd-empty-'))), /agents\.yml/);
   });
 
@@ -58,7 +58,7 @@ describe('agents', () => {
 
   it('agy has a designer that can create and edit files', () => {
     const files = agentFiles('agy', specs)!;
-    assert.equal(files.length, 4);
+    assert.equal(files.length, 5);
     const des = files.find((f) => f.path === '.agents/agents/designer/agent.md')!;
     assert.ok(des);
     assert.match(des.content, /tools:\n {2}- read_file\n {2}- write_file\n {2}- edit_file\n {2}- run_command\n/);
@@ -66,6 +66,44 @@ describe('agents', () => {
     assert.match(des.content, /Ne commite rien/);
     assert.deepEqual(skippedAgents('agy', specs), []);
     assert.deepEqual(skippedAgents('claude', specs), []);
+  });
+
+  it('opencode files are subagents that point to the installed instructions', () => {
+    const files = agentFiles('opencode', specs)!;
+    assert.deepEqual(
+      files.map((f) => f.path),
+      specs.map((s) => `.opencode/agents/${s.name}.md`),
+    );
+    for (const f of files) {
+      assert.match(f.content, /\nmode: subagent\n/);
+      // Pas de champ `name` : OpenCode prend le nom du fichier.
+      assert.doesNotMatch(f.content, /\nname:/);
+    }
+    const rel = files.find((f) => f.path === '.opencode/agents/relecteur.md')!;
+    assert.match(rel.content, /permission:\n {2}edit: deny\n {2}task: deny\n {2}webfetch: deny\n/);
+    assert.ok(rel.content.includes(`${INSTRUCTIONS_DIR}/relecteur.md`));
+    assert.match(rel.content, /Tu n'as pas écrit ce travail/);
+    const des = files.find((f) => f.path === '.opencode/agents/designer.md')!;
+    assert.match(des.content, /permission:\n {2}task: deny\n/);
+    assert.doesNotMatch(des.content, /edit: deny/);
+    assert.match(des.content, /Ne commite rien/);
+    assert.deepEqual(skippedAgents('opencode', specs), []);
+  });
+
+  it('implementeur writes files on every tool', () => {
+    const claude = agentFiles('claude', specs)!.find((f) => f.path === '.claude/agents/implementeur.md')!;
+    assert.match(claude.content, /tools: Read, Grep, Glob, Bash, Write, Edit\n/);
+    assert.match(claude.content, /Ne commite rien/);
+    assert.ok(claude.content.includes(`${INSTRUCTIONS_DIR}/implementeur.md`));
+    assert.doesNotMatch(claude.content, /Tu n'as pas écrit/);
+    // L'implémenteur ne commite pas, mais l'agent principal commite sans attendre l'utilisateur.
+    assert.doesNotMatch(claude.content, /accord de l'utilisateur/);
+    const agy = agentFiles('agy', specs)!.find((f) => f.path === '.agents/agents/implementeur/agent.md')!;
+    assert.match(agy.content, /tools:\n {2}- read_file\n {2}- write_file\n {2}- edit_file\n {2}- run_command\n/);
+    assert.match(agy.content, /commandExecutionPolicy: sandbox/);
+    const oc = agentFiles('opencode', specs)!.find((f) => f.path === '.opencode/agents/implementeur.md')!;
+    assert.match(oc.content, /permission:\n {2}task: deny\n/);
+    assert.doesNotMatch(oc.content, /edit: deny/);
   });
 
   it('unknown integration has no generator', () => {

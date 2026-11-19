@@ -51,7 +51,7 @@ function body(spec: AgentSpec): string {
   lines.push(
     spec.access === 'read-only'
       ? "Tu n'as pas écrit ce travail. Ne modifie aucun fichier, ne commite rien. Rends uniquement le rapport."
-      : "Ne commite rien : la commande qui t'a lancé s'en charge après l'accord de l'utilisateur.",
+      : "Ne commite rien : la commande qui t'a lancé s'en charge.",
   );
   return lines.join('\n\n');
 }
@@ -75,6 +75,14 @@ const CLAUDE_TOOLS = {
 const AGY_TOOLS = {
   'read-only': ['read_file', 'run_command'],
   writes: ['read_file', 'write_file', 'edit_file', 'run_command'],
+} as const;
+
+// OpenCode : format d'agent V1 (`permission` en table), que la V2 traduit tant que le fichier
+// ne mélange pas les deux formats. Seuls les refus sont déclarés : le reste (shell, écriture du
+// designer) suit la configuration du projet. `task: deny` : un sous-agent n'en lance pas d'autre.
+const OPENCODE_PERMISSION = {
+  'read-only': { edit: 'deny', task: 'deny', webfetch: 'deny' },
+  writes: { task: 'deny' },
 } as const;
 
 type Generator = {
@@ -104,6 +112,16 @@ const GENERATORS: Record<string, Generator> = {
           tools: [...AGY_TOOLS[spec.access]],
           commandExecutionPolicy: 'sandbox',
         },
+        spec,
+      ),
+    }),
+  },
+  opencode: {
+    supports: () => true,
+    file: (spec) => ({
+      path: `.opencode/agents/${spec.name}.md`,
+      content: document(
+        { description: spec.description, mode: 'subagent', permission: { ...OPENCODE_PERMISSION[spec.access] } },
         spec,
       ),
     }),

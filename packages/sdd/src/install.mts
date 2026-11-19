@@ -8,6 +8,7 @@ import { legacyAgents } from './legacy.mts';
 import { SetupError } from './errors.mts';
 import { writeIfChanged } from './fs.mts';
 import { componentArgs, zipUrl, type ComponentId, type Source } from './source.mts';
+import { IGNORE_FILE, unhideSpecify } from './ignore.mts';
 import { hasUv, specify, SpecifyError, type Run } from './specify.mts';
 import { deduceStack, defaultExamplesDir, type Branches, type Deduction } from './stack.mts';
 
@@ -30,6 +31,8 @@ export type Report = {
   noAgentGenerator: string[];
   /** Intégrations secondaires pour lesquelles les commandes de l'extension et du preset ont été enregistrées. */
   registeredFor: string[];
+  /** Vrai si OpenCode est installé : `.ignore` porte les règles qui lui montrent `.specify/`. */
+  ignoreFile: boolean;
   stack?: Deduction;
   constitution: 'written' | 'kept';
   legacy: ReturnType<typeof legacyAgents>;
@@ -221,8 +224,16 @@ async function common(o: Options, mode: 'init' | 'update'): Promise<Common> {
     if (names.length > 0) agentsSkipped.push({ integration, names });
   }
 
+  // OpenCode cherche avec ripgrep, qui saute les dossiers cachés (spec-kit#5028).
+  const ignoreFile = integrations.includes('opencode');
+  if (ignoreFile) {
+    const path = join(root, IGNORE_FILE);
+    writeIfChanged(path, unhideSpecify(existsSync(path) ? readFileSync(path, 'utf8') : ''));
+  }
+
   return {
     migrated,
+    ignoreFile,
     noIntegration: integrations.length === 0,
     installed,
     skipped,

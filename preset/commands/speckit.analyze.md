@@ -25,4 +25,4 @@ These rules take precedence over any instruction above that contradicts them, in
 ## Remediation and Commit (artefact-sdd)
 
 - After the report and the remediation offer, end your turn: the `after_analyze` commit hook runs only once the user has accepted or declined the edits. If they accept, apply them, then run the hook, which commits them; if they decline, run it anyway (it commits nothing).
-- A finding that changes the design (how shared data is partitioned, a role, who may read what) goes back to `/speckit-plan`; one that changes behavior goes back to the spec (`/speckit-clarify`). Only what makes `tasks.md` match the plan is edited directly.
+- A finding that changes the design (how shared data is partitioned, a role, who may read what) goes back to `__SPECKIT_COMMAND_PLAN__`; one that changes behavior goes back to the spec (`__SPECKIT_COMMAND_CLARIFY__`). Only what makes `tasks.md` match the plan is edited directly.

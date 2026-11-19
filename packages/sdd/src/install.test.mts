@@ -28,6 +28,7 @@ const read = (root: string, p: string): string => readFileSync(join(root, p), 'u
 
 const METHOD_AGENTS = [
   '.claude/agents/designer.md',
+  '.claude/agents/implementeur.md',
   '.claude/agents/relecteur.md',
   '.claude/agents/relecteur-produit.md',
   '.claude/agents/relecteur-design.md',
@@ -533,6 +534,7 @@ describe('install', () => {
     assert.notEqual(read(root, '.claude/agents/relecteur.md'), 'old pointer\n');
     assert.deepEqual(readdirSync(join(root, '.claude/agents')).sort(), [
       'designer.md',
+      'implementeur.md',
       'mine.md',
       'relecteur-design.md',
       'relecteur-produit.md',
@@ -586,7 +588,7 @@ describe('install', () => {
     assert.equal(report.integrationIgnored, undefined);
   });
 
-  it('agy integration gets all four agents, designer included', async () => {
+  it('agy integration gets all five agents, designer included', async () => {
     const root = tempRepo();
     existingSpecify(root);
     writeFileSync(
@@ -598,7 +600,37 @@ describe('install', () => {
     assert.deepEqual(report.agentsSkipped, []);
     assert.ok(report.agents.includes('.agents/agents/relecteur/agent.md'));
     assert.ok(report.agents.includes('.agents/agents/designer/agent.md'));
-    assert.equal(report.agents.length, 8);
+    assert.equal(report.agents.length, 10);
+  });
+
+  it('opencode integration gets its five agents and a .ignore that shows .specify/', async () => {
+    const root = tempRepo();
+    existingSpecify(root);
+    writeFileSync(
+      join(root, '.specify/integration.json'),
+      JSON.stringify({ integration: 'claude', installed_integrations: ['claude', 'opencode'] }),
+    );
+    writeFileSync(join(root, '.ignore'), 'dist/\n');
+    const { runner } = fakeRunner();
+    const report = await init(options(root, runner));
+    assert.deepEqual(report.noAgentGenerator, []);
+    assert.ok(report.agents.includes('.opencode/agents/relecteur.md'));
+    assert.equal(report.agents.length, 10);
+    assert.equal(report.ignoreFile, true);
+    const ignore = readFileSync(join(root, '.ignore'), 'utf8');
+    assert.ok(ignore.startsWith('dist/\n'));
+    assert.match(ignore, /^!\.specify\/\*\*$/m);
+    await init(options(root, runner));
+    assert.equal(readFileSync(join(root, '.ignore'), 'utf8'), ignore);
+  });
+
+  it('no .ignore without opencode', async () => {
+    const root = tempRepo();
+    existingSpecify(root);
+    const { runner } = fakeRunner();
+    const report = await init(options(root, runner));
+    assert.equal(report.ignoreFile, false);
+    assert.ok(!existsSync(join(root, '.ignore')));
   });
 
   /** Projet installé avec claude par défaut, plus `others`, et un script partagé exécutable. */

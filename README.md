@@ -7,7 +7,7 @@ Chaque fonctionnalité part d'une spec écrite et relue. Elle est implémentée 
 | Pièce | Ce qu'elle apporte |
 | --- | --- |
 | preset `artefact-sdd` | templates spec, plan, tâches et constitution ; règles TDD ajoutées aux commandes du cœur (`/speckit-specify`, `plan`, `tasks`, `analyze`, `implement`, `converge`) |
-| extension `artefact-product` | `/speckit-prd`, `/speckit-design`, `/speckit-epics`, `/speckit-prototype`, et les consignes des agents (relecteur, relecteur produit, designer, relecteur design, PO) |
+| extension `artefact-product` | `/speckit-prd`, `/speckit-design`, `/speckit-epics`, `/speckit-prototype`, et les consignes des agents (relecteur, relecteur produit, designer, relecteur design, implémenteur, PO) |
 | [`@artefact-ci/sdd`](packages/sdd/README.md) | l'installeur : `npx @artefact-ci/sdd init` et `update` |
 | [`@artefact-ci/spec-trace`](packages/spec-trace/README.md) | la matrice scénarios → tests, qui échoue quand un scénario n'a pas de test |
 | [`@artefact-ci/prototype`](packages/prototype/README.md) | le prototype HTML cliquable du produit (`specs/prototype/`), que `/speckit-prototype` complète à chaque fonctionnalité, dans le thème du projet |
@@ -19,18 +19,18 @@ Les commandes ne citent aucun outil ni aucun chemin propre à une stack : elles 
 Il faut [uv](https://docs.astral.sh/uv/) (Spec Kit est lancé par `uvx`), Node 24.11 ou plus récent, et git. Dans le dépôt du projet, sur un arbre propre :
 
 ```sh
-npx @artefact-ci/sdd@0.3.0 init
+npx @artefact-ci/sdd@0.4.0 init
 ```
 
 L'installeur ne pose aucune question. Il :
 
-1. initialise Spec Kit 1.3.2 si `.specify/` est absent, puis installe l'extension git, l'extension `artefact-product` et le preset `artefact-sdd` (zips de la release `v0.3.0` de ce dépôt) ;
+1. initialise Spec Kit 1.3.2 si `.specify/` est absent, puis installe l'extension git, l'extension `artefact-product` et le preset `artefact-sdd` (zips de la release `v0.4.0` de ce dépôt) ;
 2. branche les hooks git : `/speckit-specify` crée la branche de la fonctionnalité, et chaque commande qui écrit des fichiers commite son résultat ;
 3. génère les fichiers d'agent de l'outil du projet (voir [Outils](#outils)) ;
 4. déduit `.specify/stack.yml` du dépôt, et écrit la constitution de base si le projet n'en a pas ;
 5. écrit la version installée dans `.specify/artefact.json`, puis affiche un rapport : ce qui est installé, ce qui a été deviné, ce qu'il reste à compléter.
 
-Pour un projet Antigravity : `npx @artefact-ci/sdd@0.3.0 init --integration agy`. `--integration` ne sert qu'à la première installation : quand `.specify/` existe déjà, il est ignoré et l'outil du projet est gardé. Pour en changer ou en ajouter un, voir [Changer ou ajouter un outil](#changer-ou-ajouter-un-outil).
+Pour un projet Antigravity : `npx @artefact-ci/sdd@0.4.0 init --integration agy` ; pour OpenCode : `--integration opencode`. `--integration` ne sert qu'à la première installation : quand `.specify/` existe déjà, il est ignoré et l'outil du projet est gardé. Pour en changer ou en ajouter un, voir [Changer ou ajouter un outil](#changer-ou-ajouter-un-outil).
 
 Lancé deux fois, `init` ne change rien la deuxième fois.
 
@@ -51,7 +51,7 @@ commands:
   test: bun test {file}
   affected: bun run lint && bun run typecheck && bun test
   check: bun run check
-  trace: bunx @artefact-ci/spec-trace@0.3.0
+  trace: bunx @artefact-ci/spec-trace@0.4.0
 tests:
   globs: ['src/**/*.test.ts']
 flags: false
@@ -89,6 +89,8 @@ L'agent propose, un relecteur produit ou design relit à froid, et vous tranchez
 | 5. Implémenter | `/speckit-implement` | chaque test vu en échec avant le code |
 | 6. Converger | `/speckit-converge` | le rapport du relecteur ; la matrice de `commands.trace` |
 
+Pour aller plus vite, `/speckit-implement --subagents` (ou la même demande en clair) fait les tâches `[P]` d'une même phase en parallèle, par vagues de 4 sous-agents `implementeur` au plus, une tâche chacun. Après chaque vague, l'agent principal relance lui-même les tests (chaque test vu en échec, chaque implémentation verte), coche `tasks.md` et commite ; les tâches sans `[P]`, les refactors et les points de contrôle restent faits un par un. Sans sous-agents, la commande travaille comme d'habitude et le dit. Sur OpenCode : `/speckit.implement --subagents`.
+
 On répète 5 et 6 jusqu'à ce que `/speckit-converge` conclue **Converged**. Pour cela, chaque scénario d'acceptation doit avoir un test qui le vérifie, les vérifications doivent passer sans cache, et la relecture indépendante ne doit laisser aucun écart bloquant. Une user story fait une PR ; la dernière passe la spec en `Implemented`.
 
 Quelques règles qui ne se discutent pas :
@@ -101,13 +103,16 @@ Quelques règles qui ne se discutent pas :
 
 | Outil | Ce que génère l'installeur | Relecture et design |
 | --- | --- | --- |
-| Claude Code (par défaut) | `.claude/agents/` : `relecteur`, `relecteur-produit`, `relecteur-design`, `designer` | les commandes lancent les sous-agents |
-| Antigravity (`--integration agy`) | `.agents/agents/` : `relecteur`, `relecteur-produit`, `relecteur-design`, `designer` | les commandes lancent les sous-agents ; ce que le bac à sable leur refuse (construire le prototype, installer une police), l'agent principal le lance |
+| Claude Code (par défaut) | `.claude/agents/` : `relecteur`, `relecteur-produit`, `relecteur-design`, `designer`, `implementeur` | les commandes lancent les sous-agents |
+| Antigravity (`--integration agy`) | `.agents/agents/` : `relecteur`, `relecteur-produit`, `relecteur-design`, `designer`, `implementeur` | les commandes lancent les sous-agents ; ce que le bac à sable leur refuse (construire le prototype, installer une police), l'agent principal le lance |
+| OpenCode (`--integration opencode`) | `.opencode/agents/` : `relecteur`, `relecteur-produit`, `relecteur-design`, `designer`, `implementeur`, en sous-agents ; `.ignore`, pour que sa recherche de fichiers voie `.specify/` | les commandes lancent les sous-agents |
 | Autre outil Spec Kit | rien | la commande vous demande de lancer la relecture dans une nouvelle session et d'en coller le rapport : elle ne se saute pas |
 
 Les fichiers d'agent sont fins : ils lisent les consignes, communes à tous les outils, de `.specify/extensions/artefact-product/agents/`.
 
-Sur Antigravity, les sous-agents tournent dans le bac à sable : une commande y lit le projet mais n'y écrit pas, et chaque commande attend votre accord (ctrl+k), au plus 60 secondes. Sans réponse, elle est abandonnée et l'agent continue sans elle : restez devant l'écran pendant une relecture. Ouvrez le projet depuis son dossier réel, pas depuis `/tmp` : hors du projet ouvert, chaque écriture demande aussi un accord.
+Sur Antigravity, les sous-agents tournent dans le bac à sable : une commande y lit le projet mais n'y écrit pas, et chaque commande attend votre accord (ctrl+k), au plus 60 secondes. Sans réponse, elle est abandonnée et l'agent continue sans elle : restez devant l'écran pendant une relecture, et pendant `/speckit-implement --subagents`, où jusqu'à 4 implémenteurs demandent leurs accords en même temps. Ouvrez le projet depuis son dossier réel, pas depuis `/tmp` : hors du projet ouvert, chaque écriture demande aussi un accord.
+
+Sur OpenCode, les commandes s'appellent avec un point : `/speckit.specify`, `/speckit.prd`… Les relecteurs ne peuvent ni écrire ni lancer d'autre agent ; leurs commandes shell et les écritures du designer et de l'implémenteur suivent les permissions du projet (`opencode.json`).
 
 ### Changer ou ajouter un outil
 

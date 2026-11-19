@@ -99,6 +99,7 @@ const base: Report = {
   agentsSkipped: [],
   noAgentGenerator: [],
   registeredFor: [],
+  ignoreFile: false,
   constitution: 'kept',
   legacy: { files: [], mentions: [] },
   dirty: false,
@@ -171,6 +172,11 @@ describe('formatReport', () => {
     const text = formatReport({ ...base, mode: 'update', registeredFor: ['agy'] });
     assert.match(text, /Commandes de la méthode enregistrées aussi pour : agy \(outil par défaut inchangé\)/);
     assert.doesNotMatch(formatReport(base), /enregistrées aussi/);
+  });
+
+  it('says why .ignore changed when OpenCode is installed', () => {
+    assert.match(formatReport({ ...base, ignoreFile: true }), /\.ignore : règles qui montrent \.specify\/ à la recherche de fichiers d'OpenCode/);
+    assert.doesNotMatch(formatReport(base), /\.ignore/);
   });
 
   it('warns when the working tree was dirty', () => {
