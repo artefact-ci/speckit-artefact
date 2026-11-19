@@ -69,7 +69,7 @@ provides:
     - type: 'command'
       name: 'speckit.implement'
       file: 'commands/speckit.implement.md'
-      description: 'Test-first rules appended to implement'
+      description: 'Test-first rules, and an on-demand subagent mode for [P] tasks, appended to implement'
       strategy: 'append'
 
     - type: 'command'

@@ -89,6 +89,8 @@ L'agent propose, un relecteur produit ou design relit à froid, et vous tranchez
 | 5. Implémenter | `/speckit-implement` | chaque test vu en échec avant le code |
 | 6. Converger | `/speckit-converge` | le rapport du relecteur ; la matrice de `commands.trace` |
 
+Pour aller plus vite, `/speckit-implement --subagents` (ou la même demande en clair) fait les tâches `[P]` d'une même phase en parallèle, par vagues de 4 sous-agents `implementeur` au plus, une tâche chacun. Après chaque vague, l'agent principal relance lui-même les tests (chaque test vu en échec, chaque implémentation verte), coche `tasks.md` et commite ; les tâches sans `[P]`, les refactors et les points de contrôle restent faits un par un. Sans sous-agents, la commande travaille comme d'habitude et le dit. Sur OpenCode : `/speckit.implement --subagents`.
+
 On répète 5 et 6 jusqu'à ce que `/speckit-converge` conclue **Converged**. Pour cela, chaque scénario d'acceptation doit avoir un test qui le vérifie, les vérifications doivent passer sans cache, et la relecture indépendante ne doit laisser aucun écart bloquant. Une user story fait une PR ; la dernière passe la spec en `Implemented`.
 
 Quelques règles qui ne se discutent pas :
