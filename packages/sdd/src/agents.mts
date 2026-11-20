@@ -70,6 +70,9 @@ function document(front: Record<string, unknown>, spec: AgentSpec): string {
   return `---\n${stringify(front, { lineWidth: 0 })}---\n\n${body(spec)}\n`;
 }
 
+// `model` d'agents.yml : seul le générateur Claude Code le reprend. Antigravity n'a pas de clé
+// vérifiée ; pour OpenCode, le nom du modèle dépend du fournisseur du projet (`anthropic/…`,
+// `amazon-bedrock/…`), qu'agents.yml ne connaît pas.
 const CLAUDE_TOOLS = {
   'read-only': 'Read, Grep, Glob, Bash',
   writes: 'Read, Grep, Glob, Bash, Write, Edit',
