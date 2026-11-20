@@ -1,3 +1,5 @@
+import { parseArgs } from 'node:util';
+
 /**
  * Prototype du produit (/speckit-prototype) : un seul, global, que chaque fonctionnalité complète.
  * Pages HTML statiques à plat dans specs/prototype/, index.html en entrée (par epic et parcours),
@@ -14,21 +16,58 @@ export const VIEWPORTS = {
 
 export type Viewport = keyof typeof VIEWPORTS;
 
-/** Arguments de `pnpm prototype` : `--capture` seulement, le prototype n'a qu'un dossier. */
 /** Dossier du prototype global. */
 export const PROTOTYPE_DIR = 'specs/prototype';
 
-/** Arguments hors `--theme` : `--capture` seulement, le prototype n'a qu'un dossier. */
-export function prototypeArgs(args: string[]): { capture: boolean } {
-  for (const arg of args) {
-    if (arg === '--capture') continue;
+export interface PrototypeArgs {
+  capture: boolean;
+  theme: string | undefined;
+  help: boolean;
+}
+
+/** Arguments de `artefact-prototype` : `--capture`, `--theme <fichier css>` ; aucun dossier, le
+ * prototype est global. Une erreur dit en français ce qui ne va pas. */
+export function prototypeArgs(args: string[]): PrototypeArgs {
+  let parsed;
+  try {
+    parsed = parseArgs({
+      args,
+      allowPositionals: true,
+      options: {
+        capture: { type: 'boolean' },
+        theme: { type: 'string' },
+        help: { type: 'boolean', short: 'h' },
+      },
+    });
+  } catch (error) {
+    throw new Error(argsMessage(error));
+  }
+  const { values, positionals } = parsed;
+  const [folder] = positionals;
+  if (folder !== undefined) {
     throw new Error(
-      arg.startsWith('--')
-        ? `Option inconnue : ${arg}.`
-        : `« ${arg} » : le prototype est global, dans ${PROTOTYPE_DIR}/ ; la commande ne prend plus de dossier.`,
+      `« ${folder} » : le prototype est global, dans ${PROTOTYPE_DIR}/ ; la commande ne prend plus de dossier.`,
     );
   }
-  return { capture: args.includes('--capture') };
+  if (values.theme === '') throw new Error(MISSING_VALUE['--theme']);
+  return { capture: values.capture ?? false, theme: values.theme, help: values.help ?? false };
+}
+
+const MISSING_VALUE: Record<string, string> = {
+  '--theme': '--theme attend le fichier de thème du projet.',
+};
+
+// Les erreurs de parseArgs, en anglais, ne nomment l'option que dans leur texte : `'--base <value>'`,
+// `'-h, --help'`. On garde le nom long.
+function argsMessage(error: unknown): string {
+  const { code, message } = error as NodeJS.ErrnoException;
+  const option = /'(-[^']*)'/.exec(message)?.[1]?.split(', ').at(-1)?.split(' ')[0];
+  if (option === undefined) return message;
+  if (code === 'ERR_PARSE_ARGS_UNKNOWN_OPTION') return `Option inconnue : ${option}.`;
+  if (code === 'ERR_PARSE_ARGS_INVALID_OPTION_VALUE') {
+    return MISSING_VALUE[option] ?? `${option} ne prend pas de valeur.`;
+  }
+  return message;
 }
 
 /** Feuille d'entrée de Tailwind : le thème de l'app, et les classes des pages du prototype. */

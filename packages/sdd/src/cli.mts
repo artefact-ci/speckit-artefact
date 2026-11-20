@@ -11,43 +11,29 @@
  */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { parseArgs } from 'node:util';
+import { sddArgs, type SddArgs, USAGE } from './args.mts';
 import { init, SetupError, update } from './install.mts';
 import { formatReport } from './report.mts';
 import { devSource, releaseSource } from './source.mts';
 import { run, SpecifyError } from './specify.mts';
-
-const USAGE = 'Usage : artefact-sdd init|update [--source <dir>] [--integration <outil>] [--help]';
 
 function fail(message: string): never {
   console.error(message);
   process.exit(1);
 }
 
-let parsed;
+let args: SddArgs;
 try {
-  parsed = parseArgs({
-    args: process.argv.slice(2),
-    allowPositionals: true,
-    options: {
-      source: { type: 'string' },
-      integration: { type: 'string' },
-      help: { type: 'boolean', short: 'h' },
-    },
-  });
+  args = sddArgs(process.argv.slice(2));
 } catch (error) {
   fail(`${(error as Error).message}\n${USAGE}`);
 }
-const { values, positionals } = parsed;
-if (values.help) {
+if (args.help) {
   console.log(USAGE);
   process.exit(0);
 }
-const [command, ...extra] = positionals;
-if (command === undefined) fail(USAGE);
-if (command !== 'init' && command !== 'update') fail(`Commande inconnue : ${command}\n${USAGE}`);
-if (extra.length > 0) fail(`Argument en trop : ${extra.join(' ')}\n${USAGE}`);
-if (command === 'update' && values.integration !== undefined) {
+const { command, source, integration } = args;
+if (command === 'update' && integration !== undefined) {
   console.error("Avertissement : --integration est ignoré par update, l'intégration du projet est gardée.");
 }
 const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string };
@@ -55,10 +41,10 @@ const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url),
 try {
   const options = {
     root: process.cwd(),
-    source: values.source ? devSource(resolve(values.source)) : releaseSource(pkg.version),
+    source: source ? devSource(resolve(source)) : releaseSource(pkg.version),
     toolsVersion: pkg.version,
     runner: run,
-    ...(command === 'init' && values.integration !== undefined ? { integration: values.integration } : {}),
+    ...(command === 'init' && integration !== undefined ? { integration } : {}),
   };
   const report = command === 'init' ? await init(options) : await update(options);
   process.stdout.write(formatReport(report));

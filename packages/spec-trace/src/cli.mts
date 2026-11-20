@@ -36,13 +36,13 @@ import {
   traceFeature,
   traceRequirements,
 } from './core.mts';
+import { type TraceArgs, traceArgs, USAGE } from './args.mts';
 import { pathspecs, testGlobs } from './stack.mts';
 
 const SPECS_DIR = 'specs';
 const REQUIREMENT_INDEX = join(SPECS_DIR, 'product.yml');
 const LEGACY_INDEX = join(SPECS_DIR, 'product-requirements.json');
 const STACK_FILE = join('.specify', 'stack.yml');
-const USAGE = 'Usage : spec-trace [specs/NNN-nom…] [--base <ref git>] [--tests <motif>…]';
 
 function featureDirs(args: string[]): string[] {
   if (args.length > 0) return args;
@@ -224,38 +224,18 @@ function warnDrift(base: string, globs: string[]): void {
   }
 }
 
-const args = process.argv.slice(2);
-if (args.includes('--help') || args.includes('-h')) {
+let options: TraceArgs;
+try {
+  options = traceArgs(process.argv.slice(2));
+} catch (error) {
+  console.error((error as Error).message);
+  process.exit(1);
+}
+if (options.help) {
   console.log(USAGE);
   process.exit(0);
 }
-// Retire une option et sa valeur des arguments ; `undefined` si elle manque, `''` si sa valeur manque.
-function takeOption(name: string): string | undefined {
-  const at = args.indexOf(name);
-  if (at < 0) return undefined;
-  const value = args[at + 1];
-  const valid = value !== undefined && !value.startsWith('--');
-  args.splice(at, valid ? 2 : 1);
-  return valid ? value : '';
-}
-const base = takeOption('--base');
-if (base === '') {
-  console.error('--base attend une référence git (ex. origin/dev).');
-  process.exit(1);
-}
-const cliGlobs: string[] = [];
-for (let glob = takeOption('--tests'); glob !== undefined; glob = takeOption('--tests')) {
-  if (glob === '') {
-    console.error("--tests attend un motif de fichiers de tests (ex. 'src/**/*.test.ts').");
-    process.exit(1);
-  }
-  cliGlobs.push(glob);
-}
-const unknownOption = args.find((arg) => arg.startsWith('--'));
-if (unknownOption) {
-  console.error(`Option inconnue : ${unknownOption}\n${USAGE}`);
-  process.exit(1);
-}
+const { base, tests: cliGlobs, featureDirs: targets } = options;
 let globs: string[];
 try {
   globs =
@@ -268,8 +248,8 @@ try {
   process.exit(1);
 }
 // Viser une feature, c'est vérifier qu'elle est complète : même en Draft, tout scénario a son test.
-const strict = args.length > 0;
-const dirs = featureDirs(args);
+const strict = targets.length > 0;
+const dirs = featureDirs(targets);
 if (existsSync(LEGACY_INDEX)) {
   console.error(
     `${LEGACY_INDEX} n'est plus lu : l'index du produit est ${REQUIREMENT_INDEX} ` +
