@@ -9,6 +9,7 @@
 ### Corrigé
 
 - `spec-trace` et `artefact-prototype` lisent leurs arguments avec `parseArgs` de Node, comme `artefact-sdd`. Ils acceptent maintenant la forme `--option=valeur` (`spec-trace --base=origin/dev`, `artefact-prototype --theme=src/theme.css`), qu'ils refusaient comme option inconnue. Une option courte inconnue (`spec-trace -x`) est refusée, au lieu d'être prise pour un dossier de feature. Les messages restent en français.
+- `artefact-sdd` donne ses erreurs d'arguments en français (`--source` sans valeur, option inconnue), au lieu du message anglais de Node. Sans commande, il dit « Commande manquante : init ou update. » avant l'usage.
 
 ## [0.4.0] - 2026-11-19
 
