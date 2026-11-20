@@ -34,28 +34,28 @@ import {
   pageFiles,
   PROTOTYPE_DIR,
   prototypeArgs,
+  type PrototypeArgs,
 } from './core.mts';
 import { binOf, chromiumInstallHint, themeOf } from './stack.mts';
 
 const STACK_FILE = join('.specify', 'stack.yml');
 const USAGE = 'Usage : artefact-prototype [--capture] [--theme <fichier css>]';
 
-const args = process.argv.slice(2);
-if (args.includes('--help') || args.includes('-h')) {
+let options: PrototypeArgs;
+try {
+  options = prototypeArgs(process.argv.slice(2));
+} catch (error) {
+  console.error(`${USAGE}\n${(error as Error).message}`);
+  process.exit(1);
+}
+if (options.help) {
   console.log(USAGE);
   process.exit(0);
 }
-const themeAt = args.indexOf('--theme');
-const themeArg = themeAt >= 0 ? args.splice(themeAt, 2)[1] : undefined;
-if (themeAt >= 0 && (!themeArg || themeArg.startsWith('--'))) {
-  console.error(`--theme attend le fichier de thème du projet.\n${USAGE}`);
-  process.exit(1);
-}
+const { capture, theme: themeArg } = options;
 const dir = PROTOTYPE_DIR;
-let capture: boolean;
 let pages: string[];
 try {
-  ({ capture } = prototypeArgs(args));
   pages = pageFiles(readdirSync(dir));
 } catch (error) {
   const message =

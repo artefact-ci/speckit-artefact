@@ -12,9 +12,17 @@ import {
 } from './core.mts';
 
 describe('prototypeArgs', () => {
-  it('reads the capture flag; the prototype is global, in specs/prototype', () => {
-    assert.deepEqual(prototypeArgs([]), { capture: false });
-    assert.deepEqual(prototypeArgs(['--capture']), { capture: true });
+  it('reads --capture and --theme; the prototype is global, in specs/prototype', () => {
+    const none = { capture: false, theme: undefined, help: false };
+    assert.deepEqual(prototypeArgs([]), none);
+    assert.deepEqual(prototypeArgs(['--capture']), { ...none, capture: true });
+    assert.deepEqual(prototypeArgs(['--theme', 'a.css', '--capture']), {
+      ...none,
+      capture: true,
+      theme: 'a.css',
+    });
+    assert.deepEqual(prototypeArgs(['--theme=a.css']), { ...none, theme: 'a.css' });
+    assert.deepEqual(prototypeArgs(['-h']), { ...none, help: true });
   });
 
   it('refuses a folder, from the time each feature had its own prototype', () => {
@@ -23,8 +31,17 @@ describe('prototypeArgs', () => {
     }
   });
 
-  it('refuses an unknown option', () => {
-    assert.throws(() => prototypeArgs(['--watch']), /--watch/);
+  it('refuses an unknown option, long or short', () => {
+    assert.throws(() => prototypeArgs(['--watch']), /^Error: Option inconnue : --watch\.$/);
+    assert.throws(() => prototypeArgs(['-w']), /^Error: Option inconnue : -w\.$/);
+  });
+
+  it('asks for the theme file after --theme, and no value after --capture', () => {
+    for (const args of [['--theme'], ['--theme', '--capture'], ['--theme=']]) {
+      assert.throws(() => prototypeArgs(args), /^Error: --theme attend le fichier de thème du projet\.$/);
+    }
+    assert.throws(() => prototypeArgs(['--capture=yes']), /^Error: --capture ne prend pas de valeur\.$/);
+    assert.throws(() => prototypeArgs(['--help=yes']), /^Error: --help ne prend pas de valeur\.$/);
   });
 });
 

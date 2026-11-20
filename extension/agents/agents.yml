@@ -1,8 +1,12 @@
 # Métadonnées des sous-agents de la méthode, lues par `@artefact-ci/sdd` pour
 # générer les fichiers d'agent de chaque outil (les consignes sont les fichiers
 # `<name>.md` de ce dossier). `access` : read-only (ne modifie rien, ne commite
-# rien) ou writes (écrit des fichiers, ne commite rien). `po` n'a pas d'entrée :
-# ce n'est pas un sous-agent.
+# rien) ou writes (écrit des fichiers, ne commite rien). `model`, facultatif :
+# le modèle du sous-agent (alias `sonnet`, `opus`, `haiku`, `fable`, ou
+# identifiant complet), pour les outils dont le générateur le reprend ; sans
+# lui, le sous-agent prend le modèle de la session. Les relecteurs et le
+# designer le gardent : la relecture indépendante ne s'affaiblit pas. `po` n'a
+# pas d'entrée : ce n'est pas un sous-agent.
 # version: 1
 agents:
   - name: designer
@@ -11,6 +15,9 @@ agents:
       Expert UX/UI (SaaS moderne et professionnel) qui produit le cadrage design du produit et le prototype global, que chaque fonctionnalité complète. Lancé par /speckit-design (mode cadrage) et /speckit-prototype (modes parcours, puis maquette), avec le mode et les chemins à lire (specs/prd.md, specs/design.md, specs/NNN-<nom>/, specs/prototype/), et en reprise le rapport du relecteur-design. Écrit les fichiers, ne parle pas à l'utilisateur, rend un rapport avec ses hypothèses.
   - name: implementeur
     access: writes
+    # Une tâche bornée, test d'abord, vérifiée ensuite par l'agent principal ;
+    # plusieurs tournent à la fois, d'où un modèle plus économe.
+    model: sonnet
     description: >-
       Développeur qui fait une seule tâche de tasks.md, test d'abord. Lancé par /speckit-implement en mode sous-agents (--subagents), en même temps que les autres tâches [P] de la vague, avec seulement l'identifiant de la tâche, sa ligne exacte de tasks.md et le dossier specs/NNN-<nom>. Écrit le test ou le code de cette tâche, dans les fichiers qu'elle cite ; ne coche rien dans tasks.md, ne commite rien. Rend un rapport avec la commande de test lancée et sa ligne d'échec ou de succès.
   - name: relecteur
