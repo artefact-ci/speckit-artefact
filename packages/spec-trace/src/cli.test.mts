@@ -120,4 +120,9 @@ describe('spec-trace, drift', () => {
     write('specs/001-note/spec.md', `${readFileSync(join(repo, 'specs/001-note/spec.md'), 'utf8')}\n`);
     assert.doesNotMatch(trace('--base', 'HEAD').stdout, /Avertissements/);
   });
+
+  it('takes --base=<ref> like --base <ref>', () => {
+    write('src/note.spec.ts', "it('001-US1-AS1: z renamed', () => {});\n");
+    assert.match(trace('--base=HEAD').stdout, /## Avertissements/);
+  });
 });

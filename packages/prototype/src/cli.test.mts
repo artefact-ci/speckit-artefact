@@ -67,6 +67,7 @@ describe('prototype', () => {
   it('takes --theme over ui.theme', () => {
     write('.specify/stack.yml', 'ui:\n  theme: missing.css\n');
     assert.equal(prototype('--theme', 'src/theme.css').status, 0);
+    assert.equal(prototype('--theme=src/theme.css').status, 0);
     assert.match(prototype().stderr, /Thème introuvable : missing\.css/);
   });
 
