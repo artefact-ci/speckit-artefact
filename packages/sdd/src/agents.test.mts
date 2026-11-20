@@ -106,6 +106,32 @@ describe('agents', () => {
     assert.doesNotMatch(oc.content, /edit: deny/);
   });
 
+  it('claude files carry the model of agents.yml, and inherit the session model without one', () => {
+    const files = agentFiles('claude', specs)!;
+    const imp = files.find((f) => f.path === '.claude/agents/implementeur.md')!;
+    assert.match(imp.content, /\nmodel: sonnet\n/);
+    for (const name of ['relecteur', 'relecteur-produit', 'relecteur-design', 'designer']) {
+      const f = files.find((x) => x.path === `.claude/agents/${name}.md`)!;
+      assert.doesNotMatch(f.content, /\nmodel:/, name);
+    }
+  });
+
+  it('agy and opencode files never declare a model', () => {
+    // Antigravity : aucune clé vérifiée ; OpenCode : le nom dépend du fournisseur du projet.
+    for (const integration of ['agy', 'opencode']) {
+      for (const f of agentFiles(integration, specs)!) assert.doesNotMatch(f.content, /\nmodel:/, f.path);
+    }
+  });
+
+  it('readAgentSpecs rejects a model that is not a non-empty string', () => {
+    const root = tempRoot();
+    const file = join(root, INSTRUCTIONS_DIR, 'agents.yml');
+    writeFileSync(file, 'agents:\n  - name: x\n    access: writes\n    description: d\n    model: ""\n');
+    assert.throws(() => readAgentSpecs(root), /model/);
+    writeFileSync(file, 'agents:\n  - name: x\n    access: writes\n    description: d\n    model: 3\n');
+    assert.throws(() => readAgentSpecs(root), /model/);
+  });
+
   it('unknown integration has no generator', () => {
     assert.equal(agentFiles('copilot', specs), null);
   });
