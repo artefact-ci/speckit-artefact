@@ -1,10 +1,10 @@
 # Changelog
 
-## [Unreleased]
+## [0.5.0] - 2026-11-20
 
 ### Ajouté
 
-- Un agent peut avoir son propre modèle : la clé facultative `model` de `extension/agents/agents.yml` (alias `sonnet`, `opus`, `haiku`, `fable`, ou identifiant complet) est recopiée dans le fichier d'agent de Claude Code. Sans elle, le sous-agent garde le modèle de la session. L'`implementeur` passe sur `sonnet` : il fait une tâche bornée, vérifiée ensuite par l'agent principal, et plusieurs tournent à la fois. Les relecteurs et le designer gardent le modèle de la session. Antigravity et OpenCode ne reçoivent pas de modèle (aucune clé vérifiée pour Antigravity ; pour OpenCode, le nom dépend du fournisseur du projet). Un projet installé relance `update`.
+- Un agent peut avoir son propre modèle : la clé facultative `model` de `extension/agents/agents.yml` (alias `sonnet`, `opus`, `haiku`, `fable`, ou identifiant complet) est recopiée dans le fichier d'agent de Claude Code. Sans elle, le sous-agent garde le modèle de la session. L'`implementeur` passe sur `sonnet` : il fait une tâche bornée, vérifiée ensuite par l'agent principal, et plusieurs tournent à la fois. Les relecteurs et le designer gardent le modèle de la session. Antigravity et OpenCode ne reçoivent pas de modèle (aucune clé vérifiée pour Antigravity ; pour OpenCode, le nom dépend du fournisseur du projet). Un projet installé relance `npx @artefact-ci/sdd@0.5.0 update`.
 
 ### Corrigé
 
