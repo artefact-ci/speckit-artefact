@@ -2,7 +2,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse, stringify } from 'yaml';
 
-export type AgentSpec = { name: string; access: 'read-only' | 'writes'; description: string };
+/** `model` : modèle du sous-agent (alias ou identifiant de l'outil) ; absent, il prend celui de la session. */
+export type AgentSpec = { name: string; access: 'read-only' | 'writes'; description: string; model?: string };
 
 /** Dossier où Spec Kit installe les consignes des sous-agents (relatif à la racine du projet). */
 export const INSTRUCTIONS_DIR = '.specify/extensions/artefact-product/agents';
@@ -21,7 +22,16 @@ export function readAgentSpecs(root: string): AgentSpec[] {
   if (!doc || !Array.isArray(doc.agents)) {
     throw new Error(`${INSTRUCTIONS_DIR}/agents.yml invalide : clé « agents » absente`);
   }
-  return doc.agents.map((a) => ({ name: a.name, access: a.access, description: a.description }));
+  return doc.agents.map((a) => {
+    const spec: AgentSpec = { name: a.name, access: a.access, description: a.description };
+    if (a.model !== undefined) {
+      if (typeof a.model !== 'string' || a.model.trim() === '') {
+        throw new Error(`${INSTRUCTIONS_DIR}/agents.yml invalide : « model » de ${a.name} doit être un texte non vide`);
+      }
+      spec.model = a.model;
+    }
+    return spec;
+  });
 }
 
 /** Intégrations Spec Kit installées (`.specify/integration.json`) ; [] si le fichier manque. */
@@ -96,7 +106,12 @@ const GENERATORS: Record<string, Generator> = {
     file: (spec) => ({
       path: `.claude/agents/${spec.name}.md`,
       content: document(
-        { name: spec.name, description: spec.description, tools: CLAUDE_TOOLS[spec.access] },
+        {
+          name: spec.name,
+          description: spec.description,
+          tools: CLAUDE_TOOLS[spec.access],
+          ...(spec.model ? { model: spec.model } : {}),
+        },
         spec,
       ),
     }),

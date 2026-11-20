@@ -110,6 +110,8 @@ Quelques règles qui ne se discutent pas :
 
 Les fichiers d'agent sont fins : ils lisent les consignes, communes à tous les outils, de `.specify/extensions/artefact-product/agents/`.
 
+Sur Claude Code, les sous-agents prennent le modèle de la session, sauf l'`implementeur`, qui tourne sur `sonnet` : une tâche bornée, vérifiée ensuite par l'agent principal, plusieurs à la fois. Les relecteurs et le designer gardent le modèle de la session, pour que la relecture indépendante ne s'affaiblisse pas. Le choix vient de la clé `model` de `extension/agents/agents.yml` ; un fichier d'agent de la méthode modifié à la main dans `.claude/agents/` est réécrit par `update`.
+
 Sur Antigravity, les sous-agents tournent dans le bac à sable : une commande y lit le projet mais n'y écrit pas, et chaque commande attend votre accord (ctrl+k), au plus 60 secondes. Sans réponse, elle est abandonnée et l'agent continue sans elle : restez devant l'écran pendant une relecture, et pendant `/speckit-implement --subagents`, où jusqu'à 4 implémenteurs demandent leurs accords en même temps. Ouvrez le projet depuis son dossier réel, pas depuis `/tmp` : hors du projet ouvert, chaque écriture demande aussi un accord.
 
 Sur OpenCode, les commandes s'appellent avec un point : `/speckit.specify`, `/speckit.prd`… Les relecteurs ne peuvent ni écrire ni lancer d'autre agent ; leurs commandes shell et les écritures du designer et de l'implémenteur suivent les permissions du projet (`opencode.json`).
